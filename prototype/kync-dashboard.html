@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KYNC — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root {
+  --bg:#F7F5F2; --surface:#FFFFFF; --border:#E8E4DF; --border-lt:#F0EDE9;
+  --text-1:#1A1714; --text-2:#6B6561; --text-3:#A09893;
+  --green:#1D9E75; --green-lt:#E3F5EF;
+  --red:#E24B4A; --red-lt:#FEF0F0;
+  --amber:#D97706; --amber-lt:#FEF3C7;
+  --lilac:#7F77DD; --lilac-lt:#F2F1FD;
+  --sj-bg:#9FE1CB; --sj-fg:#085041; --sj-ac:#1D9E75;
+  --mj-bg:#F5C4B3; --mj-fg:#712B13; --mj-ac:#D85A30;
+  --oj-bg:#B5D4F4; --oj-fg:#0C447C; --oj-ac:#378ADD;
+  --lj-bg:#F4C0D1; --lj-fg:#72243E; --lj-ac:#D4537E;
+  --fa-bg:#CECBF6; --fa-fg:#3C3489; --fa-ac:#7F77DD;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-2xl:28px;
+  --app-max:1080px; --action-icon-size:52px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-1);font-size:14px;min-height:100vh;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,select,textarea{font-family:inherit;}
+.screen{display:none;} .screen.active{display:block;}
+
+/* LOGIN */
+#screen-login{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px;background:var(--bg);}
+#screen-login.active{display:flex;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.07);}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.login-logo-icon{width:44px;height:44px;border-radius:var(--r-md);background:var(--text-1);display:flex;align-items:center;justify-content:center;}
+.login-logo-icon i{font-size:22px;color:#fff;}
+.login-logo-name{font-size:20px;font-weight:800;letter-spacing:-.03em;}
+.login-logo-name span{color:var(--green);}
+.login-heading{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+.login-sub{font-size:14px;color:var(--text-2);margin-bottom:28px;line-height:1.5;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;letter-spacing:.02em;}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:14px;color:var(--text-1);background:var(--bg);transition:border-color .15s;outline:none;}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
+.login-btn{width:100%;padding:13px;border-radius:var(--r-md);background:var(--text-1);color:#fff;font-size:14px;font-weight:700;transition:background .15s;margin-top:4px;}
+.login-btn:hover{background:#2d2926;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text-3);font-size:12px;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.login-alt{width:100%;padding:11px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;color:var(--text-2);display:flex;align-items:center;justify-content:center;gap:8px;}
+.login-alt:hover{background:var(--bg);}
+.login-footer{text-align:center;margin-top:24px;font-size:12px;color:var(--text-3);}
+.login-footer a{color:var(--green);font-weight:600;text-decoration:none;}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:80;background:rgba(247,245,242,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;}
+.topbar-inner{max-width:var(--app-max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;gap:16px;}
+.tb-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.tb-logo-icon{width:32px;height:32px;border-radius:var(--r-sm);background:var(--text-1);display:flex;align-items:center;justify-content:center;}
+.tb-logo-icon i{font-size:16px;color:#fff;}
+.tb-logo-name{font-size:16px;font-weight:800;letter-spacing:-.03em;color:var(--text-1);}
+.tb-logo-name span{color:var(--green);}
+.tb-nav{display:flex;align-items:center;gap:4px;}
+.tb-nav-btn{padding:6px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--text-2);transition:background .12s,color .12s;display:flex;align-items:center;gap:6px;}
+.tb-nav-btn:hover{background:var(--border-lt);color:var(--text-1);}
+.tb-nav-btn.active{background:var(--text-1);color:#fff;}
+.tb-nav-btn i{font-size:15px;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-help-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-2);font-weight:700;cursor:pointer;transition:all .15s;}
+.tb-help-btn:hover{background:var(--text-1);color:#fff;border-color:var(--text-1);}
+.tb-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;background:var(--sj-bg);color:var(--sj-fg);border:2px solid transparent;transition:border-color .15s;}
+.tb-avatar:hover{border-color:var(--text-1);}
+@media(max-width:600px){.topbar{padding:0 14px;} .tb-nav{display:none;}}
+
+/* DASH BODY */
+.dash-body{max-width:var(--app-max);margin:0 auto;padding:28px 24px 60px;}
+.welcome-banner{background:var(--text-1);border-radius:var(--r-2xl);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:20px;overflow:hidden;position:relative;}
+.welcome-banner::after{content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
+.welcome-eyebrow{font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.welcome-heading{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.15;margin-bottom:6px;}
+.welcome-sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.5;}
+.welcome-members{display:flex;align-items:center;margin-top:16px;}
+.welcome-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2.5px solid var(--text-1);margin-right:-8px;}
+.welcome-member-count{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-left:18px;}
+.welcome-cal-btn{display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:var(--r-lg);background:var(--green);color:#fff;font-size:13px;font-weight:700;flex-shrink:0;white-space:nowrap;transition:background .15s;}
+.welcome-cal-btn:hover{background:#18896a;}
+.welcome-cal-btn i{font-size:16px;}
+@media(max-width:600px){.welcome-banner{padding:22px 20px;} .welcome-heading{font-size:20px;} .welcome-cal-btn span{display:none;} .welcome-cal-btn{padding:12px;}}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-size:16px;font-weight:800;letter-spacing:-.02em;}
+.section-link{font-size:12px;font-weight:600;color:var(--green);cursor:pointer;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 16px;}
+.stat-num{font-size:28px;font-weight:800;letter-spacing:-.04em;line-height:1;}
+.stat-lbl{font-size:12px;font-weight:600;color:var(--text-3);margin-top:4px;}
+.stat-delta{font-size:11px;font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px;}
+.delta-up{color:var(--green);} .delta-warn{color:var(--amber);}
+
+/* QUICK ACTIONS */
+.actions-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px;}
+@media(max-width:900px){.actions-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.actions-grid{grid-template-columns:repeat(2,1fr);gap:8px;}}
+.action-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-xl);padding:20px 16px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;position:relative;overflow:hidden;}
+.action-card:hover{border-color:transparent;box-shadow:0 6px 28px rgba(0,0,0,.1);transform:translateY(-2px);}
+.action-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r-xl) var(--r-xl) 0 0;}
+.ac-green::before{background:var(--green);} .ac-blue::before{background:var(--oj-ac);} .ac-purple::before{background:var(--fa-ac);}
+.ac-orange::before{background:var(--mj-ac);} .ac-pink::before{background:var(--lj-ac);} .ac-teal::before{background:var(--sj-ac);}
+.ac-amber::before{background:var(--amber);} .ac-dark::before{background:var(--text-1);} .ac-lilac::before{background:var(--lilac);}
+.ac-emerald::before{background:#059669;}
+.action-icon{width:48px;height:48px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.action-icon i{font-size:24px;}
+.ai-green{background:var(--green-lt);color:var(--green);} .ai-blue{background:#EDF4FE;color:var(--oj-ac);} .ai-purple{background:#F2F1FD;color:var(--fa-ac);}
+.ai-orange{background:#FDF2EE;color:var(--mj-ac);} .ai-pink{background:#FDF0F4;color:var(--lj-ac);} .ai-teal{background:#E8F8F3;color:var(--sj-ac);}
+.ai-amber{background:var(--amber-lt);color:var(--amber);} .ai-dark{background:#EBEBEB;color:var(--text-1);} .ai-lilac{background:var(--lilac-lt);color:var(--lilac);}
+.ai-emerald{background:#D1FAE5;color:#059669;}
+.action-label{font-size:13px;font-weight:700;line-height:1.3;}
+.action-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+
+/* MEMBERS */
+.members-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:28px;}
+.member-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border-lt);transition:background .1s;cursor:pointer;}
+.member-row:last-child{border-bottom:none;} .member-row:hover{background:var(--bg);}
+.member-av{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.member-info{flex:1;}
+.member-name{font-size:14px;font-weight:700;}
+.member-meta{font-size:12px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:8px;}
+.member-role-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;}
+.role-admin{background:var(--text-1);color:#fff;} .role-member{background:#EBEBEB;color:var(--text-2);} .role-child{background:var(--oj-bg);color:var(--oj-fg);}
+.member-perms{display:flex;gap:5px;}
+.perm-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.perm-on{background:var(--green-lt);color:var(--green);} .perm-off{background:#F0EDE9;color:var(--text-3);}
+.member-chevron{color:var(--text-3);font-size:16px;flex-shrink:0;}
+.member-row.pending{opacity:.6;}
+.pending-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--amber-lt);color:var(--amber);border:1px solid #FCD34D;}
+
+/* ACTIVITY */
+.activity-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;}
+.activity-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border-lt);}
+.activity-row:last-child{border-bottom:none;}
+.activity-icon{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.activity-text{flex:1;font-size:13px;line-height:1.4;}
+.activity-text strong{font-weight:700;}
+.activity-time{font-size:11px;color:var(--text-3);flex-shrink:0;}
+
+/* MODAL */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:flex-end;justify-content:center;}
+.modal-backdrop.open{display:flex;}
+@media(min-width:601px){.modal-backdrop{align-items:center;}}
+.modal{background:var(--surface);border-radius:var(--r-2xl) var(--r-2xl) 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;animation:slideUp .22s ease;}
+@media(min-width:601px){.modal{border-radius:var(--r-2xl);max-height:88vh;}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:12px auto 0;}
+@media(min-width:601px){.modal-handle{display:none;}}
+.modal-head{padding:20px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-size:18px;font-weight:800;letter-spacing:-.02em;}
+.modal-sub{font-size:13px;color:var(--text-2);margin-top:4px;}
+.modal-close{width:30px;height:30px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:16px;flex-shrink:0;}
+.modal-close:hover{background:var(--border);}
+.modal-body{padding:0 24px 24px;}
+.modal-field{margin-bottom:14px;}
+.modal-field label{display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:6px;letter-spacing:.02em;}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:14px;color:var(--text-1);background:var(--bg);outline:none;transition:border-color .15s;}
+.modal-field textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
+.modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.perm-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--bg);cursor:pointer;}
+.perm-toggle.on{border-color:var(--green);background:var(--green-lt);}
+.perm-toggle-lbl{font-size:12px;font-weight:600;color:var(--text-2);}
+.perm-toggle.on .perm-toggle-lbl{color:var(--green);}
+.toggle-switch{width:28px;height:16px;border-radius:8px;background:var(--border);position:relative;flex-shrink:0;}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.perm-toggle.on .toggle-switch{background:var(--green);}
+.perm-toggle.on .toggle-switch::after{transform:translateX(12px);}
+.role-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.role-pill{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;background:var(--bg);}
+.role-pill.sel{background:var(--text-1);border-color:var(--text-1);color:#fff;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;}
+.modal-btn{flex:1;padding:12px;border-radius:var(--r-md);font-size:14px;font-weight:700;}
+.modal-btn-primary{background:var(--text-1);color:#fff;}
+.modal-btn-primary:hover{background:#2d2926;}
+.modal-btn-secondary{background:var(--bg);color:var(--text-2);border:1.5px solid var(--border);}
+.modal-btn-secondary:hover{background:var(--border-lt);}
+.modal-btn-danger{background:var(--red-lt);color:var(--red);border:1.5px solid #F09595;}
+
+/* TOGGLE ROW */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--bg);margin-bottom:8px;}
+.toggle-row.on{border-color:var(--green);background:var(--green-lt);}
+.toggle-row-info{flex:1;}
+.toggle-row-label{font-size:13px;font-weight:700;}
+.toggle-row.on .toggle-row-label{color:var(--green);}
+.toggle-row-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+.toggle-row-switch{width:36px;height:20px;border-radius:10px;background:var(--border);position:relative;flex-shrink:0;cursor:pointer;}
+.toggle-row-switch::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle-row.on .toggle-row-switch{background:var(--green);}
+.toggle-row.on .toggle-row-switch::after{transform:translateX(16px);}
+
+/* SLEEP LOCK */
+.sleep-wrap{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;}
+.sleep-enabled-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.sleep-times{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:14px;border-top:1px solid var(--border-lt);}
+.sleep-time-field label{display:block;font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.04em;margin-bottom:6px;}
+.sleep-time-field input[type=time]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:15px;font-weight:700;background:var(--surface);outline:none;}
+.sleep-ext-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--amber);font-size:12px;font-weight:700;color:var(--amber);background:var(--amber-lt);cursor:pointer;white-space:nowrap;}
+.sleep-note{font-size:11px;color:var(--text-3);margin-top:10px;line-height:1.5;padding:10px 12px;background:var(--amber-lt);border-radius:var(--r-md);border:1px solid #FDE68A;}
+.sleep-note i{vertical-align:middle;margin-right:4px;}
+
+/* REWARDS */
+.rewards-target-wrap{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;}
+.rewards-target-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.rewards-target-label{font-size:13px;font-weight:700;}
+.rewards-target-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+.rewards-target-input{width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:15px;font-weight:800;background:var(--surface);text-align:center;outline:none;}
+.rewards-progress-bar{margin-top:12px;height:8px;border-radius:4px;background:var(--border-lt);overflow:hidden;}
+.rewards-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),#56cfb2);transition:width .4s;}
+.rewards-progress-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:5px;}
+
+/* SETTINGS */
+.settings-section{margin-bottom:20px;}
+.settings-section-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-lt);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-label{font-size:13px;font-weight:600;}
+.settings-row-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+.settings-toggle{width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;border:none;}
+.settings-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.settings-toggle.on{background:var(--green);}
+.settings-toggle.on::after{transform:translateX(18px);}
+.danger-zone{background:var(--red-lt);border:1px solid #F09595;border-radius:var(--r-lg);padding:16px;margin-top:8px;}
+.danger-zone-title{font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px;}
+.danger-zone-text{font-size:12px;color:#B91C1C;line-height:1.5;margin-bottom:12px;}
+
+/* KIOSK */
+.kiosk-info-card{border-radius:var(--r-lg);border:1.5px solid var(--border);overflow:hidden;}
+.kiosk-info-header{padding:12px 14px;background:var(--text-1);display:flex;align-items:center;gap:8px;}
+.kiosk-info-header-text{font-size:13px;font-weight:700;color:#fff;}
+.kiosk-info-header-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px;}
+.kiosk-platform{padding:12px 14px;border-bottom:1px solid var(--border-lt);}
+.kiosk-platform:last-child{border-bottom:none;}
+.kiosk-platform-title{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.kiosk-platform-body{font-size:12px;color:var(--text-2);line-height:1.55;}
+.kiosk-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:var(--border-lt);color:var(--text-2);margin:3px 2px 0;}
+
+/* EXAM/REVISION */
+.urgency-pills{display:flex;gap:6px;margin-top:4px;}
+.urgency-pill{flex:1;padding:10px 8px;border-radius:var(--r-md);border:1.5px solid var(--border);text-align:center;cursor:pointer;background:var(--bg);}
+.urgency-pill .up-icon{font-size:18px;margin-bottom:4px;}
+.urgency-pill .up-label{font-size:11px;font-weight:700;color:var(--text-2);}
+.urgency-pill .up-sub{font-size:10px;color:var(--text-3);margin-top:1px;}
+.urgency-pill.sel-soon{border-color:var(--red);background:var(--red-lt);}
+.urgency-pill.sel-soon .up-label{color:var(--red);}
+.urgency-pill.sel-mid{border-color:var(--amber);background:var(--amber-lt);}
+.urgency-pill.sel-mid .up-label{color:var(--amber);}
+.urgency-pill.sel-ok{border-color:var(--green);background:var(--green-lt);}
+.urgency-pill.sel-ok .up-label{color:var(--green);}
+.duration-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.duration-pill{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;background:var(--bg);}
+.duration-pill.sel{background:var(--lilac);border-color:var(--lilac);color:#fff;}
+
+/* HELP DRAWER */
+.help-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:400;}
+.help-backdrop.open{display:block;}
+.help-drawer{position:fixed;top:0;right:-420px;bottom:0;width:100%;max-width:400px;background:var(--surface);box-shadow:-8px 0 40px rgba(0,0,0,.12);z-index:401;transition:right .28s cubic-bezier(.34,1,.64,1);display:flex;flex-direction:column;}
+.help-backdrop.open .help-drawer{right:0;}
+.help-drawer-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.help-drawer-title{font-size:18px;font-weight:800;}
+.help-drawer-close{width:30px;height:30px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:16px;cursor:pointer;}
+.help-drawer-body{flex:1;overflow-y:auto;padding:20px 24px 32px;}
+.help-qs-card{background:linear-gradient(135deg,var(--text-1),#2d3a5a);border-radius:var(--r-xl);padding:20px;margin-bottom:20px;cursor:pointer;}
+.help-qs-card:hover{opacity:.95;}
+.help-qs-eyebrow{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.help-qs-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:4px;}
+.help-qs-sub{font-size:12px;color:rgba(255,255,255,.55);line-height:1.5;}
+.help-qs-btn{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:8px 16px;border-radius:20px;background:var(--green);color:#fff;font-size:12px;font-weight:700;}
+.help-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.help-feat-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;}
+.help-feat-icon{width:36px;height:36px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+.help-feat-title{font-size:12px;font-weight:700;margin-bottom:3px;}
+.help-feat-sub{font-size:11px;color:var(--text-3);line-height:1.4;}
+.help-section-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.faq-item{border:1.5px solid var(--border);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden;}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;font-size:13px;font-weight:600;background:var(--bg);gap:8px;}
+.faq-q:hover{background:var(--border-lt);}
+.faq-q i{font-size:14px;color:var(--text-3);flex-shrink:0;transition:transform .2s;}
+.faq-item.open .faq-q i{transform:rotate(180deg);}
+.faq-a{display:none;padding:0 16px 14px;font-size:13px;color:var(--text-2);line-height:1.6;background:var(--surface);}
+.faq-item.open .faq-a{display:block;}
+
+/* WIZARD */
+.wizard-steps{display:flex;align-items:center;justify-content:center;gap:6px;padding:16px 24px 0;}
+.wizard-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s;}
+.wizard-dot.active{background:var(--green);width:24px;border-radius:4px;}
+.wizard-dot.done{background:var(--green);}
+.wizard-step{display:none;} .wizard-step.active{display:block;}
+.wizard-hero{text-align:center;padding:24px 0 20px;}
+.wizard-hero-icon{width:72px;height:72px;border-radius:var(--r-xl);background:var(--green-lt);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;}
+.wizard-hero-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+.wizard-hero-sub{font-size:14px;color:var(--text-2);line-height:1.6;max-width:340px;margin:0 auto;}
+
+/* BEDTIME */
+#bedtime-overlay{display:none;position:fixed;inset:0;z-index:999;background:linear-gradient(160deg,#0F1B35,#1a2d54,#0d2140);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;}
+#bedtime-overlay.active{display:flex;}
+.bedtime-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.bedtime-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:0;animation:twinkle var(--d,3s) var(--dl,0s) infinite;}
+@keyframes twinkle{0%,100%{opacity:0;}50%{opacity:var(--op,.8);}}
+.bedtime-moon{font-size:72px;margin-bottom:16px;animation:moonFloat 4s ease-in-out infinite;}
+@keyframes moonFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.bedtime-title{font-size:28px;font-weight:800;color:#fff;margin-bottom:8px;}
+.bedtime-sub{font-size:15px;color:rgba(255,255,255,.65);line-height:1.5;max-width:300px;margin:0 auto 32px;}
+.bedtime-wake-card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-xl);padding:20px 32px;margin-bottom:24px;}
+.bedtime-wake-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.bedtime-wake-time{font-size:36px;font-weight:800;color:#fff;}
+.bedtime-ask-btn{padding:12px 28px;border-radius:24px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
+.bedtime-demo-close{position:absolute;top:20px;right:20px;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;padding:6px 10px;border:1px solid rgba(255,255,255,.15);border-radius:8px;}
+
+/* COLOUR SWATCH */
+.colour-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.colour-swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;}
+.colour-swatch:hover{transform:scale(1.1);}
+.colour-swatch.sel{border-color:var(--text-1);}
+.avatar-upload-wrap{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px;background:var(--bg);border-radius:var(--r-lg);border:1.5px dashed var(--border);}
+.avatar-preview{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;overflow:hidden;}
+.avatar-preview img{width:100%;height:100%;object-fit:cover;}
+.avatar-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--r-md);background:var(--surface);border:1.5px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;}
+.avatar-upload-btn input[type=file]{display:none;}
+.avatar-remove-btn{font-size:11px;font-weight:600;color:var(--red);cursor:pointer;margin-top:4px;display:inline-block;}
+.cal-sync-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--bg);margin-bottom:8px;cursor:pointer;}
+.cal-sync-row.connected{border-color:var(--green);background:var(--green-lt);}
+.cal-sync-icon{width:36px;height:36px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.cal-sync-icon.google{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+.cal-sync-icon.outlook{background:#0078D4;color:#fff;}
+.cal-sync-info{flex:1;}
+.cal-sync-name{font-size:13px;font-weight:700;}
+.cal-sync-status{font-size:11px;color:var(--text-3);margin-top:2px;}
+.cal-sync-row.connected .cal-sync-status{color:var(--green);}
+.cal-toggle-switch{width:36px;height:20px;border-radius:10px;background:var(--border);position:relative;}
+.cal-toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.cal-sync-row.connected .cal-toggle-switch{background:var(--green);}
+.cal-sync-row.connected .cal-toggle-switch::after{transform:translateX(16px);}
+
+/* ═══════════════════════════════════════
+   FINANCIAL REPORTING MODAL
+═══════════════════════════════════════ */
+.report-modal{max-width:740px;}
+.report-period-tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--bg);padding:4px;border-radius:var(--r-lg);border:1.5px solid var(--border);}
+.report-tab{flex:1;padding:8px;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--text-2);text-align:center;cursor:pointer;transition:all .15s;}
+.report-tab.active{background:var(--text-1);color:#fff;}
+.report-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+@media(max-width:600px){.report-summary-grid{grid-template-columns:repeat(2,1fr);}}
+.report-summary-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;}
+.report-summary-num{font-size:22px;font-weight:800;letter-spacing:-.03em;}
+.report-summary-lbl{font-size:11px;font-weight:600;color:var(--text-3);margin-top:3px;}
+.report-summary-card.paid .report-summary-num{color:var(--green);}
+.report-summary-card.upcoming .report-summary-num{color:var(--amber);}
+.report-summary-card.overdue .report-summary-num{color:var(--red);}
+.report-section-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.report-category-list{margin-bottom:20px;}
+.report-cat-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.report-cat-label{width:100px;font-size:12px;font-weight:600;color:var(--text-2);flex-shrink:0;}
+.report-cat-bar-wrap{flex:1;height:28px;background:var(--border-lt);border-radius:var(--r-sm);overflow:hidden;position:relative;}
+.report-cat-bar{height:100%;border-radius:var(--r-sm);display:flex;align-items:center;padding-left:10px;font-size:11px;font-weight:700;color:#fff;transition:width .6s ease;min-width:2px;}
+.report-cat-amount{width:70px;font-size:12px;font-weight:700;text-align:right;flex-shrink:0;}
+.report-monthly-chart{display:flex;align-items:flex-end;gap:8px;height:80px;margin-bottom:20px;}
+.report-month-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.report-month-bar{width:100%;border-radius:4px 4px 0 0;background:var(--green);opacity:.7;transition:opacity .15s;cursor:pointer;}
+.report-month-bar:hover{opacity:1;}
+.report-month-label{font-size:10px;color:var(--text-3);font-weight:600;}
+.report-bills-table{border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px;}
+.report-table-head{display:grid;grid-template-columns:1fr 120px 80px 70px;gap:0;background:var(--bg);padding:10px 16px;border-bottom:1px solid var(--border);}
+.report-table-head span{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;}
+.report-table-row{display:grid;grid-template-columns:1fr 120px 80px 70px;gap:0;padding:11px 16px;border-bottom:1px solid var(--border-lt);align-items:center;}
+.report-table-row:last-child{border-bottom:none;}
+.report-bill-name{font-size:13px;font-weight:600;}
+.report-bill-cat{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;}
+.report-bill-amount{font-size:13px;font-weight:700;}
+.report-bill-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;text-align:center;}
+.status-paid{background:var(--green-lt);color:var(--green);}
+.status-due{background:var(--amber-lt);color:var(--amber);}
+.status-overdue{background:var(--red-lt);color:var(--red);}
+.report-export-bar{display:flex;gap:8px;padding-top:4px;}
+.report-export-btn{display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--bg);font-size:13px;font-weight:600;color:var(--text-1);cursor:pointer;flex:1;justify-content:center;transition:all .15s;}
+.report-export-btn:hover{background:var(--text-1);color:#fff;border-color:var(--text-1);}
+.report-export-btn i{font-size:16px;}
+.report-export-btn.excel:hover{background:#217346;border-color:#217346;}
+.report-export-btn.pdf:hover{background:#DC2626;border-color:#DC2626;}
+
+/* ═══════════════════════════════════════
+   AI SCANNER MODAL
+═══════════════════════════════════════ */
+.scan-modal{max-width:540px;}
+.scan-drop-zone{border:2px dashed var(--border);border-radius:var(--r-lg);padding:40px 24px;text-align:center;cursor:pointer;background:var(--bg);transition:border-color .2s,background .2s;position:relative;}
+.scan-drop-zone:hover,.scan-drop-zone.drag-over{border-color:var(--green);background:var(--green-lt);}
+.scan-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.scan-drop-icon{width:60px;height:60px;border-radius:var(--r-lg);background:var(--green-lt);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.scan-drop-icon i{font-size:28px;color:var(--green);}
+.scan-drop-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.scan-drop-sub{font-size:12px;color:var(--text-3);}
+.scan-processing{display:none;text-align:center;padding:32px 0;}
+.scan-processing.active{display:block;}
+.scan-spinner{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.scan-processing-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.scan-processing-sub{font-size:12px;color:var(--text-3);}
+.scan-result{display:none;}
+.scan-result.active{display:block;}
+.scan-result-header{display:flex;align-items:center;gap:12px;padding:14px;background:var(--green-lt);border:1.5px solid #86efbd;border-radius:var(--r-lg);margin-bottom:16px;}
+.scan-result-icon{width:40px;height:40px;border-radius:var(--r-md);background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.scan-result-icon i{font-size:20px;color:#fff;}
+.scan-result-type{font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;}
+.scan-result-title{font-size:14px;font-weight:700;margin-top:2px;}
+.scan-confidence{font-size:11px;color:var(--text-3);margin-top:2px;}
+.scan-confidence span{color:var(--green);font-weight:700;}
+.scan-fields{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px;}
+.scan-field-row{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border-lt);}
+.scan-field-row:last-child{border-bottom:none;}
+.scan-field-label{width:110px;font-size:11px;font-weight:700;color:var(--text-3);flex-shrink:0;}
+.scan-field-value{flex:1;font-size:13px;font-weight:600;}
+.scan-field-edit{width:100%;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:600;background:var(--surface);outline:none;}
+.scan-field-edit:focus{border-color:var(--green);}
+.scan-edit-toggle{font-size:11px;font-weight:600;color:var(--green);cursor:pointer;margin-left:8px;white-space:nowrap;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text-1);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:600;opacity:0;transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast i{font-size:15px;color:var(--green);}
+
+@media print {
+  .topbar,.tb-nav,.modal-backdrop,.help-backdrop,.toast,#bedtime-overlay{display:none!important;}
+  .dash-body{padding:0;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo"><div class="login-logo-icon"><i class="ti ti-home-heart"></i></div><div class="login-logo-name">KY<span>NC</span></div></div>
+    <div class="login-heading">Welcome back</div>
+    <div class="login-sub">Sign in to manage your family's calendar, tasks, and more.</div>
+    <div class="field"><label>Email address</label><input type="email" placeholder="sarah@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" placeholder="••••••••"></div>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-divider">or</div>
+    <button class="login-alt" onclick="doLogin()"><i class="ti ti-brand-google" style="font-size:16px;"></i> Continue with Google</button>
+    <div class="login-footer">New family? <a href="#" onclick="doLogin()">Create an account</a> &nbsp;·&nbsp; <a href="#" onclick="doLogin()">Forgot password?</a></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="screen-dashboard" class="screen">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="tb-logo" href="#"><div class="tb-logo-icon"><i class="ti ti-home-heart"></i></div><div class="tb-logo-name">KY<span>NC</span></div></a>
+      <nav class="tb-nav">
+        <button class="tb-nav-btn active"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+        <button class="tb-nav-btn" onclick="goCalendar()"><i class="ti ti-calendar"></i>Calendar</button>
+        <button class="tb-nav-btn" onclick="openModal('modal-reports')"><i class="ti ti-chart-bar"></i>Reports</button>
+        <button class="tb-nav-btn" onclick="openModal('modal-settings')"><i class="ti ti-settings"></i>Settings</button>
+      </nav>
+      <div class="tb-right">
+        <button class="tb-help-btn" onclick="openHelp()" title="Help">?</button>
+        <div class="tb-avatar" onclick="openModal('modal-member-sarah')" title="Sarah Jones">SJ</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-body">
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <div class="welcome-eyebrow">Good morning</div>
+        <div class="welcome-heading">The Jones<br>Family</div>
+        <div class="welcome-sub">4 members · Perth, WA · Since Jan 2024</div>
+        <div class="welcome-members">
+          <div class="welcome-av" style="background:var(--sj-bg);color:var(--sj-fg);">SJ</div>
+          <div class="welcome-av" style="background:var(--mj-bg);color:var(--mj-fg);">MJ</div>
+          <div class="welcome-av" style="background:var(--oj-bg);color:var(--oj-fg);">OJ</div>
+          <div class="welcome-av" style="background:var(--lj-bg);color:var(--lj-fg);">LJ</div>
+          <span class="welcome-member-count">4 members</span>
+        </div>
+      </div>
+      <button class="welcome-cal-btn" onclick="goCalendar()"><i class="ti ti-calendar"></i><span>Open Calendar</span></button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">7</div><div class="stat-lbl">Events this week</div><div class="stat-delta delta-up"><i class="ti ti-arrow-up-right" style="font-size:11px;"></i> 2 more than last week</div></div>
+      <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">Tasks due today</div><div class="stat-delta delta-warn"><i class="ti ti-alert-circle" style="font-size:11px;"></i> 1 overdue</div></div>
+      <div class="stat-card"><div class="stat-num">$767</div><div class="stat-lbl">Spend this month</div><div class="stat-delta delta-warn"><i class="ti ti-receipt" style="font-size:11px;"></i> 2 bills due soon</div></div>
+      <div class="stat-card"><div class="stat-num">235</div><div class="stat-lbl">Kids points total</div><div class="stat-delta delta-up"><i class="ti ti-star" style="font-size:11px;"></i> Olivia leads with 140</div></div>
+    </div>
+
+    <div class="section-hd"><div class="section-title">Quick actions</div></div>
+    <div class="actions-grid">
+      <div class="action-card ac-green" onclick="openModal('modal-invite')"><div class="action-icon ai-green"><i class="ti ti-user-plus"></i></div><div><div class="action-label">Invite member</div><div class="action-sub">Send a family invite</div></div></div>
+      <div class="action-card ac-blue" onclick="goCalendar()"><div class="action-icon ai-blue"><i class="ti ti-calendar-plus"></i></div><div><div class="action-label">Add event</div><div class="action-sub">To the family calendar</div></div></div>
+      <div class="action-card ac-orange" onclick="openModal('modal-add-task')"><div class="action-icon ai-orange"><i class="ti ti-circle-plus"></i></div><div><div class="action-label">Add task</div><div class="action-sub">Assign to a member</div></div></div>
+      <div class="action-card ac-purple" onclick="openModal('modal-scan')"><div class="action-icon ai-purple"><i class="ti ti-scan"></i></div><div><div class="action-label">AI scan</div><div class="action-sub">Reads docs &amp; photos</div></div></div>
+      <div class="action-card ac-amber" onclick="openModal('modal-add-bill')"><div class="action-icon ai-amber"><i class="ti ti-receipt"></i></div><div><div class="action-label">Add bill</div><div class="action-sub">Track payments</div></div></div>
+      <div class="action-card ac-pink" onclick="openModal('modal-kids-chore')"><div class="action-icon ai-pink"><i class="ti ti-list-check"></i></div><div><div class="action-label">Add chore</div><div class="action-sub">AM or PM for kids</div></div></div>
+      <div class="action-card ac-teal" onclick="openModal('modal-add-homework')"><div class="action-icon ai-teal"><i class="ti ti-pencil"></i></div><div><div class="action-label">Add homework</div><div class="action-sub">Subject &amp; due date</div></div></div>
+      <div class="action-card ac-lilac" onclick="openModal('modal-add-exam')"><div class="action-icon ai-lilac"><i class="ti ti-notes"></i></div><div><div class="action-label">Add exam</div><div class="action-sub">With revision planner</div></div></div>
+      <div class="action-card ac-emerald" onclick="openModal('modal-reports')"><div class="action-icon ai-emerald"><i class="ti ti-chart-bar"></i></div><div><div class="action-label">Financial report</div><div class="action-sub">Bills by category</div></div></div>
+      <div class="action-card ac-dark" onclick="openModal('modal-settings')"><div class="action-icon ai-dark"><i class="ti ti-settings"></i></div><div><div class="action-label">Family settings</div><div class="action-sub">Manage &amp; configure</div></div></div>
+    </div>
+
+    <div class="section-hd"><div class="section-title">Family members</div><div class="section-link" onclick="openModal('modal-invite')">+ Invite</div></div>
+    <div class="members-list">
+      <div class="member-row" onclick="openModal('modal-member-sarah')"><div class="member-av" style="background:var(--sj-bg);color:var(--sj-fg);">SJ</div><div class="member-info"><div class="member-name">Sarah Jones</div><div class="member-meta"><span class="member-role-badge role-admin">Admin</span><span>sarah@example.com</span></div></div><div class="member-perms"><div class="perm-dot perm-on"><i class="ti ti-plus" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-pencil" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-trash" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-check" style="font-size:9px;"></i></div></div><i class="ti ti-chevron-right member-chevron"></i></div>
+      <div class="member-row" onclick="openModal('modal-member-mark')"><div class="member-av" style="background:var(--mj-bg);color:var(--mj-fg);">MJ</div><div class="member-info"><div class="member-name">Mark Jones</div><div class="member-meta"><span class="member-role-badge role-member">Member</span><span>mark@example.com</span></div></div><div class="member-perms"><div class="perm-dot perm-on"><i class="ti ti-plus" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-pencil" style="font-size:9px;"></i></div><div class="perm-dot perm-off"><i class="ti ti-trash" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-check" style="font-size:9px;"></i></div></div><i class="ti ti-chevron-right member-chevron"></i></div>
+      <div class="member-row" onclick="openModal('modal-member-olivia')"><div class="member-av" style="background:var(--oj-bg);color:var(--oj-fg);">OJ</div><div class="member-info"><div class="member-name">Olivia Jones</div><div class="member-meta"><span class="member-role-badge role-child">Child</span><span>140 pts</span></div></div><div class="member-perms"><div class="perm-dot perm-off"><i class="ti ti-plus" style="font-size:9px;"></i></div><div class="perm-dot perm-off"><i class="ti ti-pencil" style="font-size:9px;"></i></div><div class="perm-dot perm-off"><i class="ti ti-trash" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-check" style="font-size:9px;"></i></div></div><i class="ti ti-chevron-right member-chevron"></i></div>
+      <div class="member-row" onclick="openModal('modal-member-liam')"><div class="member-av" style="background:var(--lj-bg);color:var(--lj-fg);">LJ</div><div class="member-info"><div class="member-name">Liam Jones</div><div class="member-meta"><span class="member-role-badge role-child">Child</span><span>95 pts</span></div></div><div class="member-perms"><div class="perm-dot perm-off"><i class="ti ti-plus" style="font-size:9px;"></i></div><div class="perm-dot perm-off"><i class="ti ti-pencil" style="font-size:9px;"></i></div><div class="perm-dot perm-off"><i class="ti ti-trash" style="font-size:9px;"></i></div><div class="perm-dot perm-on"><i class="ti ti-check" style="font-size:9px;"></i></div></div><i class="ti ti-chevron-right member-chevron"></i></div>
+      <div class="member-row pending"><div class="member-av" style="background:#F0EDE9;color:var(--text-3);"><i class="ti ti-mail" style="font-size:16px;"></i></div><div class="member-info"><div class="member-name" style="color:var(--text-2);">grandma@example.com</div><div class="member-meta"><span class="pending-badge">Invite pending</span><span>Sent 2 days ago</span></div></div><i class="ti ti-chevron-right member-chevron"></i></div>
+    </div>
+
+    <div class="section-hd" style="margin-top:28px;"><div class="section-title">Recent activity</div></div>
+    <div class="activity-list">
+      <div class="activity-row"><div class="activity-icon" style="background:var(--green-lt);color:var(--green);"><i class="ti ti-circle-check"></i></div><div class="activity-text"><strong>Olivia</strong> completed "Make bed" · +5 pts</div><div class="activity-time">2 min ago</div></div>
+      <div class="activity-row"><div class="activity-icon" style="background:#EDF4FE;color:var(--oj-ac);"><i class="ti ti-calendar-plus"></i></div><div class="activity-text"><strong>Sarah</strong> added "Dinner — Grandma's" to Saturday</div><div class="activity-time">1 hr ago</div></div>
+      <div class="activity-row"><div class="activity-icon" style="background:var(--lilac-lt);color:var(--lilac);"><i class="ti ti-notes"></i></div><div class="activity-text"><strong>Sarah</strong> added Maths exam for Olivia · 📚 2 revision sessions planned</div><div class="activity-time">3 hrs ago</div></div>
+      <div class="activity-row"><div class="activity-icon" style="background:#F2F1FD;color:var(--fa-ac);"><i class="ti ti-scan"></i></div><div class="activity-text"><strong>AI</strong> read school newsletter — extracted 3 events for review</div><div class="activity-time">4 hrs ago</div></div>
+      <div class="activity-row"><div class="activity-icon" style="background:var(--amber-lt);color:var(--amber);"><i class="ti ti-receipt"></i></div><div class="activity-text"><strong>Telstra bill</strong> due in 1 day — $89.00</div><div class="activity-time">Today</div></div>
+      <div class="activity-row"><div class="activity-icon" style="background:#D1FAE5;color:#059669;"><i class="ti ti-chart-bar"></i></div><div class="activity-text"><strong>June report</strong> ready — $767 spent across 5 categories</div><div class="activity-time">Yesterday</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ FINANCIAL REPORTS MODAL ════ -->
+<div class="modal-backdrop" id="modal-reports" onclick="backdropClose(event,'modal-reports')">
+  <div class="modal report-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Financial reports</div><div class="modal-sub">Family expenditure by category · AUD</div></div>
+      <button class="modal-close" onclick="closeModal('modal-reports')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="report-period-tabs">
+        <div class="report-tab active" onclick="switchPeriod(this,'month')">This month</div>
+        <div class="report-tab" onclick="switchPeriod(this,'quarter')">This quarter</div>
+        <div class="report-tab" onclick="switchPeriod(this,'year')">This year</div>
+      </div>
+
+      <div class="report-summary-grid">
+        <div class="report-summary-card"><div class="report-summary-num" id="rep-total">$767</div><div class="report-summary-lbl">Total spent</div></div>
+        <div class="report-summary-card paid"><div class="report-summary-num" id="rep-paid">$557</div><div class="report-summary-lbl">Paid</div></div>
+        <div class="report-summary-card upcoming"><div class="report-summary-num" id="rep-upcoming">$188</div><div class="report-summary-lbl">Upcoming</div></div>
+        <div class="report-summary-card overdue"><div class="report-summary-num" id="rep-overdue">$22</div><div class="report-summary-lbl">Overdue</div></div>
+      </div>
+
+      <div class="report-section-label">Spend by category</div>
+      <div class="report-category-list" id="rep-cats">
+        <div class="report-cat-row"><div class="report-cat-label">Utilities</div><div class="report-cat-bar-wrap"><div class="report-cat-bar" style="width:82%;background:#1D9E75;">82%</div></div><div class="report-cat-amount">$299</div></div>
+        <div class="report-cat-row"><div class="report-cat-label">Insurance</div><div class="report-cat-bar-wrap"><div class="report-cat-bar" style="width:45%;background:#378ADD;">45%</div></div><div class="report-cat-amount">$165</div></div>
+        <div class="report-cat-row"><div class="report-cat-label">School</div><div class="report-cat-bar-wrap"><div class="report-cat-bar" style="width:32%;background:#7F77DD;">32%</div></div><div class="report-cat-amount">$116</div></div>
+        <div class="report-cat-row"><div class="report-cat-label">Subscriptions</div><div class="report-cat-bar-wrap"><div class="report-cat-bar" style="width:24%;background:#D85A30;">24%</div></div><div class="report-cat-amount">$87</div></div>
+        <div class="report-cat-row"><div class="report-cat-label">Medical</div><div class="report-cat-bar-wrap"><div class="report-cat-bar" style="width:14%;background:#D4537E;">14%</div></div><div class="report-cat-amount">$55</div></div>
+        <div class="report-cat-row"><div class="report-cat-label">Other</div><div class="report-cat-bar-wrap"><div class="report-cat-bar" style="width:12%;background:#A09893;">12%</div></div><div class="report-cat-amount">$45</div></div>
+      </div>
+
+      <div class="report-section-label" id="rep-chart-label">Monthly breakdown · Jan – Jun 2024</div>
+      <div class="report-monthly-chart" id="rep-chart">
+        <div class="report-month-bar-wrap"><div class="report-month-bar" style="height:55px;" title="$620"></div><div class="report-month-label">Jan</div></div>
+        <div class="report-month-bar-wrap"><div class="report-month-bar" style="height:48px;" title="$540"></div><div class="report-month-label">Feb</div></div>
+        <div class="report-month-bar-wrap"><div class="report-month-bar" style="height:62px;" title="$700"></div><div class="report-month-label">Mar</div></div>
+        <div class="report-month-bar-wrap"><div class="report-month-bar" style="height:44px;" title="$495"></div><div class="report-month-label">Apr</div></div>
+        <div class="report-month-bar-wrap"><div class="report-month-bar" style="height:58px;" title="$652"></div><div class="report-month-label">May</div></div>
+        <div class="report-month-bar-wrap"><div class="report-month-bar" style="height:68px;opacity:1;" title="$767"></div><div class="report-month-label" style="color:var(--green);font-weight:700;">Jun</div></div>
+      </div>
+
+      <div class="report-section-label">Bill breakdown</div>
+      <div class="report-bills-table">
+        <div class="report-table-head"><span>Bill</span><span>Category</span><span>Amount</span><span>Status</span></div>
+        <div class="report-table-row"><div><div class="report-bill-name">Synergy Energy</div></div><div><span class="report-bill-cat" style="background:#E3F5EF;color:var(--green);">Utilities</span></div><div class="report-bill-amount">$210</div><div><span class="report-bill-status status-paid">Paid</span></div></div>
+        <div class="report-table-row"><div><div class="report-bill-name">Telstra Mobile</div></div><div><span class="report-bill-cat" style="background:#E3F5EF;color:var(--green);">Utilities</span></div><div class="report-bill-amount">$89</div><div><span class="report-bill-status status-due">Due soon</span></div></div>
+        <div class="report-table-row"><div><div class="report-bill-name">Home insurance</div></div><div><span class="report-bill-cat" style="background:#EDF4FE;color:var(--oj-ac);">Insurance</span></div><div class="report-bill-amount">$165</div><div><span class="report-bill-status status-paid">Paid</span></div></div>
+        <div class="report-table-row"><div><div class="report-bill-name">Liam excursion</div></div><div><span class="report-bill-cat" style="background:var(--lilac-lt);color:var(--lilac);">School</span></div><div class="report-bill-amount">$45</div><div><span class="report-bill-status status-overdue">Overdue</span></div></div>
+        <div class="report-table-row"><div><div class="report-bill-name">Netflix</div></div><div><span class="report-bill-cat" style="background:#FDF2EE;color:var(--mj-ac);">Subscription</span></div><div class="report-bill-amount">$23</div><div><span class="report-bill-status status-due">Due soon</span></div></div>
+      </div>
+
+      <div class="report-export-bar">
+        <button class="report-export-btn excel" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Export to Excel</button>
+        <button class="report-export-btn" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>Export PDF</button>
+        <button class="report-export-btn" onclick="printReport()"><i class="ti ti-printer"></i>Print</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ AI SCANNER MODAL ════ -->
+<div class="modal-backdrop" id="modal-scan" onclick="backdropClose(event,'modal-scan')">
+  <div class="modal scan-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">AI document scanner</div><div class="modal-sub">Upload a photo or PDF — Claude reads it and creates a draft entry for your review.</div></div>
+      <button class="modal-close" onclick="closeScan()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Step 1: Drop zone -->
+      <div id="scan-step-upload">
+        <div class="scan-drop-zone" id="scan-drop" onclick="document.getElementById('scan-file-input').click()">
+          <input type="file" id="scan-file-input" accept="image/*,.pdf" onchange="startScan(this)">
+          <div class="scan-drop-icon"><i class="ti ti-cloud-upload"></i></div>
+          <div class="scan-drop-title">Drop a file or tap to upload</div>
+          <div class="scan-drop-sub">Photos, PDFs, screenshots — invitations, bills, school newsletters</div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Claude can read</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:8px;"><i class="ti ti-calendar-event" style="color:var(--oj-ac);font-size:16px;"></i><div><div style="font-size:12px;font-weight:700;">Calendar events</div><div style="font-size:11px;color:var(--text-3);">Party invites, school notices</div></div></div>
+            <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:8px;"><i class="ti ti-receipt" style="color:var(--amber);font-size:16px;"></i><div><div style="font-size:12px;font-weight:700;">Bills &amp; invoices</div><div style="font-size:11px;color:var(--text-3);">Utility bills, school fees</div></div></div>
+            <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:8px;"><i class="ti ti-file-text" style="color:var(--lilac);font-size:16px;"></i><div><div style="font-size:12px;font-weight:700;">School newsletters</div><div style="font-size:11px;color:var(--text-3);">Extracts all key dates</div></div></div>
+            <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:8px;"><i class="ti ti-photo" style="color:var(--sj-ac);font-size:16px;"></i><div><div style="font-size:12px;font-weight:700;">Photos of documents</div><div style="font-size:11px;color:var(--text-3);">Handwritten notes, flyers</div></div></div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Or try a demo</div>
+          <div style="display:flex;gap:8px;">
+            <button style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--text-2);background:var(--bg);cursor:pointer;" onclick="runDemoScan('bill')">📄 Demo bill scan</button>
+            <button style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--text-2);background:var(--bg);cursor:pointer;" onclick="runDemoScan('event')">📅 Demo event scan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Processing -->
+      <div class="scan-processing" id="scan-step-processing">
+        <div class="scan-spinner"></div>
+        <div class="scan-processing-title" id="scan-processing-msg">Reading your document…</div>
+        <div class="scan-processing-sub">Claude is extracting dates, amounts, and details</div>
+        <div style="margin-top:20px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:12px 16px;">
+          <div id="scan-log" style="font-size:12px;color:var(--text-3);line-height:2;font-family:monospace;"></div>
+        </div>
+      </div>
+
+      <!-- Step 3: Review result -->
+      <div class="scan-result" id="scan-step-result">
+        <div class="scan-result-header">
+          <div class="scan-result-icon"><i class="ti ti-check" id="scan-result-icon"></i></div>
+          <div>
+            <div class="scan-result-type" id="scan-result-type">Bill detected</div>
+            <div class="scan-result-title" id="scan-result-title">Synergy Energy — June 2024</div>
+            <div class="scan-confidence">AI confidence: <span id="scan-confidence-val">97%</span> · Review and confirm below</div>
+          </div>
+        </div>
+        <div class="modal-field" style="margin-bottom:6px;"><div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Extracted fields — tap any to edit</div></div>
+        <div class="scan-fields" id="scan-fields-container"></div>
+        <div style="background:var(--amber-lt);border:1px solid #FDE68A;border-radius:var(--r-md);padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <i class="ti ti-info-circle" style="font-size:14px;flex-shrink:0;"></i>
+          Always check AI-extracted details before saving. Nothing is saved until you confirm.
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-secondary" onclick="resetScan()"><i class="ti ti-arrow-left" style="margin-right:6px;font-size:13px;"></i>Scan another</button>
+          <button class="modal-btn modal-btn-primary" id="scan-confirm-btn" onclick="confirmScan()">Save to KYNC</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ STANDARD MODALS ════ -->
+<div class="modal-backdrop" id="modal-invite" onclick="backdropClose(event,'modal-invite')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Invite a member</div><div class="modal-sub">Send an email invite to join your family.</div></div><button class="modal-close" onclick="closeModal('modal-invite')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Email address</label><input type="email" placeholder="email@example.com"></div>
+      <div class="modal-field"><label>Role</label><div class="role-pills"><div class="role-pill" onclick="selectRole(this)">Admin</div><div class="role-pill sel" onclick="selectRole(this)">Member</div><div class="role-pill" onclick="selectRole(this)">Child</div><div class="role-pill" onclick="selectRole(this)">Guest</div></div></div>
+      <div class="modal-field"><label>Task permissions</label><div class="perm-grid"><div class="perm-toggle on" onclick="togglePerm(this)"><span class="perm-toggle-lbl">Add tasks</span><div class="toggle-switch"></div></div><div class="perm-toggle" onclick="togglePerm(this)"><span class="perm-toggle-lbl">Delete tasks</span><div class="toggle-switch"></div></div><div class="perm-toggle on" onclick="togglePerm(this)"><span class="perm-toggle-lbl">Edit tasks</span><div class="toggle-switch"></div></div><div class="perm-toggle on" onclick="togglePerm(this)"><span class="perm-toggle-lbl">Complete tasks</span><div class="toggle-switch"></div></div></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-invite')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-invite','Invite sent!')">Send invite</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-add-task" onclick="backdropClose(event,'modal-add-task')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add task</div><div class="modal-sub">Assign a task to a family member.</div></div><button class="modal-close" onclick="closeModal('modal-add-task')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Task title</label><input type="text" placeholder="e.g. Book car service"></div>
+      <div class="modal-field"><label>Assign to</label><select><option>Sarah Jones</option><option>Mark Jones</option><option>Olivia Jones</option><option>Liam Jones</option></select></div>
+      <div class="modal-field"><label>Due date</label><input type="date"></div>
+      <div class="modal-field"><label>Notes</label><input type="text" placeholder="Any extra details…"></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-add-task')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-add-task','Task added')">Add task</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-kids-chore" onclick="backdropClose(event,'modal-kids-chore')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add chore</div><div class="modal-sub">Morning or afternoon chore for the kids.</div></div><button class="modal-close" onclick="closeModal('modal-kids-chore')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Chore title</label><input type="text" placeholder="e.g. Make bed"></div>
+      <div class="modal-field"><label>Assign to</label><select><option>Olivia Jones</option><option>Liam Jones</option><option>All children</option></select></div>
+      <div class="modal-field"><label>Period</label><div class="role-pills"><div class="role-pill sel" onclick="selectRole(this)">🌅 Morning (AM)</div><div class="role-pill" onclick="selectRole(this)">🌙 Afternoon (PM)</div></div></div>
+      <div class="modal-field"><label>Repeats</label><div class="role-pills" style="flex-wrap:wrap;"><div class="role-pill sel" onclick="selectRole(this)">Mon</div><div class="role-pill sel" onclick="selectRole(this)">Tue</div><div class="role-pill sel" onclick="selectRole(this)">Wed</div><div class="role-pill sel" onclick="selectRole(this)">Thu</div><div class="role-pill sel" onclick="selectRole(this)">Fri</div><div class="role-pill" onclick="selectRole(this)">Sat</div><div class="role-pill" onclick="selectRole(this)">Sun</div></div></div>
+      <div class="modal-field"><label>Points value</label><input type="number" value="5" min="0" max="100"></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-kids-chore')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-kids-chore','Chore added')">Add chore</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-add-homework" onclick="backdropClose(event,'modal-add-homework')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add homework</div><div class="modal-sub">Track school assignments by subject.</div></div><button class="modal-close" onclick="closeModal('modal-add-homework')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Assignment title</label><input type="text" placeholder="e.g. Chapter 7 worksheet"></div>
+      <div class="modal-field"><label>Assign to</label><select><option>Olivia Jones</option><option>Liam Jones</option></select></div>
+      <div class="modal-field"><label>Subject</label><select><option>Maths</option><option>English</option><option>Science</option><option>History</option><option>Reading</option><option>Other</option></select></div>
+      <div class="modal-field"><label>Due date</label><input type="date"></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-add-homework')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-add-homework','Homework added')">Add homework</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-add-exam" onclick="backdropClose(event,'modal-add-exam')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add exam</div><div class="modal-sub">Track an upcoming test with revision planner.</div></div><button class="modal-close" onclick="closeModal('modal-add-exam')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Exam title</label><input type="text" placeholder="e.g. Maths Test"></div>
+      <div class="modal-2col">
+        <div class="modal-field"><label>Assign to</label><select><option>Olivia Jones</option><option>Liam Jones</option></select></div>
+        <div class="modal-field"><label>Subject</label><select><option>Maths</option><option>English</option><option>Science</option><option>History</option><option>Spelling</option><option>Other</option></select></div>
+      </div>
+      <div class="modal-field"><label>Exam date</label><input type="date"></div>
+      <div class="modal-field">
+        <label>Urgency</label>
+        <div class="urgency-pills">
+          <div class="urgency-pill sel-soon" onclick="selectUrgency(this,'soon')"><div class="up-icon">🔴</div><div class="up-label">Soon</div><div class="up-sub">Under 5 days</div></div>
+          <div class="urgency-pill" onclick="selectUrgency(this,'mid')"><div class="up-icon">🟡</div><div class="up-label">Coming up</div><div class="up-sub">5–14 days</div></div>
+          <div class="urgency-pill" onclick="selectUrgency(this,'ok')"><div class="up-icon">🟢</div><div class="up-label">Plenty of time</div><div class="up-sub">15+ days</div></div>
+        </div>
+      </div>
+      <div class="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1–5, open book"></div>
+      <div style="background:var(--lilac-lt);border:1.5px solid #C4BFFE;border-radius:var(--r-md);padding:12px 14px;display:flex;gap:10px;margin-bottom:4px;"><div style="width:32px;height:32px;border-radius:var(--r-sm);background:var(--lilac);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-books" style="font-size:16px;color:#fff;"></i></div><div><div style="font-size:12px;font-weight:700;color:var(--lilac);">Revision sessions added after saving</div><div style="font-size:11px;color:#7b74cc;margin-top:1px;">Open the exam entry to schedule study blocks — they appear in lilac on the calendar.</div></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-add-exam')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-add-exam','Exam added — tap to add revision sessions')">Save exam</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-add-bill" onclick="backdropClose(event,'modal-add-bill')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add bill</div><div class="modal-sub">Track an upcoming payment.</div></div><button class="modal-close" onclick="closeModal('modal-add-bill')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Bill name</label><input type="text" placeholder="e.g. Synergy Energy"></div>
+      <div class="modal-2col">
+        <div class="modal-field"><label>Amount (AUD)</label><input type="number" placeholder="0.00" step="0.01"></div>
+        <div class="modal-field"><label>Due date</label><input type="date"></div>
+      </div>
+      <div class="modal-field"><label>Category</label><select><option>Utilities</option><option>Insurance</option><option>Mortgage / Rent</option><option>Subscription</option><option>School</option><option>Medical</option><option>Other</option></select></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-add-bill')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-add-bill','Bill added')">Add bill</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Member modals (Sarah full, others abbreviated) -->
+<div class="modal-backdrop" id="modal-member-sarah" onclick="backdropClose(event,'modal-member-sarah')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div style="display:flex;align-items:center;gap:12px;"><div style="width:56px;height:56px;border-radius:50%;background:var(--sj-bg);color:var(--sj-fg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;" id="av-header-sarah">SJ</div><div><div style="font-size:17px;font-weight:800;">Sarah Jones</div><div style="font-size:12px;color:var(--text-3);">Admin · sarah@example.com</div></div></div><button class="modal-close" onclick="closeModal('modal-member-sarah')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Display name</label><input type="text" value="Sarah Jones"></div>
+      <div class="modal-field"><label>Colour</label><div class="colour-row"><div class="colour-swatch sel" style="background:#9FE1CB;" onclick="selectColour(this,'sarah')"></div><div class="colour-swatch" style="background:#F5C4B3;" onclick="selectColour(this,'sarah')"></div><div class="colour-swatch" style="background:#B5D4F4;" onclick="selectColour(this,'sarah')"></div><div class="colour-swatch" style="background:#F4C0D1;" onclick="selectColour(this,'sarah')"></div><div class="colour-swatch" style="background:#CECBF6;" onclick="selectColour(this,'sarah')"></div><div class="colour-swatch" style="background:#FDE68A;" onclick="selectColour(this,'sarah')"></div></div></div>
+      <div class="modal-field"><label>Calendar sync</label><div class="cal-sync-row connected" onclick="toggleCalSync(this)"><div class="cal-sync-icon google"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></div><div class="cal-sync-info"><div class="cal-sync-name">Google Calendar</div><div class="cal-sync-status">Connected</div></div><div class="cal-toggle-switch"></div></div></div>
+      <div class="modal-field"><label>Notifications</label><div class="toggle-row on" onclick="this.classList.toggle('on')"><div class="toggle-row-info"><div class="toggle-row-label">Push notifications</div><div class="toggle-row-sub">Event reminders &amp; family updates</div></div><div class="toggle-row-switch"></div></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-danger">Remove member</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-member-sarah','Changes saved')">Save changes</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-member-mark" onclick="backdropClose(event,'modal-member-mark')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div style="display:flex;align-items:center;gap:12px;"><div style="width:56px;height:56px;border-radius:50%;background:var(--mj-bg);color:var(--mj-fg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;">MJ</div><div><div style="font-size:17px;font-weight:800;">Mark Jones</div><div style="font-size:12px;color:var(--text-3);">Member · mark@example.com</div></div></div><button class="modal-close" onclick="closeModal('modal-member-mark')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Display name</label><input type="text" value="Mark Jones"></div>
+      <div class="modal-field"><label>Role</label><div class="role-pills"><div class="role-pill" onclick="selectRole(this)">Admin</div><div class="role-pill sel" onclick="selectRole(this)">Member</div><div class="role-pill" onclick="selectRole(this)">Child</div><div class="role-pill" onclick="selectRole(this)">Guest</div></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-danger">Remove member</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-member-mark','Changes saved')">Save changes</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-member-olivia" onclick="backdropClose(event,'modal-member-olivia')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div style="display:flex;align-items:center;gap:12px;"><div style="width:56px;height:56px;border-radius:50%;background:var(--oj-bg);color:var(--oj-fg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;">OJ</div><div><div style="font-size:17px;font-weight:800;">Olivia Jones</div><div style="font-size:12px;color:var(--text-3);">Child · PIN login · 140 pts</div></div></div><button class="modal-close" onclick="closeModal('modal-member-olivia')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Display name</label><input type="text" value="Olivia Jones"></div>
+      <div class="modal-field"><label>Weekly points target</label><div class="rewards-target-wrap"><div class="rewards-target-row"><div><div class="rewards-target-label">Points goal</div><div class="rewards-target-sub">Shown on Olivia's Kids View</div></div><input class="rewards-target-input" type="number" value="150" id="target-olivia" oninput="updateBar('olivia',140)"></div><div class="rewards-progress-bar"><div class="rewards-progress-fill" id="progress-olivia" style="width:93%;"></div></div><div class="rewards-progress-meta"><span>140 pts this week</span><span id="pct-olivia">Goal: 150 pts</span></div></div></div>
+      <div class="modal-field"><label>Bedtime lock</label><div class="sleep-wrap"><div class="sleep-enabled-row"><div><div style="font-size:13px;font-weight:700;">Enable bedtime lock</div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">App shows a sleep screen during restricted hours</div></div><div class="toggle-row-switch on" id="sleep-toggle-olivia" onclick="toggleSleep('olivia')" style="cursor:pointer;"></div></div><div class="sleep-times" id="sleep-times-olivia"><div class="sleep-time-field"><label>🌙 Bedtime</label><input type="time" value="20:30"></div><div class="sleep-time-field"><label>☀️ Wake time</label><input type="time" value="07:00"></div><div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-lt);"><div><div style="font-size:12px;font-weight:700;color:var(--text-2);">Grant extension</div><div style="font-size:11px;color:var(--text-3);">15 minutes right now</div></div><button class="sleep-ext-btn" onclick="showToast('Extension granted for Olivia ✨')">+15 min</button></div><div style="grid-column:1/-1;"><div class="sleep-note"><i class="ti ti-info-circle"></i> Syncs in real-time via Supabase Realtime.</div></div><div style="grid-column:1/-1;"><button class="modal-btn modal-btn-secondary" style="width:100%;margin-top:4px;" onclick="showBedtime()"><i class="ti ti-eye" style="margin-right:6px;"></i>Preview sleep screen</button></div></div></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-danger">Remove member</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-member-olivia','Changes saved')">Save changes</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-member-liam" onclick="backdropClose(event,'modal-member-liam')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div style="display:flex;align-items:center;gap:12px;"><div style="width:56px;height:56px;border-radius:50%;background:var(--lj-bg);color:var(--lj-fg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;">LJ</div><div><div style="font-size:17px;font-weight:800;">Liam Jones</div><div style="font-size:12px;color:var(--text-3);">Child · PIN login · 95 pts</div></div></div><button class="modal-close" onclick="closeModal('modal-member-liam')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Display name</label><input type="text" value="Liam Jones"></div>
+      <div class="modal-field"><label>Weekly points target</label><div class="rewards-target-wrap"><div class="rewards-target-row"><div><div class="rewards-target-label">Points goal</div><div class="rewards-target-sub">Shown on Liam's Kids View</div></div><input class="rewards-target-input" type="number" value="40" id="target-liam" oninput="updateBar('liam',95)"></div><div class="rewards-progress-bar"><div class="rewards-progress-fill" id="progress-liam" style="width:42%;"></div></div><div class="rewards-progress-meta"><span>95 pts this week</span><span id="pct-liam">Goal: 40 pts</span></div></div></div>
+      <div class="modal-field"><label>Bedtime lock</label><div class="sleep-wrap"><div class="sleep-enabled-row"><div><div style="font-size:13px;font-weight:700;">Enable bedtime lock</div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">App shows a sleep screen during restricted hours</div></div><div class="toggle-row-switch" id="sleep-toggle-liam" onclick="toggleSleep('liam')" style="cursor:pointer;"></div></div><div class="sleep-times" id="sleep-times-liam" style="display:none;"><div class="sleep-time-field"><label>🌙 Bedtime</label><input type="time" value="20:00"></div><div class="sleep-time-field"><label>☀️ Wake time</label><input type="time" value="07:00"></div><div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-lt);"><div><div style="font-size:12px;font-weight:700;color:var(--text-2);">Grant extension</div><div style="font-size:11px;color:var(--text-3);">15 minutes right now</div></div><button class="sleep-ext-btn" onclick="showToast('Extension granted for Liam ✨')">+15 min</button></div><div style="grid-column:1/-1;"><div class="sleep-note"><i class="ti ti-info-circle"></i> Syncs in real-time via Supabase Realtime.</div></div></div></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-danger">Remove member</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-member-liam','Changes saved')">Save changes</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-backdrop" id="modal-settings" onclick="backdropClose(event,'modal-settings')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Family settings</div></div><button class="modal-close" onclick="closeModal('modal-settings')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="settings-section"><div class="settings-section-title">Family profile</div>
+        <div class="modal-field" style="margin-bottom:10px;"><label>Family name</label><input type="text" value="The Jones Family"></div>
+        <div class="modal-field" style="margin-bottom:10px;"><label>Location</label><input type="text" value="Perth, WA"></div>
+        <div class="modal-field" style="margin-bottom:0;"><label>Currency</label><select><option selected>AUD — Australian Dollar</option><option>NZD — New Zealand Dollar</option><option>GBP — British Pound</option><option>USD — US Dollar</option><option>EUR — Euro</option><option>CAD — Canadian Dollar</option></select></div>
+      </div>
+      <div class="settings-section"><div class="settings-section-title">Notifications</div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Event reminders</div><div class="settings-row-sub">Push notification before events</div></div><button class="settings-toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Bill due alerts</div><div class="settings-row-sub">3 days before due date</div></div><button class="settings-toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Chore reminders</div><div class="settings-row-sub">Morning and afternoon nudges for kids</div></div><button class="settings-toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Weekly summary</div><div class="settings-row-sub">Sunday evening family digest</div></div><button class="settings-toggle" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <div class="settings-section"><div class="settings-section-title">Kids dashboard</div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Points system</div><div class="settings-row-sub">Award points for completed chores</div></div><button class="settings-toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Show exam countdown</div><div class="settings-row-sub">Days remaining on kids' view</div></div><button class="settings-toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Show revision sessions</div><div class="settings-row-sub">Study blocks on kids' calendar</div></div><button class="settings-toggle on" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <div class="settings-section"><div class="settings-section-title"><i class="ti ti-device-tablet" style="font-size:12px;"></i> Central kiosk · Device lock</div>
+        <div class="kiosk-info-card"><div class="kiosk-info-header"><i class="ti ti-moon" style="font-size:18px;color:#fff;"></i><div><div class="kiosk-info-header-text">Hardware sleep schedule</div><div class="kiosk-info-header-sub">Requires OS-level setup · one-time configuration</div></div></div><div class="kiosk-platform"><div class="kiosk-platform-title"><i class="ti ti-brand-apple" style="font-size:14px;color:#555;"></i> iPad kiosk</div><div class="kiosk-platform-body">Enable <strong>Guided Access</strong> (Settings → Accessibility) then set your Auto-Lock timer. For scheduling, use <strong>Kiosk Pro</strong>.</div><div><span class="kiosk-chip">Guided Access</span><span class="kiosk-chip">Kiosk Pro</span></div></div><div class="kiosk-platform"><div class="kiosk-platform-title"><i class="ti ti-brand-android" style="font-size:14px;color:#3ddc84;"></i> Android kiosk</div><div class="kiosk-platform-body">Use <strong>Fully Kiosk Browser</strong> with its daily sleep/wake schedule.</div><div><span class="kiosk-chip">Fully Kiosk Browser</span><span class="kiosk-chip">Motion wake</span></div></div></div>
+      </div>
+      <div class="settings-section"><div class="settings-section-title">Danger zone</div><div class="danger-zone"><div class="danger-zone-title">Delete family account</div><div class="danger-zone-text">Permanently deletes all events, tasks, bills, and member data. This cannot be undone.</div><button class="modal-btn modal-btn-danger" style="width:100%;">Delete family account</button></div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-settings')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="saveAndToast('modal-settings','Settings saved')">Save settings</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- HELP DRAWER -->
+<div class="help-backdrop" id="help-backdrop" onclick="closeHelp()">
+  <div class="help-drawer" onclick="event.stopPropagation()">
+    <div class="help-drawer-head"><div class="help-drawer-title">Help &amp; support</div><button class="help-drawer-close" onclick="closeHelp()"><i class="ti ti-x"></i></button></div>
+    <div class="help-drawer-body">
+      <div class="help-qs-card" onclick="closeHelp();openModal('modal-wizard')">
+        <div class="help-qs-eyebrow">✨ New to KYNC?</div>
+        <div class="help-qs-title">AI Quick-Start Guide</div>
+        <div class="help-qs-sub">Let our AI walk you through setup in under 3 minutes — members, chores, calendar and all.</div>
+        <div class="help-qs-btn"><i class="ti ti-rocket" style="font-size:13px;"></i> Start setup wizard</div>
+      </div>
+      <div class="help-section-label" style="margin-bottom:10px;">What can KYNC do?</div>
+      <div class="help-features">
+        <div class="help-feat-card"><div class="help-feat-icon" style="background:#EDF4FE;"><i class="ti ti-calendar" style="color:var(--oj-ac);font-size:18px;"></i></div><div class="help-feat-title">Family Calendar</div><div class="help-feat-sub">Colour-coded events with week, month &amp; day views. Print or export to PDF.</div></div>
+        <div class="help-feat-card"><div class="help-feat-icon" style="background:var(--lilac-lt);"><i class="ti ti-notes" style="color:var(--lilac);font-size:18px;"></i></div><div class="help-feat-title">Exams &amp; Revision</div><div class="help-feat-sub">Countdown timers with linked revision sessions on the calendar.</div></div>
+        <div class="help-feat-card"><div class="help-feat-icon" style="background:var(--green-lt);"><i class="ti ti-list-check" style="color:var(--green);font-size:18px;"></i></div><div class="help-feat-title">Chores &amp; Tasks</div><div class="help-feat-sub">AM/PM chore routines with points &amp; rewards system.</div></div>
+        <div class="help-feat-card"><div class="help-feat-icon" style="background:#D1FAE5;"><i class="ti ti-chart-bar" style="color:#059669;font-size:18px;"></i></div><div class="help-feat-title">Financial Reports</div><div class="help-feat-sub">Bills by category. Export to Excel, PDF, or print.</div></div>
+        <div class="help-feat-card"><div class="help-feat-icon" style="background:#F2F1FD;"><i class="ti ti-scan" style="color:var(--lilac);font-size:18px;"></i></div><div class="help-feat-title">AI Document Scanner</div><div class="help-feat-sub">Photo or PDF — Claude reads it and creates a draft entry.</div></div>
+        <div class="help-feat-card"><div class="help-feat-icon" style="background:#EBEBEB;"><i class="ti ti-device-tablet" style="color:var(--text-1);font-size:18px;"></i></div><div class="help-feat-title">Kiosk &amp; Kids Mode</div><div class="help-feat-sub">Tablet view with bedtime lock &amp; parent override.</div></div>
+      </div>
+      <div class="help-section-label">Frequently asked questions</div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How does the AI scanner work?<i class="ti ti-chevron-down"></i></div><div class="faq-a">Tap <strong>AI scan</strong> and upload a photo or PDF of any bill, event invitation, or school newsletter. Claude reads it, extracts the key details, and shows you a draft entry to review and edit before saving. Nothing is saved automatically.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How do exam countdowns work?<i class="ti ti-chevron-down"></i></div><div class="faq-a">Add an exam via <strong>Add exam</strong>. It appears on the priority countdown bar on the calendar. Open the exam to add revision sessions — they show as lilac blocks on the calendar and the exam pill shows a 📚 session count.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Can I print or export the calendar?<i class="ti ti-chevron-down"></i></div><div class="faq-a">Yes — open the Calendar and tap the print icon in the toolbar. Choose Print for a browser print view, or Export PDF to download.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How do I export financial reports?<i class="ti ti-chevron-down"></i></div><div class="faq-a">Open <strong>Financial reports</strong> from the dashboard or the Reports nav button. Choose your period (month/quarter/year) then tap <strong>Export to Excel</strong>, <strong>Export PDF</strong>, or <strong>Print</strong> from the export bar at the bottom.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How do I change the family currency?<i class="ti ti-chevron-down"></i></div><div class="faq-a">Go to <strong>Family Settings → Family profile</strong> and change the currency dropdown. This updates across all bills and reports.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How do I add a child account?<i class="ti ti-chevron-down"></i></div><div class="faq-a">Tap <strong>Invite member</strong>, enter their name, and set the role to <strong>Child</strong>. Child accounts use PIN-only login — no email needed, perfect for shared tablets.</div></div>
+      <div style="margin-top:20px;padding:14px;background:var(--bg);border-radius:var(--r-lg);border:1.5px solid var(--border);text-align:center;"><div style="font-size:12px;font-weight:700;margin-bottom:4px;">Need more help?</div><div style="font-size:12px;color:var(--text-3);">Full docs at <span style="color:var(--green);font-weight:600;">kync.app/help</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- WIZARD MODAL -->
+<div class="modal-backdrop" id="modal-wizard" onclick="backdropClose(event,'modal-wizard')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-handle"></div>
+    <div class="wizard-steps">
+      <div class="wizard-dot active" id="wdot-0"></div>
+      <div class="wizard-dot" id="wdot-1"></div>
+      <div class="wizard-dot" id="wdot-2"></div>
+      <div class="wizard-dot" id="wdot-3"></div>
+    </div>
+    <div class="modal-body" style="padding-top:8px;">
+      <div class="wizard-step active" id="wstep-0">
+        <div class="wizard-hero"><div class="wizard-hero-icon">🏠</div><div class="wizard-hero-title">Welcome to KYNC!</div><div class="wizard-hero-sub">I'm your AI setup assistant. Let's get your family running in about 2 minutes.</div></div>
+        <div class="modal-actions"><button class="modal-btn modal-btn-primary" onclick="wizNext()">Let's go <i class="ti ti-arrow-right" style="margin-left:4px;"></i></button></div>
+      </div>
+      <div class="wizard-step" id="wstep-1">
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px;margin-top:8px;">Your family</div>
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:18px;">Tell us a bit so we can personalise KYNC for you.</div>
+        <div class="modal-field"><label>Family name</label><input type="text" value="The Jones Family"></div>
+        <div class="modal-2col">
+          <div class="modal-field" style="margin-bottom:0;"><label>Location</label><input type="text" placeholder="e.g. Perth, WA"></div>
+          <div class="modal-field" style="margin-bottom:0;"><label>Currency</label><select><option>AUD</option><option>NZD</option><option>GBP</option><option>USD</option><option>EUR</option><option>CAD</option></select></div>
+        </div>
+        <div class="modal-actions" style="margin-top:18px;"><button class="modal-btn modal-btn-secondary" onclick="wizBack()">Back</button><button class="modal-btn modal-btn-primary" onclick="wizNext()">Next <i class="ti ti-arrow-right" style="margin-left:4px;"></i></button></div>
+      </div>
+      <div class="wizard-step" id="wstep-2">
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px;margin-top:8px;">Add your family</div>
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:18px;">You can add more members any time after setup.</div>
+        <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border-lt);"><div style="width:36px;height:36px;border-radius:50%;background:var(--sj-bg);color:var(--sj-fg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">SJ</div><div style="flex:1;font-size:13px;font-weight:600;">Sarah Jones <span style="font-size:11px;color:var(--green);font-weight:700;">Admin (you)</span></div></div>
+          <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showToast('Member invite available in full build')"><div style="width:36px;height:36px;border-radius:50%;background:var(--border-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-plus" style="color:var(--text-3);"></i></div><div style="font-size:13px;font-weight:600;color:var(--text-3);">Add a partner, child or guest…</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-3);background:var(--amber-lt);padding:10px 12px;border-radius:var(--r-md);border:1px solid #FDE68A;line-height:1.5;"><i class="ti ti-info-circle" style="vertical-align:middle;margin-right:4px;"></i>Children use PIN-only login — no email needed.</div>
+        <div class="modal-actions" style="margin-top:18px;"><button class="modal-btn modal-btn-secondary" onclick="wizBack()">Back</button><button class="modal-btn modal-btn-primary" onclick="wizNext()">Next <i class="ti ti-arrow-right" style="margin-left:4px;"></i></button></div>
+      </div>
+      <div class="wizard-step" id="wstep-3">
+        <div class="wizard-hero"><div class="wizard-hero-icon">🎉</div><div class="wizard-hero-title">You're all set!</div><div class="wizard-hero-sub">KYNC is ready for the Jones family. Head to the calendar or explore the dashboard.</div></div>
+        <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:4px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Setup complete</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;"><i class="ti ti-circle-check" style="color:var(--green);font-size:16px;"></i> Family profile created</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;"><i class="ti ti-circle-check" style="color:var(--green);font-size:16px;"></i> You're set as Admin</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><i class="ti ti-circle-check" style="color:var(--green);font-size:16px;"></i> Currency set to AUD</div>
+        </div>
+        <div class="modal-actions" style="margin-top:14px;"><button class="modal-btn modal-btn-secondary" onclick="closeModal('modal-wizard')">Dashboard</button><button class="modal-btn modal-btn-primary" onclick="closeModal('modal-wizard');goCalendar()"><i class="ti ti-calendar" style="margin-right:6px;"></i>Open Calendar</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BEDTIME OVERLAY -->
+<div id="bedtime-overlay">
+  <div class="bedtime-stars" id="bedtime-stars"></div>
+  <span class="bedtime-demo-close" onclick="hideBedtime()">✕ Close preview</span>
+  <div class="bedtime-moon">🌙</div>
+  <div class="bedtime-title">Time for bed!</div>
+  <div class="bedtime-sub">This app is sleeping. Get some rest — it'll be ready in the morning.</div>
+  <div class="bedtime-wake-card"><div class="bedtime-wake-label">Back at</div><div class="bedtime-wake-time">7:00 AM</div></div>
+  <button class="bedtime-ask-btn" onclick="showToast('Extension request sent to Mum & Dad 📱');hideBedtime();">Ask for extra time</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg">Done</span></div>
+
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ── Core ── */
+function doLogin(){showScreen('screen-dashboard');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goCalendar(){showToast('Opening calendar…');setTimeout(()=>showToast('Calendar prototype: open kync-calendar.html'),700);}
+function showToast(msg){var t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function saveAndToast(id,msg){closeModal(id);setTimeout(()=>showToast(msg),120);}
+
+/* ── Modals ── */
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+function backdropClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+/* ── Help ── */
+function openHelp(){document.getElementById('help-backdrop').classList.add('open');document.body.style.overflow='hidden';}
+function closeHelp(){document.getElementById('help-backdrop').classList.remove('open');document.body.style.overflow='';}
+function toggleFaq(el){el.classList.toggle('open');}
+
+/* ── Wizard ── */
+var wStep=0;
+function wizNext(){if(wStep<3){wStep++;renderWiz();}}
+function wizBack(){if(wStep>0){wStep--;renderWiz();}}
+function renderWiz(){
+  for(var i=0;i<4;i++){
+    var s=document.getElementById('wstep-'+i),d=document.getElementById('wdot-'+i);
+    if(s)s.classList.toggle('active',i===wStep);
+    if(d){d.classList.remove('active','done');if(i===wStep)d.classList.add('active');else if(i<wStep)d.classList.add('done');}
+  }
+}
+
+/* ── UI helpers ── */
+function togglePerm(el){el.classList.toggle('on');}
+function selectRole(el){el.parentElement.querySelectorAll('.role-pill').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');}
+function selectUrgency(el,t){el.parentElement.querySelectorAll('.urgency-pill').forEach(p=>p.classList.remove('sel-soon','sel-mid','sel-ok'));el.classList.add('sel-'+t);}
+function selectColour(el,m){el.parentElement.querySelectorAll('.colour-swatch').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');var h=document.getElementById('av-header-'+m);if(h&&!h.querySelector('img'))h.style.background=el.style.background;}
+function toggleCalSync(row){var s=row.querySelector('.cal-sync-status');row.classList.toggle('connected');s.textContent=row.classList.contains('connected')?'Connected':'Not connected';}
+function toggleSleep(m){var t=document.getElementById('sleep-toggle-'+m),ti=document.getElementById('sleep-times-'+m);var on=t.classList.toggle('on');ti.style.display=on?'grid':'none';}
+function updateBar(m,cur){var inp=document.getElementById('target-'+m),fill=document.getElementById('progress-'+m),pct=document.getElementById('pct-'+m);var tgt=Math.max(1,parseInt(inp.value)||1);fill.style.width=Math.min(100,Math.round(cur/tgt*100))+'%';pct.textContent='Goal: '+tgt+' pts';}
+
+/* ── Bedtime ── */
+function showBedtime(){
+  document.getElementById('bedtime-overlay').classList.add('active');
+  document.querySelectorAll('.modal-backdrop.open').forEach(m=>{m.classList.remove('open');document.body.style.overflow='';});
+  document.body.style.overflow='hidden';
+  var c=document.getElementById('bedtime-stars');
+  if(!c.children.length){for(var i=0;i<80;i++){var s=document.createElement('div');s.className='bedtime-star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.setProperty('--d',(2+Math.random()*4)+'s');s.style.setProperty('--dl',Math.random()*4+'s');s.style.setProperty('--op',(0.3+Math.random()*0.7).toFixed(2));c.appendChild(s);}}
+}
+function hideBedtime(){document.getElementById('bedtime-overlay').classList.remove('active');document.body.style.overflow='';}
+
+/* ── ESC ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeHelp();
+    document.querySelectorAll('.modal-backdrop.open').forEach(m=>{m.classList.remove('open');document.body.style.overflow='';});
+    hideBedtime();
+  }
+});
+
+/* ══════════════════════════════════════════
+   FINANCIAL REPORTS
+══════════════════════════════════════════ */
+var REPORT_DATA = {
+  month:  {total:'$767',paid:'$557',upcoming:'$188',overdue:'$22',label:'Monthly breakdown · Jan – Jun 2024'},
+  quarter:{total:'$2,184',paid:'$1,890',upcoming:'$249',overdue:'$45',label:'Monthly breakdown · Q2 2024 (Apr–Jun)'},
+  year:   {total:'$8,940',paid:'$8,109',upcoming:'$786',overdue:'$45',label:'Monthly breakdown · Jan – Dec 2024'}
+};
+function switchPeriod(tab,period){
+  document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  var d=REPORT_DATA[period];
+  document.getElementById('rep-total').textContent=d.total;
+  document.getElementById('rep-paid').textContent=d.paid;
+  document.getElementById('rep-upcoming').textContent=d.upcoming;
+  document.getElementById('rep-overdue').textContent=d.overdue;
+  document.getElementById('rep-chart-label').textContent=d.label;
+}
+
+function exportExcel(){
+  if(typeof XLSX==='undefined'){showToast('SheetJS loading…');return;}
+  var wb=XLSX.utils.book_new();
+  var data=[
+    ['KYNC Family Financial Report — June 2024'],[''],
+    ['Bill','Category','Amount','Due Date','Status'],
+    ['Synergy Energy','Utilities','$210.50','Jun 25','Paid'],
+    ['Telstra Mobile','Utilities','$89.00','Jun 23','Due soon'],
+    ['Home insurance','Insurance','$165.00','Jul 1','Paid'],
+    ['Liam excursion','School','$45.00','Jun 26','Overdue'],
+    ['Netflix','Subscription','$22.99','Jul 5','Due soon'],
+    [''],['Total','','$767.00','',''],
+  ];
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:25},{wch:15},{wch:12},{wch:12},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'June 2024');
+  XLSX.writeFile(wb,'KYNC-Financial-Report-Jun-2024.xlsx');
+  showToast('Excel file downloaded ✓');
+}
+
+function exportPDF(){
+  var printContent = `
+    <html><head><title>KYNC Financial Report</title>
+    <style>body{font-family:sans-serif;padding:32px;color:#1A1714;}h1{font-size:22px;margin-bottom:4px;}p{color:#6B6561;margin-bottom:24px;}table{width:100%;border-collapse:collapse;}th{text-align:left;font-size:12px;font-weight:700;color:#A09893;text-transform:uppercase;padding:8px 12px;border-bottom:2px solid #E8E4DF;}td{padding:10px 12px;border-bottom:1px solid #F0EDE9;font-size:13px;}.total td{font-weight:700;border-top:2px solid #E8E4DF;}.paid{color:#1D9E75;}.due{color:#D97706;}.overdue{color:#E24B4A;}</style></head>
+    <body>
+    <h1>KYNC Family Financial Report</h1>
+    <p>The Jones Family · June 2024 · AUD</p>
+    <table>
+    <tr><th>Bill</th><th>Category</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+    <tr><td>Synergy Energy</td><td>Utilities</td><td>$210.50</td><td>Jun 25</td><td class="paid">Paid</td></tr>
+    <tr><td>Telstra Mobile</td><td>Utilities</td><td>$89.00</td><td>Jun 23</td><td class="due">Due soon</td></tr>
+    <tr><td>Home insurance</td><td>Insurance</td><td>$165.00</td><td>Jul 1</td><td class="paid">Paid</td></tr>
+    <tr><td>Liam excursion fee</td><td>School</td><td>$45.00</td><td>Jun 26</td><td class="overdue">Overdue</td></tr>
+    <tr><td>Netflix</td><td>Subscription</td><td>$22.99</td><td>Jul 5</td><td class="due">Due soon</td></tr>
+    <tr class="total"><td colspan="2">Total</td><td>$767.00</td><td colspan="2"></td></tr>
+    </table>
+    </body></html>`;
+  var w=window.open('','_blank');
+  w.document.write(printContent);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>{w.print();},300);
+  showToast('PDF export ready — use Print → Save as PDF');
+}
+
+function printReport(){
+  var w=window.open('','_blank');
+  w.document.write(document.querySelector('#modal-reports .modal').outerHTML.replace(/<button[^>]*>.*?<\/button>/gs,'').replace(/onclick="[^"]*"/g,''));
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),300);
+  showToast('Print dialog opened');
+}
+
+/* ══════════════════════════════════════════
+   AI DOCUMENT SCANNER
+══════════════════════════════════════════ */
+var SCAN_DEMO = {
+  bill: {
+    type:'Bill detected',icon:'ti-receipt',
+    title:'Synergy Energy — July 2024',
+    confidence:'96',
+    fields:[
+      {label:'Provider',key:'provider',value:'Synergy Energy'},
+      {label:'Amount',key:'amount',value:'$210.50'},
+      {label:'Due date',key:'due_date',value:'25 Jul 2024'},
+      {label:'Category',key:'category',value:'Utilities'},
+      {label:'Account no.',key:'account',value:'4821-0039-2'},
+    ],
+    saveMsg:'Bill saved — $210.50 due Jul 25'
+  },
+  event: {
+    type:'Calendar event detected',icon:'ti-calendar-event',
+    title:"Olivia's End-of-Year Concert",
+    confidence:'94',
+    fields:[
+      {label:'Event',key:'title',value:"End-of-Year Concert"},
+      {label:'Date',key:'date',value:'Fri 12 Jul 2024'},
+      {label:'Time',key:'time',value:'6:30 PM'},
+      {label:'Location',key:'location',value:'Wembley Primary — Assembly Hall'},
+      {label:'Assign to',key:'assign',value:'Olivia Jones'},
+    ],
+    saveMsg:'Event added to calendar'
+  }
+};
+
+var scanCurrentType = null;
+var scanCurrentData = null;
+
+function closeScan(){closeModal('modal-scan');resetScan();}
+
+function startScan(input){
+  if(!input.files||!input.files[0])return;
+  var file=input.files[0];
+  var isImage=file.type.startsWith('image/');
+  var isPDF=file.type==='application/pdf';
+  if(!isImage&&!isPDF){showToast('Please upload an image or PDF');return;}
+  if(file.size>20*1024*1024){showToast('File must be under 20 MB');return;}
+  // Read file and send to Claude API
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var base64=e.target.result.split(',')[1];
+    var mimeType=file.type;
+    callClaudeScanner(base64,mimeType);
+  };
+  reader.readAsDataURL(file);
+}
+
+function runDemoScan(type){
+  showProcessing('Analysing document…');
+  var steps=['Uploading document…','Detecting document type…','Extracting key details…','Cross-checking fields…','Almost done…'];
+  var i=0;
+  var logEl=document.getElementById('scan-log');
+  logEl.innerHTML='';
+  var interval=setInterval(()=>{
+    if(i<steps.length){logEl.innerHTML+='→ '+steps[i]+'<br>';i++;}
+    else{
+      clearInterval(interval);
+      setTimeout(()=>showScanResult(SCAN_DEMO[type],type),400);
+    }
+  },500);
+}
+
+async function callClaudeScanner(base64Data, mimeType){
+  showProcessing('Reading your document…');
+  var logEl=document.getElementById('scan-log');
+  logEl.innerHTML='→ Uploading to Claude…<br>';
+
+  try{
+    var isImage=mimeType.startsWith('image/');
+    var contentBlock=isImage
+      ? {type:'image',source:{type:'base64',media_type:mimeType,data:base64Data}}
+      : {type:'document',source:{type:'base64',media_type:'application/pdf',data:base64Data}};
+
+    logEl.innerHTML+='→ Analysing content…<br>';
+
+    var response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content:[
+            contentBlock,
+            {type:'text',text:`You are a document reader for KYNC, a family management app. Analyse this document and extract structured information. Respond ONLY with a valid JSON object — no markdown, no preamble, no backticks. The JSON must have exactly this shape:
+{
+  "type": "bill" or "event",
+  "title": "short descriptive title",
+  "confidence": number 0-100,
+  "fields": [
+    {"label": "human label", "key": "snake_case_key", "value": "extracted value"}
+  ]
+}
+For bills extract: provider/company name, amount (with currency symbol), due date, category (one of: utilities, insurance, mortgage, rent, subscription, school, medical, other), account number if visible.
+For events extract: event title, date, time, location, who it might be for (if determinable).
+If the document is neither a bill nor an event invitation, still return your best attempt and set confidence below 60.`}
+          ]
+        }]
+      })
+    });
+
+    if(!response.ok){throw new Error('API error '+response.status);}
+    var data=await response.json();
+    logEl.innerHTML+='→ Processing response…<br>';
+
+    var text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    var clean=text.replace(/```json|```/g,'').trim();
+    var parsed=JSON.parse(clean);
+
+    var resultData={
+      type: parsed.type==='bill'?'Bill detected':'Calendar event detected',
+      icon: parsed.type==='bill'?'ti-receipt':'ti-calendar-event',
+      title: parsed.title||'Document scanned',
+      confidence: String(parsed.confidence||85),
+      fields: parsed.fields||[],
+      saveMsg: parsed.type==='bill'?'Bill saved to KYNC':'Event added to calendar'
+    };
+    showScanResult(resultData, parsed.type);
+  }catch(err){
+    logEl.innerHTML+='→ Error: '+err.message+'<br>→ Showing demo result instead…<br>';
+    setTimeout(()=>showScanResult(SCAN_DEMO['bill'],'bill'),800);
+  }
+}
+
+function showProcessing(msg){
+  document.getElementById('scan-step-upload').style.display='none';
+  var proc=document.getElementById('scan-step-processing');
+  proc.classList.add('active');
+  document.getElementById('scan-processing-msg').textContent=msg;
+}
+
+function showScanResult(data, type){
+  document.getElementById('scan-step-processing').classList.remove('active');
+  var res=document.getElementById('scan-step-result');
+  res.classList.add('active');
+  document.getElementById('scan-result-icon').className='ti '+data.icon;
+  document.getElementById('scan-result-type').textContent=data.type;
+  document.getElementById('scan-result-title').textContent=data.title;
+  document.getElementById('scan-confidence-val').textContent=data.confidence+'%';
+  scanCurrentData=data;
+  scanCurrentType=type;
+
+  // Store field values in a lookup so onclick handlers don't need inline escaping
+  window._scanFieldValues = {};
+  var container=document.getElementById('scan-fields-container');
+  container.innerHTML='';
+  (data.fields||[]).forEach(function(f){
+    window._scanFieldValues[f.key] = f.value;
+    var row=document.createElement('div');
+    row.className='scan-field-row';
+    // Build elements programmatically to avoid any quote/escape issues
+    var labelDiv=document.createElement('div');
+    labelDiv.className='scan-field-label';
+    labelDiv.textContent=f.label;
+    var valDiv=document.createElement('div');
+    valDiv.className='scan-field-value';
+    valDiv.id='sfv-'+f.key;
+    valDiv.textContent=f.value;
+    var editBtn=document.createElement('span');
+    editBtn.className='scan-edit-toggle';
+    editBtn.textContent='Edit';
+    (function(key){editBtn.addEventListener('click',function(){toggleScanEdit(key);});})(f.key);
+    row.appendChild(labelDiv);
+    row.appendChild(valDiv);
+    row.appendChild(editBtn);
+    container.appendChild(row);
+  });
+}
+
+function toggleScanEdit(key){
+  var valEl=document.getElementById('sfv-'+key);
+  if(valEl.querySelector('input')){
+    // Already editing — commit the value
+    valEl.textContent=valEl.querySelector('input').value;
+  }else{
+    var currentVal=valEl.textContent;
+    var input=document.createElement('input');
+    input.className='scan-field-edit';
+    input.value=currentVal;
+    valEl.textContent='';
+    valEl.appendChild(input);
+    input.focus();
+    input.addEventListener('blur',function(){
+      valEl.textContent=input.value;
+    });
+  }
+}
+
+function confirmScan(){
+  var msg=(scanCurrentData&&scanCurrentData.saveMsg)||'Saved to KYNC';
+  closeModal('modal-scan');
+  setTimeout(()=>showToast(msg),120);
+  resetScan();
+}
+
+function resetScan(){
+  document.getElementById('scan-step-upload').style.display='block';
+  document.getElementById('scan-step-processing').classList.remove('active');
+  document.getElementById('scan-step-result').classList.remove('active');
+  document.getElementById('scan-log').innerHTML='';
+  var fi=document.getElementById('scan-file-input');
+  if(fi)fi.value='';
+  scanCurrentType=null;
+  scanCurrentData=null;
+}
+</script>
+</body>
+</html>
