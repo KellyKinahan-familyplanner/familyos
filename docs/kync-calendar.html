@@ -394,6 +394,11 @@ input,select{font-family:inherit;}
   .show-side-panel .tasks-dock{display:none;}
 }
 
+
+/* Cal modals */
+.cal-modal-backdrop{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+.cal-modal-backdrop.open{display:flex;}
+
 </style>
 </head>
 <body>
@@ -425,7 +430,7 @@ input,select{font-family:inherit;}
     </div>
     <div class="nav-cluster">
       <button class="nav-arrow" onclick="navStep(-1)"><i class="ti ti-chevron-left"></i></button>
-      <span class="nav-label" id="nav-lbl">21–27 Jun 2025</span>
+      <span class="nav-label" id="nav-lbl">22–28 Jun 2026</span>
       <button class="nav-arrow" onclick="navStep(1)"><i class="ti ti-chevron-right"></i></button>
     </div>
     <button class="today-btn" onclick="goToday()">Today</button>
@@ -448,12 +453,12 @@ input,select{font-family:inherit;}
       <div class="cal-head">
         <div class="cgutter"></div>
         <div class="dh" onclick="drillDay(0)"><div class="dname">Sun</div><div class="dnum">21</div></div>
-        <div class="dh today" onclick="drillDay(1)"><div class="dname">Mon</div><div class="dnum">22</div></div>
+        <div class="dh" onclick="drillDay(0)"><div class="dname">Sun</div><div class="dnum">22</div></div>
         <div class="dh" onclick="drillDay(2)"><div class="dname">Tue</div><div class="dnum">23</div></div>
         <div class="dh" onclick="drillDay(3)"><div class="dname">Wed</div><div class="dnum">24</div></div>
         <div class="dh school-hol" onclick="drillDay(4)" title="School holidays"><div class="dname">Thu ☀️</div><div class="dnum">25</div></div>
         <div class="dh school-hol" onclick="drillDay(5)" title="School holidays"><div class="dname">Fri ☀️</div><div class="dnum">26</div></div>
-        <div class="dh" onclick="drillDay(6)"><div class="dname">Sat</div><div class="dnum">27</div></div>
+        <div class="dh today" onclick="drillDay(6)"><div class="dname">Sat</div><div class="dnum">28</div></div>
       </div>
       <div class="cal-body">
         <div class="tcol">
@@ -612,11 +617,11 @@ input,select{font-family:inherit;}
 <div class="fab-wrap" style="bottom:calc(var(--dock-peek) + 16px)">
   <button class="fab" onclick="toggleFab()" aria-label="New"><i class="ti ti-plus" id="fab-i"></i></button>
   <div class="fab-menu" id="fab-menu">
-    <div class="fopt" onclick="showToast('Add event — use dashboard quick actions')"><i class="ti ti-calendar-plus"></i>Add event</div>
-    <div class="fopt" onclick="showToast('Add task — use dashboard quick actions')"><i class="ti ti-circle-plus"></i>Add task</div>
-    <div class="fopt" onclick="showToast('Add exam — use dashboard quick actions')"><i class="ti ti-notes"></i>Add exam</div>
-    <div class="fopt" onclick="showToast('Add revision session — use dashboard quick actions')"><i class="ti ti-books"></i>Add revision</div>
-    <div class="fopt" onclick="showToast('AI scan — use dashboard quick actions')"><i class="ti ti-scan"></i>Scan document</div>
+    <div class="fopt" onclick="closeFab();openCalModal('modal-cal-event')"><i class="ti ti-calendar-plus"></i>Add event</div>
+    <div class="fopt" onclick="closeFab();openCalModal('modal-cal-task')"><i class="ti ti-circle-plus"></i>Add task</div>
+    <div class="fopt" onclick="closeFab();openCalModal('modal-cal-exam')"><i class="ti ti-notes"></i>Add exam</div>
+    <div class="fopt" onclick="closeFab();openCalModal('modal-cal-revision')"><i class="ti ti-books"></i>Add revision</div>
+    <div class="fopt" onclick="closeFab();openCalModal('modal-cal-scan')"><i class="ti ti-scan"></i>Scan document</div>
   </div>
 </div>
 
@@ -655,7 +660,7 @@ input,select{font-family:inherit;}
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg">Done</span></div>
 
 <script>
-/* -- Data -- */
+
 var ACCENT = {'ev-sj':'#1D9E75','ev-mj':'#D85A30','ev-oj':'#378ADD','ev-lj':'#D4537E','ev-fam':'#7F77DD','ev-revision':'#7F77DD'};
 var WHO = {
   'ev-sj':['SJ','#9FE1CB','#085041'], 'ev-mj':['MJ','#F5C4B3','#712B13'],
@@ -672,7 +677,7 @@ var EV_ICON = {
   'exam':{ic:'ti-notes',bg:'rgba(255,255,255,.28)'}
 };
 
-/* Priority pills — exams now included with session counts */
+
 var PILLS = [
   {u:'mj',  cls:'p-mj',   icon:'ti-receipt',   name:'Telstra bill',    days:1,  done:false, type:'bill'},
   {u:'oj',  cls:'p-exam', icon:'ti-notes',      name:'Maths Test',      days:3,  done:false, type:'exam', sessions:2, subject:'Olivia'},
@@ -687,65 +692,65 @@ var WEEK_DAYS = [
   {name:'Sun', num:21, events:[]},
   {name:'Mon', num:22, today:true, events:[
     {n:'Swimming',   cls:'ev-oj', u:'oj', time:'4:00 pm', notes:'Beatty Park Pool. Towel and goggles.',  s:'4:00 pm',e:'4:45 pm',loc:'Beatty Park Pool',type:'event'},
-    {n:'Gym — PT',   cls:'ev-mj', u:'mj', time:'5:00 pm', notes:'Personal trainer. Running shoes.',       s:'5:00 pm',e:'6:00 pm',loc:'Jetts Fitness',type:'task'},
+    {n:'Gym \u2014 PT',   cls:'ev-mj', u:'mj', time:'5:00 pm', notes:'Personal trainer. Running shoes.',       s:'5:00 pm',e:'6:00 pm',loc:'Jetts Fitness',type:'task'},
   ]},
   {name:'Tue', num:23, events:[
     {n:'Dentist',    cls:'ev-sj', u:'sj', time:'10:30 am',notes:'Smile Dental, Subiaco. Insurance card.', s:'10:30 am',e:'11:15 am',loc:'Smile Dental',type:'event'},
-    {n:'Maths revision — Number patterns', cls:'ev-revision', u:'oj', time:'3:30 pm', notes:'Focus: Number patterns. 45 min. Linked to Maths Test Thu 25 Jun.', s:'3:30 pm',e:'4:15 pm',loc:'Home',type:'revision',exam:'Maths Test — Olivia',examDate:'Thu 25 Jun'},
+    {n:'Maths revision \u2014 Number patterns', cls:'ev-revision', u:'oj', time:'3:30 pm', notes:'Focus: Number patterns. 45 min. Linked to Maths Test Thu 25 Jun.', s:'3:30 pm',e:'4:15 pm',loc:'Home',type:'revision',exam:'Maths Test \u2014 Olivia',examDate:'Thu 25 Jun'},
   ]},
   {name:'Wed', num:24, events:[
     {n:'Football',   cls:'ev-lj', u:'lj', time:'3:30 pm', notes:'Wembley Oval. Shin pads. Pick up 5 pm.',s:'3:30 pm',e:'5:00 pm',loc:'Wembley Oval',type:'event'},
-    {n:'Maths revision — Times tables',    cls:'ev-revision', u:'oj', time:'4:00 pm', notes:'Times tables drill, 30 min. Final revision before exam tomorrow.', s:'4:00 pm',e:'4:30 pm',loc:'Home',type:'revision',exam:'Maths Test — Olivia',examDate:'Thu 25 Jun'},
+    {n:'Maths revision \u2014 Times tables',    cls:'ev-revision', u:'oj', time:'4:00 pm', notes:'Times tables drill, 30 min. Final revision before exam tomorrow.', s:'4:00 pm',e:'4:30 pm',loc:'Home',type:'revision',exam:'Maths Test \u2014 Olivia',examDate:'Thu 25 Jun'},
   ]},
   {name:'Thu', num:25, schoolHol:true, events:[
-    {n:'Sports day', cls:'ev-oj', u:'oj', time:'All day',  notes:"School carnival. Parents from 10am. Hat & sunscreen.", s:'All day',e:'—',loc:"Olivia's School",type:'event'},
+    {n:'Sports day', cls:'ev-oj', u:'oj', time:'All day',  notes:"School carnival. Parents from 10am. Hat & sunscreen.", s:'All day',e:'\u2014',loc:"Olivia's School",type:'event'},
   ]},
   {name:'Fri', num:26, schoolHol:true, events:[
     {n:'Work call',  cls:'ev-mj', u:'mj', time:'9:00 am', notes:'Quarterly call. Dial-in link in email.', s:'9:00 am',e:'10:00 am',loc:'Video call',type:'task'},
   ]},
   {name:'Sat', num:27, events:[
-    {n:"Dinner — Grandma's", cls:'ev-fam', u:'fam', time:'6:00 pm', notes:'Everyone bringing a dish. 14 Rosewood Ave.', s:'6:00 pm',e:'9:00 pm',loc:'14 Rosewood Ave',type:'event'},
+    {n:"Dinner \u2014 Grandma's", cls:'ev-fam', u:'fam', time:'6:00 pm', notes:'Everyone bringing a dish. 14 Rosewood Ave.', s:'6:00 pm',e:'9:00 pm',loc:'14 Rosewood Ave',type:'event'},
   ]},
 ];
 
 var MONTH_EVS = [
-  {date:6,  cls:'ev-sj', u:'sj',  n:'Sarah birthday',    time:'All day',  notes:'',s:'All day',e:'—',loc:'Home',type:'event'},
+  {date:6,  cls:'ev-sj', u:'sj',  n:'Sarah birthday',    time:'All day',  notes:'',s:'All day',e:'\u2014',loc:'Home',type:'event'},
   {date:10, cls:'ev-fam',u:'fam', n:'Movie night',        time:'7:00 pm',  notes:'',s:'7:00 pm',e:'9:30 pm',loc:'Home',type:'event'},
   {date:14, cls:'ev-lj', u:'lj',  n:'Football match',     time:'10:00 am', notes:'',s:'10:00 am',e:'12:00 pm',loc:'Wembley',type:'event'},
-  {date:18, cls:'ev-mj', u:'mj',  n:'Work conference',    time:'All day',  notes:'',s:'All day',e:'—',loc:'CBD',type:'task'},
-  {date:19, cls:'ev-mj', u:'mj',  n:'Work conference',    time:'All day',  notes:'',s:'All day',e:'—',loc:'CBD',type:'task'},
+  {date:18, cls:'ev-mj', u:'mj',  n:'Work conference',    time:'All day',  notes:'',s:'All day',e:'\u2014',loc:'CBD',type:'task'},
+  {date:19, cls:'ev-mj', u:'mj',  n:'Work conference',    time:'All day',  notes:'',s:'All day',e:'\u2014',loc:'CBD',type:'task'},
   {date:21, cls:'ev-fam',u:'fam', n:'Family lunch',       time:'1:00 pm',  notes:'Grandma joining via video.',s:'1:00 pm',e:'2:00 pm',loc:'Home',type:'event'},
   {date:22, cls:'ev-oj', u:'oj',  n:'Swimming',           time:'4:00 pm',  notes:'Beatty Park Pool.',s:'4:00 pm',e:'4:45 pm',loc:'Beatty Park Pool',type:'event'},
-  {date:22, cls:'ev-mj', u:'mj',  n:'Gym — PT',           time:'5:00 pm',  notes:'Personal trainer.',s:'5:00 pm',e:'6:00 pm',loc:'Jetts Fitness',type:'task'},
+  {date:22, cls:'ev-mj', u:'mj',  n:'Gym \u2014 PT',           time:'5:00 pm',  notes:'Personal trainer.',s:'5:00 pm',e:'6:00 pm',loc:'Jetts Fitness',type:'task'},
   {date:23, cls:'ev-sj', u:'sj',  n:'Dentist',            time:'10:30 am', notes:'Smile Dental.',s:'10:30 am',e:'11:15 am',loc:'Smile Dental',type:'event'},
   {date:23, cls:'ev-revision', u:'oj', n:'Maths revision',time:'3:30 pm',  notes:'Number patterns. 45 min.',s:'3:30 pm',e:'4:15 pm',loc:'Home',type:'revision'},
   {date:24, cls:'ev-lj', u:'lj',  n:'Football',           time:'3:30 pm',  notes:'Wembley Oval.',s:'3:30 pm',e:'5:00 pm',loc:'Wembley Oval',type:'event'},
   {date:24, cls:'ev-revision', u:'oj', n:'Maths revision',time:'4:00 pm',  notes:'Times tables. 30 min.',s:'4:00 pm',e:'4:30 pm',loc:'Home',type:'revision'},
-  {date:25, cls:'ev-oj', u:'oj',  n:'Sports day',         time:'All day',  notes:'School carnival.',s:'All day',e:'—',loc:"Olivia's School",type:'event'},
+  {date:25, cls:'ev-oj', u:'oj',  n:'Sports day',         time:'All day',  notes:'School carnival.',s:'All day',e:'\u2014',loc:"Olivia's School",type:'event'},
   {date:26, cls:'ev-mj', u:'mj',  n:'Work call',          time:'9:00 am',  notes:'Sydney call.',s:'9:00 am',e:'10:00 am',loc:'Video call',type:'task'},
-  {date:27, cls:'ev-fam',u:'fam', n:"Dinner — Grandma's",time:'6:00 pm',  notes:'14 Rosewood Ave.',s:'6:00 pm',e:'9:00 pm',loc:'14 Rosewood Ave',type:'event'},
+  {date:27, cls:'ev-fam',u:'fam', n:"Dinner \u2014 Grandma's",time:'6:00 pm',  notes:'14 Rosewood Ave.',s:'6:00 pm',e:'9:00 pm',loc:'14 Rosewood Ave',type:'event'},
   {date:29, cls:'ev-lj', u:'lj',  n:'Liam school play',   time:'6:30 pm',  notes:'Assembly hall.',s:'6:30 pm',e:'8:00 pm',loc:"Liam's School",type:'event'},
 ];
-/* School holiday dates in June */
+
 var SCHOOL_HOL_DATES = [25,26,27,28,29,30];
 
 var DAY_EVS = [
   {hour:8,  cls:'ev-fam',u:'fam',n:'Family breakfast', time:'8:00 am', notes:'Weekly family breakfast.',s:'8:00 am',e:'9:00 am',loc:'Home',type:'event'},
-  {hour:10, cls:'ev-sj', u:'sj', n:'Dentist — Sarah',  time:'10:30 am',notes:'Smile Dental, Subiaco.',  s:'10:30 am',e:'11:15 am',loc:'Smile Dental',type:'event'},
+  {hour:10, cls:'ev-sj', u:'sj', n:'Dentist \u2014 Sarah',  time:'10:30 am',notes:'Smile Dental, Subiaco.',  s:'10:30 am',e:'11:15 am',loc:'Smile Dental',type:'event'},
   {hour:12, cls:'ev-mj', u:'mj', n:'Lunch with team',  time:'12:00 pm',notes:'Catch up with work team.',s:'12:00 pm',e:'1:00 pm', loc:'CBD cafe',type:'task'},
   {hour:15, cls:'ev-lj', u:'lj', n:'Football training',time:'3:30 pm', notes:'Wembley Oval. Shin pads.',s:'3:30 pm',e:'5:00 pm', loc:'Wembley Oval',type:'chore'},
-  {hour:15, cls:'ev-revision',u:'oj',n:'Maths revision',time:'3:30 pm',notes:'Number patterns. 45 min. Linked to Maths Test Thu.',s:'3:30 pm',e:'4:15 pm',loc:'Home',type:'revision',exam:'Maths Test — Olivia',examDate:'Thu 25 Jun'},
+  {hour:15, cls:'ev-revision',u:'oj',n:'Maths revision',time:'3:30 pm',notes:'Number patterns. 45 min. Linked to Maths Test Thu.',s:'3:30 pm',e:'4:15 pm',loc:'Home',type:'revision',exam:'Maths Test \u2014 Olivia',examDate:'Thu 25 Jun'},
   {hour:16, cls:'ev-oj', u:'oj', n:'Swimming',         time:'4:00 pm', notes:'Beatty Park Pool.',       s:'4:00 pm',e:'4:45 pm', loc:'Beatty Park Pool',type:'event'},
   {hour:18, cls:'ev-fam',u:'fam',n:'Family dinner',    time:'6:00 pm', notes:'Cook together night.',    s:'6:00 pm',e:'7:00 pm', loc:'Home',type:'event'},
 ];
 
-/* -- State -- */
-var curView='week', curUser='all', dockOpen=false, mobileDay=1;
 
-/* -- Toast -- */
+var curView='week', curUser='all', dockOpen=false, mobileDay=6;
+
+
 function showToast(msg){var t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
 
-/* -- Priority pills -- */
+
 function renderPills(){
   var el=document.getElementById('pbar');
   el.innerHTML=PILLS.map(function(p){
@@ -756,23 +761,23 @@ function renderPills(){
     var dl=p.done?'Done':(p.days===1?'1 day':p.days+' days');
     var extra='';
     if(p.type==='exam'&&!p.done){
-      if(p.sessions>0){extra='<span class="pill-sessions">📚 '+p.sessions+' session'+(p.sessions>1?'s':'')+'</span>';}
-      else{extra='<span class="pill-no-revision">⚠ No revision</span>';}
+      if(p.sessions>0){extra='<span class="pill-sessions">📚 '+p.sessions+' session'+(p.sessions>1?'s':'')+'<\/span>';}
+      else{extra='<span class="pill-no-revision">⚠ No revision<\/span>';}
     }
-    return '<div class="'+cls+'" title="'+(p.subject?p.subject+' · ':'')+dl+'">' +
-      '<div class="pill-ic"><i class="ti '+ic+'"></i></div>' +
-      '<div class="pill-lbl"><span class="pill-name">'+p.name+'</span>' +
-      '<span class="pill-days">'+dl+'</span>'+extra+'</div></div>';
+    return '<div class="'+cls+'" title="'+(p.subject?p.subject+' \u00b7 ':'')+dl+'">' +
+      '<div class="pill-ic"><i class="ti '+ic+'"><\/i><\/div>' +
+      '<div class="pill-lbl"><span class="pill-name">'+p.name+'<\/span>' +
+      '<span class="pill-days">'+dl+'<\/span>'+extra+'<\/div><\/div>';
   }).join('');
 }
 
-/* -- Day strip (mobile week) -- */
+
 function renderDayStrip(){
   var el=document.getElementById('day-strip');
   el.innerHTML=WEEK_DAYS.map(function(d,i){
     var hasDot=d.events.some(function(e){return curUser==='all'||curUser===e.u;});
     var cls='ds-day'+(d.today?' today':'')+(i===mobileDay?' active':'')+(hasDot?' has-dot':'');
-    return '<div class="'+cls+'" onclick="selectDay('+i+')"><div class="ds-dname">'+d.name+'</div><div class="ds-dnum">'+d.num+'</div></div>';
+    return '<div class="'+cls+'" onclick="selectDay('+i+')"><div class="ds-dname">'+d.name+'<\/div><div class="ds-dnum">'+d.num+'<\/div><\/div>';
   }).join('');
 }
 
@@ -782,11 +787,11 @@ function selectDay(i){
   renderAgenda();
 }
 
-/* -- Agenda (mobile) -- */
+
 function renderAgenda(){
   var el=document.getElementById('agenda');
   var evs=WEEK_DAYS[mobileDay].events.filter(function(e){return curUser==='all'||curUser===e.u;});
-  if(!evs.length){el.innerHTML='<div class="agenda-empty">Nothing on — enjoy the day!</div>';return;}
+  if(!evs.length){el.innerHTML='<div class="agenda-empty">Nothing on \u2014 enjoy the day!<\/div>';return;}
   var ac=ACCENT, EI=EV_ICON;
   el.innerHTML=evs.map(function(ev){
     var a=ac[ev.cls]||'#ccc';
@@ -794,15 +799,15 @@ function renderAgenda(){
     var wm=WHO[ev.cls]||['?','#ccc','#333'];
     var hide=curUser!=='all'&&curUser!==ev.u;
     return '<div class="ag-item'+(hide?' dim':'')+'" onclick="showEvent('+JSON.stringify(ev).replace(/"/g,'&quot;')+')">' +
-      '<div class="ag-time">'+ev.time+'</div>' +
-      '<div class="ag-bar" style="background:'+a+'"></div>' +
-      '<div><div class="ag-name">'+(ev.type==='revision'?'📚 ':'')+ev.n+'</div><div class="ag-meta">'+ev.loc+'</div></div>' +
-      '<div class="ag-av" style="background:'+wm[1]+';color:'+wm[2]+'">'+wm[0]+'</div>' +
-      '</div>';
+      '<div class="ag-time">'+ev.time+'<\/div>' +
+      '<div class="ag-bar" style="background:'+a+'"><\/div>' +
+      '<div><div class="ag-name">'+(ev.type==='revision'?'📚 ':'')+ev.n+'<\/div><div class="ag-meta">'+ev.loc+'<\/div><\/div>' +
+      '<div class="ag-av" style="background:'+wm[1]+';color:'+wm[2]+'">'+wm[0]+'<\/div>' +
+      '<\/div>';
   }).join('');
 }
 
-/* -- Month render -- */
+
 function renderMonth(){
   var body=document.getElementById('month-body');
   var cells=[];
@@ -812,31 +817,31 @@ function renderMonth(){
   for(var d=1;d<=30;d++){
     var isHol=SCHOOL_HOL_DATES.indexOf(d)>-1;
     var evs=MONTH_EVS.filter(function(e){return e.date===d;});
-    cells.push({num:d,today:d===22,hol:isHol,evs:evs});
+    cells.push({num:d,today:d===28,hol:isHol,evs:evs});
   }
   // Pad to complete grid
   while(cells.length%7!==0) cells.push({num:0,other:true,hol:false,evs:[]});
 
   body.innerHTML=cells.map(function(c){
-    if(c.other) return '<div class="mcell other"><div class="mdate"></div></div>';
+    if(c.other) return '<div class="mcell other"><div class="mdate"><\/div><\/div>';
     var hol=c.hol?' school-hol':'';
     var evHTML=c.evs.map(function(ev){
       var hide=curUser!=='all'&&curUser!==ev.u;
       var mc='mev mev-'+ev.cls.replace('ev-','')+(hide?' dim':'');
       var ti=(EV_ICON[ev.type]||EV_ICON['event']);
       return '<div class="'+mc+'" onclick="showEvent('+JSON.stringify(ev).replace(/"/g,'&quot;')+')">' +
-        '<span class="mev-name">'+(ev.type==='revision'?'📚 ':'')+ev.n+'</span>' +
-        '<span class="mev-dot"><i class="ti '+ti.ic+'"></i></span></div>';
+        '<span class="mev-name">'+(ev.type==='revision'?'📚 ':'')+ev.n+'<\/span>' +
+        '<span class="mev-dot"><i class="ti '+ti.ic+'"><\/i><\/span><\/div>';
     }).join('');
-    return '<div class="mcell'+hol+(c.hol?' ' :'')+'"><div class="mdate'+(c.today?' tod':'')+'">'+c.num+'</div>'+evHTML+'</div>';
+    return '<div class="mcell'+hol+(c.hol?' ' :'')+'"><div class="mdate'+(c.today?' tod':'')+'">'+c.num+'<\/div>'+evHTML+'<\/div>';
   }).join('');
 }
 
-/* -- Day grid render -- */
+
 function renderDayGrid(){
   var g=document.getElementById('day-grid');
-  var hours=[8,9,10,11,12,13,14,15,16,17,18,19];
-  var lbl=['8 am','9 am','10 am','11 am','12 pm','1 pm','2 pm','3 pm','4 pm','5 pm','6 pm','7 pm'];
+  var hours=[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+  var lbl=['6 am','7 am','8 am','9 am','10 am','11 am','12 pm','1 pm','2 pm','3 pm','4 pm','5 pm','6 pm','7 pm','8 pm','9 pm'];
   g.innerHTML=hours.map(function(h,i){
     var evs=DAY_EVS.filter(function(e){return e.hour===h&&(curUser==='all'||curUser===e.u);});
     var evHTML=evs.map(function(ev){
@@ -845,16 +850,16 @@ function renderDayGrid(){
       var wm=WHO[ev.cls]||['?','#ccc','#333'];
       var isRev=ev.type==='revision';
       return '<div class="dv-ev'+(isRev?' revision':'')+'" onclick="showEvent('+JSON.stringify(ev).replace(/"/g,'&quot;')+')">' +
-        '<div class="dv-bar" style="background:'+a+'"></div>' +
-        '<div><div class="dv-ev-name">'+(isRev?'📚 ':'')+ev.n+'</div><div class="dv-ev-meta">'+ev.time+' · '+ev.loc+'</div></div>' +
-        '<div class="dv-ev-icon" style="background:'+(isRev?'var(--lilac)':a)+'"><i class="ti '+ti.ic+'"></i></div>' +
-        '</div>';
+        '<div class="dv-bar" style="background:'+a+'"><\/div>' +
+        '<div><div class="dv-ev-name">'+(isRev?'📚 ':'')+ev.n+'<\/div><div class="dv-ev-meta">'+ev.time+' \u00b7 '+ev.loc+'<\/div><\/div>' +
+        '<div class="dv-ev-icon" style="background:'+(isRev?'var(--lilac)':a)+'"><i class="ti '+ti.ic+'"><\/i><\/div>' +
+        '<\/div>';
     }).join('');
-    return '<div class="dv-row"><div class="dv-time">'+lbl[i]+'</div><div class="dv-slot">'+evHTML+'</div></div>';
+    return '<div class="dv-row"><div class="dv-time">'+lbl[i]+'<\/div><div class="dv-slot">'+evHTML+'<\/div><\/div>';
   }).join('');
 }
 
-/* -- View switching -- */
+
 function setView(v,btn){
   curView=v;
   ['week','month','day'].forEach(function(x){document.getElementById('v-'+x).classList.toggle('hidden',x!==v);});
@@ -863,9 +868,9 @@ function setView(v,btn){
   document.querySelectorAll('.pill-toggle .ptb').forEach(function(b){b.classList.remove('on');});
   if(btn)btn.classList.add('on');
   var lbl=document.getElementById('nav-lbl');
-  if(v==='week')  lbl.textContent='21–27 Jun 2025';
-  if(v==='month'){lbl.textContent='June 2025';renderMonth();}
-  if(v==='day')  {lbl.textContent='Mon 22 Jun 2025';renderDayGrid();}
+  if(v==='week')  lbl.textContent='22\u201328 Jun 2026';
+  if(v==='month'){lbl.textContent='June 2026';renderMonth();}
+  if(v==='day')  {lbl.textContent='Sat 28 Jun 2026';renderDayGrid();}
   closeAllPanels();
 }
 
@@ -873,10 +878,10 @@ function drillDay(idx){
   setView('day',document.querySelectorAll('.pill-toggle .ptb')[2]);
   document.getElementById('nav-lbl').textContent=WEEK_DAYS[idx].name+' '+WEEK_DAYS[idx].num+' Jun 2025';
 }
-function navStep(dir){showToast('Navigation — functional in full React build');}
-function goToday(){showToast('Jumped to today');}
+function navStep(dir){showToast('Calendar navigation coming in full app');}
+function goToday(){setView('week',document.querySelectorAll('.pill-toggle .ptb')[0]);document.getElementById('nav-lbl').textContent='22\u201328 Jun 2026';showToast('Jumped to today');}
 
-/* -- User filter -- */
+
 function setUser(u){
   curUser=u;
   document.querySelectorAll('.av').forEach(function(a){a.classList.toggle('sel',a.dataset.u===u);});
@@ -886,69 +891,20 @@ function setUser(u){
   if(curView==='day')renderDayGrid();
 }
 
-/* -- Event panel -- */
+
 
 function buildAttachSection(name) {
   var key = name.replace(/\s+/g, '_');
   var listId = 'panel-attach-list-' + key;
   var inputId = 'panel-attach-input-' + key;
   return '<div class="attach-panel-list" id="' + listId + '">' +
-    '<div class="attach-panel-empty"><i class="ti ti-paperclip"></i> No files attached</div>' +
-    '</div>' +
+    '<div class="attach-panel-empty"><i class="ti ti-paperclip"><\/i> No files attached<\/div>' +
+    '<\/div>' +
     '<label class="attach-panel-btn">' +
-    '<i class="ti ti-upload" style="font-size:13px"></i> Upload file or photo' +
-    '<input type="file" id="' + inputId + '" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" ' +
-    'onchange="handlePanelAttach(this,\'' + key + '\')">' +
-    '</label>';
+    '<i class="ti ti-upload" style="font-size:13px"><\/i> Upload file or photo' +
+    '<input type="file" id="' + inputId + '" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handlePanelAttach(this,\'' + key + '\')">' +
+    '<\/label>';
 }
-
-function buildPanel(ev){
-  var wm=WHO[ev.cls]||['?','#ccc','#333'];
-  var ac=ACCENT[ev.cls]||'#ccc';
-  var isRev=ev.type==='revision';
-  var revTag=isRev?'<div class="revision-tag"><i class="ti ti-books"></i>Revision session · Linked to <strong>'+ev.exam+'</strong> ('+ev.examDate+')</div>':'';
-  return '<div class="panel">'+
-    '<div class="panel-bar" style="background:'+(isRev?'var(--lilac)':ac)+'"></div>'+
-    '<div class="panel-bd">'+
-    '<button class="panel-close" onclick="closeAllPanels()"><i class="ti ti-x"></i></button>'+
-    revTag+
-    '<div class="panel-title">'+(isRev?'📚 ':'')+ev.n+'</div>'+
-    '<div class="panel-who"><div style="width:22px;height:22px;border-radius:50%;background:'+wm[1]+';color:'+wm[2]+';font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center">'+wm[0]+'</div>'+(ev.sub||ev.time)+'</div>'+
-    '<div class="meta-row">'+
-    '<div class="chip"><i class="ti ti-clock" style="font-size:12px"></i>'+ev.s+' – '+ev.e+'</div>'+
-    '<div class="chip"><i class="ti ti-map-pin" style="font-size:12px"></i>'+ev.loc+'</div>'+
-    '</div>'+
-    '<div class="notes-lbl">Notes</div>'+
-    '<div class="notes-box">'+(ev.notes||'No notes added.')+'</div>'+
-    '<div class="notes-lbl" style="margin-top:14px;">Attachments</div>'+
-    buildAttachSection(ev.n)+
-    '<div class="panel-acts">'+
-    '<button class="pact"><i class="ti ti-edit" style="font-size:13px"></i>Edit</button>'+
-    '<button class="pact"><i class="ti ti-bell" style="font-size:13px"></i>Remind</button>'+
-    '<button class="pact del"><i class="ti ti-trash" style="font-size:13px"></i>Delete</button>'+
-    '</div></div></div>';
-}
-
-function showEvent(ev){
-  var mobile=window.innerWidth<=600;
-  if(mobile){
-    var sheet=document.getElementById('ev-sheet');
-    document.getElementById('ev-sheet-body').innerHTML=
-      '<div class="sheet-handle"></div><div class="sheet-inner">'+
-      '<button style="float:right;background:none;border:none;font-size:18px;color:var(--text-2)" onclick="closeMobileSheet(\'ev-sheet\')"><i class="ti ti-x"></i></button>'+
-      buildPanel(ev).replace('<div class="panel-bar"','<div style="display:none"').replace('class="panel-bd"','class="panel-bd" style="padding:0"')+
-      '</div>';
-    sheet.classList.add('open');
-  }else{
-    closeAllPanels();
-    var pw=document.getElementById(curView+'-panel');
-    if(pw){pw.innerHTML=buildPanel(ev);pw.classList.add('open');}
-  }
-}
-
-function closeAllPanels(){document.querySelectorAll('.panel-wrap').forEach(function(p){p.classList.remove('open');p.innerHTML='';});}
-
-/* -- Mobile sheets -- */
 function closeMobileSheet(id){document.getElementById(id).classList.remove('open');}
 function bnClick(tab,btn){
   document.querySelectorAll('.bn-item').forEach(function(b){b.classList.remove('on');});
@@ -957,20 +913,20 @@ function bnClick(tab,btn){
   else{closeMobileSheet('task-sheet');}
 }
 
-/* -- Tasks dock -- */
+
 function toggleDock(){
   dockOpen=!dockOpen;
   document.getElementById('dock-body').classList.toggle('open',dockOpen);
-  document.getElementById('dock-tog').innerHTML=dockOpen?'<i class="ti ti-chevron-down"></i> Hide':'<i class="ti ti-chevron-up"></i> Show';
+  document.getElementById('dock-tog').innerHTML=dockOpen?'<i class="ti ti-chevron-down"><\/i> Hide':'<i class="ti ti-chevron-up"><\/i> Show';
 }
 function toggleTask(el){
   el.classList.toggle('done');
   var txt=el.parentElement.querySelector('.ttxt');
   if(txt)txt.classList.toggle('done');
-  el.innerHTML=el.classList.contains('done')?'<i class="ti ti-check" style="font-size:9px;color:#fff"></i>':'';
+  el.innerHTML=el.classList.contains('done')?'<i class="ti ti-check" style="font-size:9px;color:#fff"><\/i>':'';
 }
 
-/* -- FAB -- */
+
 function toggleFab(){
   document.getElementById('fab-menu').classList.toggle('open');
   document.getElementById('fab-i').classList.toggle('open');
@@ -984,85 +940,164 @@ document.addEventListener('click',function(e){
   }
 });
 
-/* -- Print & PDF export -- */
+
 function printCalendar(){
-  showToast('Opening print dialog…');
+  showToast('Opening print dialog\u2026');
   setTimeout(function(){window.print();},300);
 }
 function exportCalendarPDF(){
   var period=document.getElementById('nav-lbl').textContent;
-  var printContent='<html><head><title>KYNC Calendar — '+period+'</title>'+
-    '<style>body{font-family:sans-serif;padding:32px;color:#1A1714;}h1{font-size:22px;margin-bottom:4px;}p{color:#6B6561;margin-bottom:24px;}table{width:100%;border-collapse:collapse;}th{text-align:left;font-size:12px;font-weight:700;color:#A09893;text-transform:uppercase;padding:8px 12px;border-bottom:2px solid #E8E4DF;}td{padding:10px 12px;border-bottom:1px solid #F0EDE9;font-size:13px;}.rev{color:#7F77DD;font-weight:700;}.hol{background:#FEF3C7;}</style></head>'+
-    '<body><h1>KYNC Family Calendar</h1><p>The Jones Family · '+period+'</p>'+
-    '<table><tr><th>Day</th><th>Event</th><th>Time</th><th>Who</th><th>Location</th></tr>'+
+  var printContent='<html><head><title>KYNC Calendar \u2014 '+period+'<\/title>'+
+    '<style>body{font-family:sans-serif;padding:32px;color:#1A1714;}h1{font-size:22px;margin-bottom:4px;}p{color:#6B6561;margin-bottom:24px;}table{width:100%;border-collapse:collapse;}th{text-align:left;font-size:12px;font-weight:700;color:#A09893;text-transform:uppercase;padding:8px 12px;border-bottom:2px solid #E8E4DF;}td{padding:10px 12px;border-bottom:1px solid #F0EDE9;font-size:13px;}.rev{color:#7F77DD;font-weight:700;}.hol{background:#FEF3C7;}<\/style><\/head>'+
+    '<body><h1>KYNC Family Calendar<\/h1><p>The Jones Family \u00b7 '+period+'<\/p>'+
+    '<table><tr><th>Day<\/th><th>Event<\/th><th>Time<\/th><th>Who<\/th><th>Location<\/th><\/tr>'+
     WEEK_DAYS.map(function(d){
       return d.events.map(function(ev){
         var who=WHO[ev.cls]?WHO[ev.cls][0]:'All';
         var isRev=ev.type==='revision';
         var hol=d.schoolHol?' class="hol"':'';
-        return '<tr'+hol+'><td>'+d.name+' '+d.num+(d.schoolHol?' ☀️':'')+'</td>'+
-          '<td'+(isRev?' class="rev"':'')+'>'+(isRev?'📚 ':'')+ev.n+'</td>'+
-          '<td>'+ev.time+'</td><td>'+who+'</td><td>'+ev.loc+'</td></tr>';
+        return '<tr'+hol+'><td>'+d.name+' '+d.num+(d.schoolHol?' ☀️':'')+'<\/td>'+
+          '<td'+(isRev?' class="rev"':'')+'>'+(isRev?'📚 ':'')+ev.n+'<\/td>'+
+          '<td>'+ev.time+'<\/td><td>'+who+'<\/td><td>'+ev.loc+'<\/td><\/tr>';
       }).join('');
     }).join('')+
-    '</table><p style="margin-top:24px;font-size:11px;color:#A09893;">Exported from KYNC · kync.app · '+new Date().toLocaleDateString('en-AU')+'</p></body></html>';
-  var w=window.open('','_blank');
-  w.document.write(printContent);
-  w.document.close();
-  w.focus();
-  setTimeout(function(){w.print();},300);
-  showToast('PDF export ready — use Print to save as PDF');
+    '<\/table><p style="margin-top:24px;font-size:11px;color:#A09893;">Exported from KYNC \u00b7 kync.app \u00b7 '+new Date().toLocaleDateString('en-AU')+'<\/p><\/body><\/html>';
+  var win=window.open('','_blank');
+  win.document.write(printContent);
+  win.document.close();
+  setTimeout(function(){win.print();},500);
 }
 
-/* -- Padding adjust -- */
-function adjustPadding(){
-  var mobile=window.innerWidth<=600;
-  document.querySelector('.app').style.paddingBottom=mobile?'80px':'70px';
+function openCalModal(id){
+  var el=document.getElementById(id);
+  if(el){el.style.display='flex';setTimeout(function(){el.classList.add('open');},10);}
+  document.body.style.overflow='hidden';
 }
-
-/* -- Init -- */
-renderPills();
-renderDayStrip();
-renderAgenda();
-adjustPadding();
-window.addEventListener('resize',adjustPadding);
-
-/* -- Panel attachment handler -- */
-var panelAttachments = {};
-function handlePanelAttach(input, key) {
-  if (!panelAttachments[key]) panelAttachments[key] = [];
-  var list = document.getElementById('panel-attach-list-' + key);
-  if (!list) return;
-  var emptyEl = list.querySelector('.attach-panel-empty');
-  Array.from(input.files).forEach(function(file) {
-    if (emptyEl) { emptyEl.remove(); emptyEl = null; }
-    var id = 'pa-' + Date.now() + Math.random().toString(36).slice(2);
-    panelAttachments[key].push({id:id, file:file});
-    var isImg = file.type.startsWith('image/');
-    var item = document.createElement('div');
-    item.className = 'attach-panel-item';
-    item.id = id;
-    item.innerHTML = '<div class="attach-panel-icon"><i class="ti ti-'+(isImg?'photo':'file-text')+'"></i></div>' +
-      '<span class="attach-panel-name">'+file.name+'</span>' +
-      '<span class="attach-panel-del" onclick="removePanelAttach(\'' + id + '\',\'' + key + '\')"><i class="ti ti-x"></i></span>';
-    if (isImg) {
-      var r = new FileReader();
-      r.onload = function(e) {
-        var icon = item.querySelector('.attach-panel-icon');
-        if (icon) icon.outerHTML = '<img class="attach-panel-thumb" src="'+e.target.result+'" onclick="window.open(this.src,\'_blank\')" style="cursor:zoom-in">';
-      };
-      r.readAsDataURL(file);
-    }
-    list.appendChild(item);
-  });
-  input.value = '';
+function closeCalModal(id){
+  var el=document.getElementById(id);
+  if(el){el.classList.remove('open');el.style.display='none';}
+  document.body.style.overflow='';
 }
-function removePanelAttach(id, key) {
-  panelAttachments[key] = (panelAttachments[key]||[]).filter(function(a){return a.id!==id;});
-  var el = document.getElementById(id);
-  if (el) el.remove();
+function closeFab(){
+  var fm=document.getElementById('fab-menu');
+  var fi=document.getElementById('fab-i');
+  if(fm)fm.classList.remove('open');
+  if(fi)fi.classList.remove('open');
+}
+function selectRole(el){
+  el.parentElement.querySelectorAll('.role-pill').forEach(function(p){p.classList.remove('sel');});
+  el.classList.add('sel');
 }
 
 </script>
+
+<!-- CALENDAR MODALS -->
+<div class="cal-modal-backdrop" id="modal-cal-event" onclick="if(event.target===this)closeCalModal('modal-cal-event')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add event</div></div><button class="modal-close" onclick="closeCalModal('modal-cal-event')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Event title</label><input type="text" placeholder="e.g. Dentist appointment"></div>
+      <div class="modal-field"><label>Date</label><input type="date"></div>
+      <div class="modal-field"><label>Time</label><div style="display:flex;gap:8px;"><input type="time" style="flex:1;"><input type="time" style="flex:1;"></div></div>
+      <div class="modal-field"><label>Location</label><input type="text" placeholder="Optional"></div>
+      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+  <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
+  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+</div></div>
+      <div class="modal-field"><label>Repeat</label><select><option>Does not repeat</option><option>Daily</option><option>Weekly</option><option>Fortnightly</option><option>Monthly</option></select></div>
+      <div class="modal-field"><label>Notes</label><textarea rows="2" placeholder="Optional"></textarea></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-event')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-event');showToast('Event added!')">Add event</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="cal-modal-backdrop" id="modal-cal-task" onclick="if(event.target===this)closeCalModal('modal-cal-task')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add task</div></div><button class="modal-close" onclick="closeCalModal('modal-cal-task')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Task</label><input type="text" placeholder="e.g. Book car service"></div>
+      <div class="modal-field"><label>Due date</label><input type="date"></div>
+      <div class="modal-field"><label>Priority</label><div class="role-pills"><div class="role-pill" onclick="selectRole(this)">&#128308; High</div><div class="role-pill sel" onclick="selectRole(this)">&#128993; Medium</div><div class="role-pill" onclick="selectRole(this)">&#128994; Low</div></div></div>
+      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+  <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
+  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+</div></div>
+      <div class="modal-field"><label>Notes</label><textarea rows="2" placeholder="Optional"></textarea></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-task')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-task');showToast('Task added!')">Add task</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="cal-modal-backdrop" id="modal-cal-exam" onclick="if(event.target===this)closeCalModal('modal-cal-exam')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add exam</div></div><button class="modal-close" onclick="closeCalModal('modal-cal-exam')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Subject</label><input type="text" placeholder="e.g. Maths"></div>
+      <div class="modal-field"><label>Exam date</label><input type="date"></div>
+      <div class="modal-field"><label>Exam time</label><input type="time"></div>
+      <div class="modal-field"><label>Location / Room</label><input type="text" placeholder="e.g. Hall B"></div>
+      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+  <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
+  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+</div></div>
+      <div class="modal-field"><label>Add revision sessions</label>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.5;">KYNC will add revision blocks to the calendar before your exam date.</div>
+        <div class="role-pills"><div class="role-pill sel" onclick="selectRole(this)">None</div><div class="role-pill" onclick="selectRole(this)">1 session</div><div class="role-pill" onclick="selectRole(this)">2 sessions</div><div class="role-pill" onclick="selectRole(this)">3 sessions</div><div class="role-pill" onclick="selectRole(this)">Daily</div></div>
+        <div style="display:flex;gap:8px;margin-top:8px;"><input type="time" style="flex:1;" value="15:30"><select style="flex:1;"><option>30 min</option><option selected>45 min</option><option>60 min</option><option>90 min</option></select></div>
+      </div>
+      <div class="modal-field"><label>Notes</label><textarea rows="2" placeholder="Topics, syllabus..."></textarea></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-exam')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-exam');showToast('Exam added!')">Add exam</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="cal-modal-backdrop" id="modal-cal-revision" onclick="if(event.target===this)closeCalModal('modal-cal-revision')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add revision session</div></div><button class="modal-close" onclick="closeCalModal('modal-cal-revision')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Subject</label><input type="text" placeholder="e.g. English Literature"></div>
+      <div class="modal-field"><label>Date</label><input type="date"></div>
+      <div class="modal-field"><label>Time</label><div style="display:flex;gap:8px;"><input type="time" style="flex:1;"><input type="time" style="flex:1;"></div></div>
+      <div class="modal-field"><label>Topics to cover</label><textarea rows="2" placeholder="e.g. Chapter 3, essay structure..."></textarea></div>
+      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+  <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
+  <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
+  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+</div></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-revision')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-revision');showToast('Revision session added!')">Add session</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="cal-modal-backdrop" id="modal-cal-scan" onclick="if(event.target===this)closeCalModal('modal-cal-scan')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Scan document</div></div><button class="modal-close" onclick="closeCalModal('modal-cal-scan')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:20px 0 10px;">
+        <div style="width:64px;height:64px;border-radius:var(--r-xl);background:var(--green-lt);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><i class="ti ti-scan" style="font-size:28px;color:var(--green);"></i></div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px;">AI Document Scanner</div>
+        <div style="font-size:12px;color:var(--text-3);line-height:1.6;">Upload a photo of a bill, letter or report card. KYNC will read and organise it.</div>
+      </div>
+      <label style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;border:1.5px dashed var(--border);border-radius:var(--r-md);background:var(--bg);cursor:pointer;margin-bottom:14px;">
+        <i class="ti ti-cloud-upload" style="font-size:28px;color:var(--green);"></i>
+        <span style="font-size:13px;font-weight:700;color:var(--text-2);">Tap to upload photo or PDF</span>
+        <input type="file" accept="image/*,.pdf" style="display:none;">
+      </label>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-scan')">Cancel</button></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

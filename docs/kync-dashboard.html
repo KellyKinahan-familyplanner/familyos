@@ -593,7 +593,7 @@ input,select,textarea{font-family:inherit;}
     <div class="section-hd"><div class="section-title">Quick actions</div></div>
     <div class="actions-grid">
       <div class="action-card ac-green" onclick="openModal('modal-invite')"><div class="action-icon ai-green"><i class="ti ti-user-plus"></i></div><div><div class="action-label">Invite member</div><div class="action-sub">Send a family invite</div></div></div>
-      <div class="action-card ac-blue" onclick="goCalendar()"><div class="action-icon ai-blue"><i class="ti ti-calendar-plus"></i></div><div><div class="action-label">Add event</div><div class="action-sub">To the family calendar</div></div></div>
+      <div class="action-card ac-blue" onclick="openModal('modal-add-event')"><div class="action-icon ai-blue"><i class="ti ti-calendar-plus"></i></div><div><div class="action-label">Add event</div><div class="action-sub">To the family calendar</div></div></div>
       <div class="action-card ac-orange" onclick="openModal('modal-add-task')"><div class="action-icon ai-orange"><i class="ti ti-circle-plus"></i></div><div><div class="action-label">Add task</div><div class="action-sub">Assign to a member</div></div></div>
       <div class="action-card ac-purple" onclick="openModal('modal-scan')"><div class="action-icon ai-purple"><i class="ti ti-scan"></i></div><div><div class="action-label">AI scan</div><div class="action-sub">Reads docs &amp; photos</div></div></div>
       <div class="action-card ac-amber" onclick="openModal('modal-add-bill')"><div class="action-icon ai-amber"><i class="ti ti-receipt"></i></div><div><div class="action-label">Add bill</div><div class="action-sub">Track payments</div></div></div>
@@ -1652,11 +1652,30 @@ function closeKidsView() {
 
 /* -- Kids chore toggle -- */
 function kvToggle(el) {
+  var wasDone = el.classList.contains('done');
   el.classList.toggle('done');
   el.innerHTML = el.classList.contains('done') ? '<i class="ti ti-check" style="font-size:11px;color:#fff;"></i>' : '';
   var label = el.nextElementSibling;
   if (label) label.classList.toggle('done');
-  if (el.classList.contains('done')) showToast('Great job! +5 pts ⭐');
+  var ptsEl = el.parentElement.querySelector('.kv-chore-pts');
+  var pts = ptsEl ? (parseInt(ptsEl.textContent) || 5) : 5;
+  var card = el.closest('.kv-card');
+  if (!card) return;
+  var ptsSpan = card.querySelector('.kv-pts-top span:first-child');
+  var ptsFill = card.querySelector('.kv-pts-fill');
+  var goalSpan = card.querySelector('.kv-pts-top span:last-child');
+  if (ptsSpan) {
+    var m = ptsSpan.textContent.match(/\d+/);
+    var current = m ? parseInt(m[0]) : 0;
+    var newPts = wasDone ? Math.max(0, current - pts) : current + pts;
+    ptsSpan.textContent = '⭐ ' + newPts + ' pts this week';
+    if (ptsFill && goalSpan) {
+      var gm = goalSpan.textContent.match(/\d+/);
+      var goal = gm ? parseInt(gm[0]) : 150;
+      ptsFill.style.width = Math.min(100, Math.round(newPts/goal*100)) + '%';
+    }
+  }
+  if (!wasDone) showToast('Great job! +' + pts + ' pts ⭐');
 }
 
 </script>
