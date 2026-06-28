@@ -1117,7 +1117,7 @@ input,select,textarea{font-family:inherit;}
 /* ── Core ── */
 function doLogin(){showScreen('screen-dashboard');}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function goCalendar(){showToast('Opening calendar…');setTimeout(()=>showToast('Calendar prototype: open kync-calendar.html'),700);}
+function goCalendar(){window.location.href='kync-calendar.html';}
 function showToast(msg){var t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function saveAndToast(id,msg){closeModal(id);setTimeout(()=>showToast(msg),120);}
 
