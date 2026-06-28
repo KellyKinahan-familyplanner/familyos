@@ -1,1 +1,1 @@
-﻿# KYNC
+KYNC Prototype
