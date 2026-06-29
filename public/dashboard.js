@@ -24,6 +24,21 @@ function openModal(id){
   if(el){el.classList.add('open');document.body.style.overflow='hidden';}
   if(id==='modal-reports'){loadReport('month');}
   if(id==='modal-add-bill'){loadBillCategories();}
+  if(id==='modal-invite'){
+    // Always reset to Child mode
+    var childPill=document.querySelector('#modal-invite .role-pill:nth-child(3)');
+    if(childPill){selectInviteRole(childPill,'child');}
+    // Clear name + PIN fields
+    var nameEl=document.getElementById('invite-name');
+    if(nameEl)nameEl.value='';
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(function(pid){
+      var p=document.getElementById(pid);if(p)p.value='';
+    });
+    var btn=document.getElementById('invite-btn');
+    if(btn){btn.disabled=false;btn.textContent='Create child account';}
+    var sub=document.getElementById('invite-sub');
+    if(sub)sub.textContent='Set up a PIN-only account for your child.';
+  }
 }
 function closeModal(id){var el=document.getElementById(id);if(el){el.classList.remove('open');document.body.style.overflow='';}}
 function backdropClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
