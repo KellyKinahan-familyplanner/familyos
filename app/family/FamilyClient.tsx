@@ -126,6 +126,10 @@ input,select,textarea{font-family:inherit;}
 export default function FamilyClient({ displayName, familyName, familySlug, initials, isAdmin, members: initialMembers }: Props) {
   const [members, setMembers]     = useState<FamilyMember[]>(initialMembers)
   const [modal, setModal]         = useState<'add' | null>(null)
+  const [editMember, setEditMember] = useState<FamilyMember | null>(null)
+  const [editName, setEditName]   = useState('')
+  const [editFeedUrl, setEditFeedUrl] = useState('')
+  const [editFeedName, setEditFeedName] = useState('')
   const [tab, setTab]             = useState<'child' | 'adult'>('child')
   const [saving, setSaving]       = useState(false)
   const [toast, setToast]         = useState('')
@@ -298,6 +302,48 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
     }
   }
 
+  const openEdit = (m: FamilyMember) => {
+    setEditMember(m)
+    setEditName(m.display_name)
+    setEditFeedUrl('')
+    setEditFeedName(m.display_name + "'s Calendar")
+  }
+
+  const saveMemberName = async () => {
+    if (!editMember || !editName.trim()) return
+    setSaving(true)
+    const res = await fetch(`/api/members/${editMember.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        display_name: editName.trim(),
+        avatar_initials: editName.trim().split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase(),
+      }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (!res.ok) { showToast(data.error || 'Failed to save'); return }
+    setMembers(prev => prev.map(m => m.id === editMember.id ? { ...m, display_name: data.display_name, avatar_initials: data.avatar_initials } : m))
+    showToast(`${data.display_name} updated ✓`)
+    setEditMember(null)
+  }
+
+  const addPersonalFeed = async () => {
+    if (!editMember || !editFeedUrl.trim()) { showToast('Enter a calendar URL'); return }
+    setSaving(true)
+    const res = await fetch('/api/calendar-feeds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editFeedName.trim() || editMember.display_name + "'s Calendar", url: editFeedUrl.trim(), colour: '#378ADD', member_id: editMember.id }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (!res.ok) { showToast(data.error || 'Failed'); return }
+    setFeeds(f => [...f, data])
+    setEditFeedUrl('')
+    showToast('Calendar feed added ✓')
+  }
+
   const copySlug = () => {
     navigator.clipboard.writeText(familySlug)
     showToast('Family username copied ✓')
@@ -329,13 +375,18 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
             <div className="member-pin"><i className="ti ti-at" style={{ fontSize: 10 }} />{m.invite_email}</div>
           )}
         </div>
-        {isAdmin && m.role !== 'admin' && (
-          <div className="member-actions">
+        <div className="member-actions">
+          {isAdmin && (
+            <button className="member-action-btn" onClick={() => openEdit(m)} title="Edit">
+              <i className="ti ti-pencil" />
+            </button>
+          )}
+          {isAdmin && m.role !== 'admin' && (
             <button className="member-action-btn danger" onClick={() => removeMember(m.id, m.display_name)} title="Remove">
               <i className="ti ti-trash" />
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     )
   }
@@ -605,6 +656,66 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
                 onClick={tab === 'child' ? addChild : inviteAdult}>
                 {saving ? 'Saving…' : tab === 'child' ? 'Add child' : 'Send invite'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit member modal */}
+      {editMember && (
+        <div className="modal-backdrop" onClick={() => setEditMember(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-head">
+              <div>
+                <Image src="/Kync_logo.png" alt="KYNC" width={48} height={18} className="modal-kync-logo" />
+                <div className="modal-title">Edit — {editMember.display_name}</div>
+              </div>
+              <button className="modal-close" onClick={() => setEditMember(null)}><i className="ti ti-x" /></button>
+            </div>
+            <div className="modal-body">
+              <div className="form-row">
+                <label className="form-label">Display name</label>
+                <input className="form-input" autoFocus value={editName} onChange={e => setEditName(e.target.value)}
+                  placeholder={editMember.display_name} />
+              </div>
+              <div className="modal-actions" style={{ padding: '0 0 16px 0', border: 'none', justifyContent: 'flex-start' }}>
+                <button className="modal-btn modal-btn-secondary" onClick={() => setEditMember(null)}>Cancel</button>
+                <button className="modal-btn modal-btn-primary" disabled={saving || !editName.trim()} onClick={saveMemberName}>
+                  {saving ? 'Saving…' : 'Save name'}
+                </button>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border-lt)', paddingTop: 16, marginTop: 4 }}>
+                <div className="section-label" style={{ marginBottom: 10 }}>Personal calendar sync</div>
+                <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12, lineHeight: 1.5 }}>
+                  Paste a personal iCal / Google Calendar URL to sync {editMember.display_name}&apos;s events into KYNC.
+                </p>
+                {feeds.filter(f => f.member_id === editMember.id).map(f => (
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--bg)', borderRadius: 'var(--r-md)', border: '1.5px solid var(--border)', marginBottom: 8 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: f.colour, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{f.last_synced ? `Synced ${new Date(f.last_synced).toLocaleString('en-AU', { dateStyle: 'short', timeStyle: 'short' })}` : 'Never synced'}</div>
+                    </div>
+                    <button onClick={() => syncFeed(f.id)} disabled={feedSyncing} style={{ background: 'var(--green-lt)', border: 'none', color: 'var(--green)', borderRadius: 'var(--r-md)', padding: '6px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                      {feedSyncing ? '…' : '↻ Sync'}
+                    </button>
+                    <button onClick={() => removeFeed(f.id)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 16, padding: 4 }}><i className="ti ti-trash" /></button>
+                  </div>
+                ))}
+                <div className="form-row" style={{ marginBottom: 8 }}>
+                  <label className="form-label">Feed name</label>
+                  <input className="form-input" value={editFeedName} onChange={e => setEditFeedName(e.target.value)} placeholder={`${editMember.display_name}'s Calendar`} />
+                </div>
+                <div className="form-row" style={{ marginBottom: 12 }}>
+                  <label className="form-label">iCal URL</label>
+                  <input className="form-input" value={editFeedUrl} onChange={e => setEditFeedUrl(e.target.value)}
+                    placeholder="https://calendar.google.com/calendar/ical/..." />
+                </div>
+                <button className="modal-btn modal-btn-primary" disabled={saving || !editFeedUrl.trim()} onClick={addPersonalFeed}>
+                  {saving ? 'Adding…' : '+ Connect calendar'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
