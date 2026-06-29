@@ -1550,37 +1550,35 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: 'var(--oj-bg)', color: 'var(--oj-fg)' }}>K1</div>
-              <div><div className="kv-card-title">Today&apos;s chores</div><div className="kv-card-sub">ðŸŒ… Morning Â· {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}</div></div>
+              <div>
+                <div className="kv-card-title">Today&apos;s chores</div>
+                <div className="kv-card-sub" id="kv-date-olivia"></div>
+              </div>
             </div>
-            <div className="kv-chore-row"><div className="kv-chore-check done" onClick={(e) => (window as any).kvToggle(e.currentTarget)}><i className="ti ti-check" style={{ fontSize: 11, color: '#fff' }}></i></div><div className="kv-chore-label done">Make bed</div><div className="kv-chore-pts">+5 pts</div></div>
-            <div className="kv-chore-row"><div className="kv-chore-check done" onClick={(e) => (window as any).kvToggle(e.currentTarget)}><i className="ti ti-check" style={{ fontSize: 11, color: '#fff' }}></i></div><div className="kv-chore-label done">Brush teeth</div><div className="kv-chore-pts">+5 pts</div></div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Pack school bag</div><div className="kv-chore-pts">+5 pts</div></div>
+            <div id="kv-chores-olivia">
+              <div style={{ padding: '16px 0', color: 'var(--text-3)', fontSize: 13, textAlign: 'center' }}>Loading chores…</div>
+            </div>
             <div className="kv-points-bar">
-              <div className="kv-pts-top"><span>â­ 140 pts this week</span><span style={{ color: 'var(--text-3)' }}>Goal: 150 pts</span></div>
-              <div className="kv-pts-track"><div className="kv-pts-fill" style={{ width: '93%', background: 'var(--oj-ac)' }}></div></div>
+              <div className="kv-pts-top"><span id="kv-pts-olivia">0 pts today</span><span style={{ color: 'var(--text-3)' }} id="kv-pts-goal-olivia">Goal: 50 pts</span></div>
+              <div className="kv-pts-track"><div className="kv-pts-fill" id="kv-pts-fill-olivia" style={{ width: '0%', background: 'var(--oj-ac)' }}></div></div>
             </div>
-          </div>
-          <div className="kv-card">
-            <div className="kv-card-head">
-              <div className="kv-card-icon" style={{ background: '#F2F1FD', color: 'var(--fa-ac)' }}><i className="ti ti-books" style={{ fontSize: 16 }}></i></div>
-              <div><div className="kv-card-title">Homework due</div><div className="kv-card-sub">Maths test Thursday Â· 2 days</div></div>
-            </div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Maths revision â€” number patterns</div><div className="kv-chore-pts" style={{ color: 'var(--fa-ac)' }}>ðŸ“š</div></div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Reading log Â· 20 pages</div><div className="kv-chore-pts" style={{ color: 'var(--fa-ac)' }}>ðŸ“š</div></div>
           </div>
         </div>
         <div id="kv-liam" style={{ width: '100%', maxWidth: 480, display: 'none' }}>
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: 'var(--lj-bg)', color: 'var(--lj-fg)' }}>K2</div>
-              <div><div className="kv-card-title">Today&apos;s chores</div><div className="kv-card-sub">ðŸŒ… Morning Â· {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}</div></div>
+              <div>
+                <div className="kv-card-title">Today&apos;s chores</div>
+                <div className="kv-card-sub" id="kv-date-liam"></div>
+              </div>
             </div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Make bed</div><div className="kv-chore-pts">+5 pts</div></div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Brush teeth</div><div className="kv-chore-pts">+5 pts</div></div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Feed the dog</div><div className="kv-chore-pts">+10 pts</div></div>
+            <div id="kv-chores-liam">
+              <div style={{ padding: '16px 0', color: 'var(--text-3)', fontSize: 13, textAlign: 'center' }}>Loading chores…</div>
+            </div>
             <div className="kv-points-bar">
-              <div className="kv-pts-top"><span>â­ 95 pts this week</span><span style={{ color: 'var(--text-3)' }}>Goal: 40 pts</span></div>
-              <div className="kv-pts-track"><div className="kv-pts-fill" style={{ width: '100%', background: 'var(--lj-ac)' }}></div></div>
+              <div className="kv-pts-top"><span id="kv-pts-liam">0 pts today</span><span style={{ color: 'var(--text-3)' }} id="kv-pts-goal-liam">Goal: 50 pts</span></div>
+              <div className="kv-pts-track"><div className="kv-pts-fill" id="kv-pts-fill-liam" style={{ width: '0%', background: 'var(--lj-ac)' }}></div></div>
             </div>
           </div>
         </div>

@@ -567,7 +567,61 @@ function selectDeviceMode(el,mode){
   if(desc)desc.textContent=DEVICE_MODE_DESC[mode]||'';
 }
 
-/* Kids View */
+/* Kids View — load chores from Supabase */
+function loadKidsChores(member){
+  var slotId = member === 'olivia' ? 'kv-chores-olivia' : 'kv-chores-liam';
+  var dateId = member === 'olivia' ? 'kv-date-olivia' : 'kv-date-liam';
+  var ptsId  = member === 'olivia' ? 'kv-pts-olivia' : 'kv-pts-liam';
+  var fillId = member === 'olivia' ? 'kv-pts-fill-olivia' : 'kv-pts-fill-liam';
+
+  // The child label that was used when adding the chore (e.g. "Child 1" or "Child 2")
+  var memberLabel = member === 'olivia' ? 'Child 1' : 'Child 2';
+  var today = new Date().toISOString().slice(0, 10);
+
+  var dateEl = document.getElementById(dateId);
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'long' });
+
+  var slot = document.getElementById(slotId);
+  if (!slot) return;
+  slot.innerHTML = '<div style="padding:16px 0;color:var(--text-3);font-size:13px;text-align:center">Loading chores…</div>';
+
+  fetch('/api/entries').then(function(r){ return r.json(); }).then(function(entries){
+    // Filter: type=chore, recurring OR due today, assigned to this child or Everyone
+    var chores = (entries || []).filter(function(e){
+      if (e.type !== 'chore') return false;
+      var assignees = e.assignees || [];
+      var mine = assignees.some(function(a){ return a === memberLabel || a === 'Everyone'; });
+      if (!mine) return false;
+      // Show if recurring (daily/weekly/monthly) or specifically today
+      return e.recur !== 'none' || e.date === today;
+    });
+
+    if (!chores.length) {
+      slot.innerHTML = '<div style="padding:16px 0;color:var(--text-3);font-size:13px;text-align:center">No chores for today 🎉</div>';
+      return;
+    }
+
+    var html = chores.map(function(c){
+      var pts = c.points || 5;
+      return '<div class="kv-chore-row">'
+        + '<div class="kv-chore-check" onclick="kvToggle(this)"></div>'
+        + '<div class="kv-chore-label">' + c.title + '</div>'
+        + '<div class="kv-chore-pts">+' + pts + ' pts</div>'
+        + '</div>';
+    }).join('');
+    slot.innerHTML = html;
+
+    // Update points display
+    var totalPts = chores.reduce(function(s, c){ return s + (c.points || 5); }, 0);
+    var ptsEl = document.getElementById(ptsId);
+    if (ptsEl) ptsEl.textContent = '0 / ' + totalPts + ' pts today';
+    var fillEl = document.getElementById(fillId);
+    if (fillEl) fillEl.style.width = '0%';
+  }).catch(function(){
+    if (slot) slot.innerHTML = '<div style="padding:16px 0;color:var(--text-3);font-size:13px;text-align:center">Could not load chores</div>';
+  });
+}
+
 function openKidsView(member){
   var overlay=document.getElementById('kids-view-overlay');
   if(!overlay)return;
@@ -585,6 +639,7 @@ function openKidsView(member){
   if(tabs[idx]){tabs[idx].classList.add('sel');tabs[idx].style.background=tabColors[member][0];tabs[idx].style.color=tabColors[member][1];tabs[idx].style.borderColor=tabColors[member][0];}
   overlay.classList.add('active');
   document.body.style.overflow='hidden';
+  loadKidsChores(member);
 }
 function closeKidsView(){
   var overlay=document.getElementById('kids-view-overlay');
@@ -596,7 +651,9 @@ function kvToggle(el){
   el.innerHTML=el.classList.contains('done')?'<i class="ti ti-check" style="font-size:11px;color:#fff;"></i>':'';
   var label=el.nextElementSibling;
   if(label)label.classList.toggle('done');
-  if(el.classList.contains('done'))showToast('Great job! +5 pts');
+  var ptsEl=el.parentElement.querySelector('.kv-chore-pts');
+  var pts=ptsEl?parseInt(ptsEl.textContent)||5:5;
+  if(el.classList.contains('done'))showToast('Great job! +'+pts+' pts');
 }
 
 /* Bedtime settings save */
