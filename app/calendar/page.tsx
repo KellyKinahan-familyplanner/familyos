@@ -2,6 +2,8 @@ import { createServerSideClient } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
 import CalendarClient from './CalendarClient'
 
+export const dynamic = 'force-dynamic'
+
 const MEMBER_COLOURS = [
   { bg: '#E8F7F2', fg: '#1D9E75' },
   { bg: '#FFF3E0', fg: '#F57C00' },

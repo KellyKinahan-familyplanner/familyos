@@ -2,6 +2,8 @@ import { createServerSideClient } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
 import DashboardClient from './DashboardClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createServerSideClient()
   const { data: { user } } = await supabase.auth.getUser()
