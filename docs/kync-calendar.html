@@ -638,6 +638,7 @@ input,select{font-family:inherit;}
   <div class="fab-menu" id="fab-menu">
     <div class="fopt" onclick="closeFab();openCalModal('modal-cal-event')"><i class="ti ti-calendar-plus"></i>Add event</div>
     <div class="fopt" onclick="closeFab();openCalModal('modal-cal-task')"><i class="ti ti-circle-plus"></i>Add task</div>
+    <div class="fopt" onclick="closeFab();openCalModal('modal-cal-chore')"><i class="ti ti-sparkles"></i>Add chore</div>
     <div class="fopt" onclick="closeFab();openCalModal('modal-cal-exam')"><i class="ti ti-notes"></i>Add exam</div>
     <div class="fopt" onclick="closeFab();openCalModal('modal-cal-revision')"><i class="ti ti-books"></i>Add revision</div>
     <div class="fopt" onclick="closeFab();openCalModal('modal-cal-scan')"><i class="ti ti-scan"></i>Scan document</div>
@@ -768,6 +769,71 @@ var curView='week', curUser='all', dockOpen=false, mobileDay=6;
 
 
 function showToast(msg){var t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+
+
+function showEvent(ev){
+  var wm=WHO[ev.cls]||['?','#E8E4DF','#1A1714'];
+  var ac=ACCENT[ev.cls]||'#ccc';
+  var typeLabel={event:'Event',task:'Task',revision:'Revision',exam:'Exam',chore:'Chore',homework:'Homework',bill:'Bill'};
+  var whoNames={'ev-sj':'Sarah','ev-mj':'Mark','ev-oj':'Olivia','ev-lj':'Liam','ev-fam':'Everyone','ev-revision':'Olivia'};
+  var who=whoNames[ev.cls]||wm[0];
+  var isRev=ev.type==='revision';
+  var body=document.getElementById('ev-sheet-body');
+  body.innerHTML=
+    '<div class="sheet-handle" style="background:'+ac+';width:36px;height:4px;border-radius:2px;margin:10px auto 0;"></div>'+
+    '<div class="sheet-inner" style="padding:0 20px 24px;">'+
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0 12px;border-bottom:1px solid var(--border-lt);">'+
+        '<div>'+
+          '<div style="font-size:18px;font-weight:800;color:var(--text-1);line-height:1.2;">'+(isRev?'📚 ':'')+ev.n+'</div>'+
+          '<div style="display:flex;align-items:center;gap:5px;margin-top:4px;">'+
+            '<div style="width:18px;height:18px;border-radius:5px;background:'+ac+'22;display:inline-flex;align-items:center;justify-content:center;"><i class="ti '+(EV_ICON[ev.type]||EV_ICON['event']).ic+'" style="color:'+ac+';font-size:11px;"></i></div>'+
+            '<span style="font-size:12px;color:var(--text-3);">'+(typeLabel[ev.type]||'Event')+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<button onclick="closeMobileSheet(\'ev-sheet\')" style="width:28px;height:28px;border-radius:50%;background:var(--border-lt);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text-2);flex-shrink:0;"><i class="ti ti-x"></i></button>'+
+      '</div>'+
+      '<div style="margin-top:16px;display:flex;flex-direction:column;gap:14px;">'+
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div style="width:32px;height:32px;border-radius:8px;background:'+ac+'22;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-clock" style="color:'+ac+';font-size:15px;"></i></div>'+
+          '<div><div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Date &amp; time</div>'+
+          '<div style="font-size:14px;color:var(--text-1);">'+(ev.sub||ev.time||'')+'</div>'+
+          (ev.s&&ev.e&&ev.s!=='All day'?'<div style="font-size:12px;color:var(--text-3);">'+ev.s+' – '+ev.e+'</div>':'')+
+          '</div>'+
+        '</div>'+
+        (ev.loc?
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div style="width:32px;height:32px;border-radius:8px;background:'+ac+'22;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-map-pin" style="color:'+ac+';font-size:15px;"></i></div>'+
+          '<div><div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Location</div>'+
+          '<div style="font-size:14px;color:var(--text-1);">'+ev.loc+'</div></div>'+
+        '</div>':'')+
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div style="width:32px;height:32px;border-radius:8px;background:'+wm[1]+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800;color:'+wm[2]+'">'+wm[0]+'</div>'+
+          '<div><div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Assigned to</div>'+
+          '<div style="font-size:14px;color:var(--text-1);">'+who+'</div></div>'+
+        '</div>'+
+        (isRev&&ev.exam?
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div style="width:32px;height:32px;border-radius:8px;background:#E9E6FC;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-notes" style="color:#7F77DD;font-size:15px;"></i></div>'+
+          '<div><div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Linked exam</div>'+
+          '<div style="font-size:14px;color:var(--text-1);">'+ev.exam+'</div>'+
+          '<div style="font-size:12px;color:var(--text-3);">'+ev.examDate+'</div></div>'+
+        '</div>':'')+
+        (ev.notes?
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div style="width:32px;height:32px;border-radius:8px;background:'+ac+'22;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-notes" style="color:'+ac+';font-size:15px;"></i></div>'+
+          '<div><div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;">Notes</div>'+
+          '<div style="font-size:14px;color:var(--text-1);line-height:1.5;">'+ev.notes+'</div></div>'+
+        '</div>':'')+
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div style="width:32px;height:32px;border-radius:8px;background:var(--border-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-paperclip" style="color:var(--text-2);font-size:15px;"></i></div>'+
+          '<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Photos &amp; files</div>'+
+          buildAttachSection(ev.n)+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('ev-sheet').classList.add('open');
+}
 
 
 function renderPills(){
@@ -1004,8 +1070,26 @@ function closeFab(){
   if(fi)fi.classList.remove('open');
 }
 function selectRole(el){
-  el.parentElement.querySelectorAll('.role-pill').forEach(function(p){p.classList.remove('sel');});
-  el.classList.add('sel');
+  var parent=el.parentElement;
+  if(parent.dataset.multi==='true'){
+    // Multi-select: toggle clicked pill
+    if(el.dataset.everyone==='true'){
+      // "Everyone" toggles all on or clears all
+      var allSel=el.classList.contains('sel');
+      parent.querySelectorAll('.role-pill').forEach(function(p){p.classList.toggle('sel',!allSel);});
+    } else {
+      el.classList.toggle('sel');
+      // If all individuals are selected, also select Everyone; if any deselected, deselect Everyone
+      var everyone=parent.querySelector('[data-everyone="true"]');
+      if(everyone){
+        var individuals=Array.from(parent.querySelectorAll('.role-pill:not([data-everyone])'));
+        everyone.classList.toggle('sel',individuals.every(function(p){return p.classList.contains('sel');}));
+      }
+    }
+  } else {
+    parent.querySelectorAll('.role-pill').forEach(function(p){p.classList.remove('sel');});
+    el.classList.add('sel');
+  }
 }
 
 </script>
@@ -1019,12 +1103,12 @@ function selectRole(el){
       <div class="modal-field"><label>Date</label><input type="date"></div>
       <div class="modal-field"><label>Time</label><div style="display:flex;gap:8px;"><input type="time" style="flex:1;"><input type="time" style="flex:1;"></div></div>
       <div class="modal-field"><label>Location</label><input type="text" placeholder="Optional"></div>
-      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+      <div class="modal-field"><label>Assign to</label><div class="role-pills" data-multi="true">
   <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
-  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+  <div class="role-pill" data-everyone="true" onclick="selectRole(this)">Everyone</div>
 </div></div>
       <div class="modal-field"><label>Repeat</label><select><option>Does not repeat</option><option>Daily</option><option>Weekly</option><option>Fortnightly</option><option>Monthly</option></select></div>
       <div class="modal-field"><label>Notes</label><textarea rows="2" placeholder="Optional"></textarea></div>
@@ -1040,12 +1124,12 @@ function selectRole(el){
       <div class="modal-field"><label>Task</label><input type="text" placeholder="e.g. Book car service"></div>
       <div class="modal-field"><label>Due date</label><input type="date"></div>
       <div class="modal-field"><label>Priority</label><div class="role-pills"><div class="role-pill" onclick="selectRole(this)">&#128308; High</div><div class="role-pill sel" onclick="selectRole(this)">&#128993; Medium</div><div class="role-pill" onclick="selectRole(this)">&#128994; Low</div></div></div>
-      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+      <div class="modal-field"><label>Assign to</label><div class="role-pills" data-multi="true">
   <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
-  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+  <div class="role-pill" data-everyone="true" onclick="selectRole(this)">Everyone</div>
 </div></div>
       <div class="modal-field"><label>Notes</label><textarea rows="2" placeholder="Optional"></textarea></div>
       <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-task')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-task');showToast('Task added!')">Add task</button></div>
@@ -1061,12 +1145,12 @@ function selectRole(el){
       <div class="modal-field"><label>Exam date</label><input type="date"></div>
       <div class="modal-field"><label>Exam time</label><input type="time"></div>
       <div class="modal-field"><label>Location / Room</label><input type="text" placeholder="e.g. Hall B"></div>
-      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+      <div class="modal-field"><label>Assign to</label><div class="role-pills" data-multi="true">
   <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
-  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+  <div class="role-pill" data-everyone="true" onclick="selectRole(this)">Everyone</div>
 </div></div>
       <div class="modal-field"><label>Add revision sessions</label>
         <div style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.5;">KYNC will add revision blocks to the calendar before your exam date.</div>
@@ -1087,14 +1171,36 @@ function selectRole(el){
       <div class="modal-field"><label>Date</label><input type="date"></div>
       <div class="modal-field"><label>Time</label><div style="display:flex;gap:8px;"><input type="time" style="flex:1;"><input type="time" style="flex:1;"></div></div>
       <div class="modal-field"><label>Topics to cover</label><textarea rows="2" placeholder="e.g. Chapter 3, essay structure..."></textarea></div>
-      <div class="modal-field"><label>Assign to</label><div class="role-pills">
+      <div class="modal-field"><label>Assign to</label><div class="role-pills" data-multi="true">
   <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
   <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
-  <div class="role-pill" onclick="selectRole(this)">Everyone</div>
+  <div class="role-pill" data-everyone="true" onclick="selectRole(this)">Everyone</div>
 </div></div>
       <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-revision')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-revision');showToast('Revision session added!')">Add session</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="cal-modal-backdrop" id="modal-cal-chore" onclick="if(event.target===this)closeCalModal('modal-cal-chore')">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-head"><div><div class="modal-title">Add chore</div></div><button class="modal-close" onclick="closeCalModal('modal-cal-chore')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Chore</label><input type="text" placeholder="e.g. Vacuum living room"></div>
+      <div class="modal-field"><label>Due date</label><input type="date"></div>
+      <div class="modal-field"><label>Time</label><input type="time"></div>
+      <div class="modal-field"><label>Assign to</label><div class="role-pills" data-multi="true">
+        <div class="role-pill sel" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sj-ac);margin-right:4px;vertical-align:middle;"></span>Sarah</div>
+        <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mj-ac);margin-right:4px;vertical-align:middle;"></span>Mark</div>
+        <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--oj-ac);margin-right:4px;vertical-align:middle;"></span>Olivia</div>
+        <div class="role-pill" onclick="selectRole(this)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lj-ac);margin-right:4px;vertical-align:middle;"></span>Liam</div>
+        <div class="role-pill" data-everyone="true" onclick="selectRole(this)">Everyone</div>
+      </div></div>
+      <div class="modal-field"><label>Repeat</label><select><option>Does not repeat</option><option>Daily</option><option>Weekly</option><option>Fortnightly</option><option>Monthly</option></select></div>
+      <div class="modal-field"><label>Points</label><div class="role-pills"><div class="role-pill" onclick="selectRole(this)">⭐ 5 pts</div><div class="role-pill sel" onclick="selectRole(this)">⭐ 10 pts</div><div class="role-pill" onclick="selectRole(this)">⭐ 20 pts</div><div class="role-pill" onclick="selectRole(this)">⭐ 50 pts</div></div></div>
+      <div class="modal-field"><label>Notes</label><textarea rows="2" placeholder="Optional"></textarea></div>
+      <div class="modal-actions"><button class="modal-btn modal-btn-secondary" onclick="closeCalModal('modal-cal-chore')">Cancel</button><button class="modal-btn modal-btn-primary" onclick="closeCalModal('modal-cal-chore');showToast('Chore added!')">Add chore</button></div>
     </div>
   </div>
 </div>

@@ -1,201 +1,124 @@
-'use client'
+import { createServerSideClient } from '@/lib/supabase'
+import { redirect } from 'next/navigation'
+import { LogoutButton } from './logout-button'
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+export default async function DashboardPage() {
+  const supabase = await createServerSideClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
-  const supabase = createClient()
-
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
-    }
-
-    router.push('/dashboard')
-    router.refresh()
+  if (!user) {
+    redirect('/login')
   }
 
-  async function handleSignUp(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+  const { data: member } = await supabase
+    .from('family_members')
+    .select('display_name, role')
+    .eq('user_id', user.id)
+    .maybeSingle()
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
-    }
-
-    // Since email confirmation is off for testing, log straight in
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (loginError) {
-      setError('Account created — please sign in.')
-      setLoading(false)
-      return
-    }
-
-    router.push('/dashboard')
-    router.refresh()
+  if (!member) {
+    redirect('/onboarding')
   }
+
+  const { data: family } = member
+    ? await supabase
+        .from('families')
+        .select('name')
+        .eq('id', (
+          await supabase
+            .from('family_members')
+            .select('family_id')
+            .eq('user_id', user.id)
+            .maybeSingle()
+        ).data?.family_id)
+        .maybeSingle()
+    : { data: null }
+
+  const displayName = member?.display_name ?? user.email ?? 'there'
+  const familyName = family?.name ?? null
+
+  const sections = [
+    { icon: '📅', label: 'Calendar', href: '/calendar', desc: 'Family events & schedule' },
+    { icon: '✅', label: 'Tasks', href: '/tasks', desc: 'Chores & to-dos' },
+    { icon: '💰', label: 'Bills', href: '/bills', desc: 'Track your expenses' },
+    { icon: '⭐', label: 'Kids', href: '/kids', desc: 'Points & rewards' },
+    { icon: '👨‍👩‍👧‍👦', label: 'Family', href: '/family', desc: 'Members & settings' },
+  ]
 
   return (
     <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', padding: '24px',
-      background: '#F7F5F2', fontFamily: 'Inter, sans-serif'
+      minHeight: '100vh', background: '#F7F5F2',
+      fontFamily: "'Inter', sans-serif", padding: '0',
     }}>
-      <div style={{
-        background: '#fff', border: '1px solid #E8E4DF',
-        borderRadius: '28px', padding: '44px 40px',
-        width: '100%', maxWidth: '420px',
-        boxShadow: '0 8px 40px rgba(0,0,0,.07)'
+      {/* Header */}
+      <header style={{
+        background: '#1A1714', color: '#fff',
+        padding: '16px 24px', display: 'flex',
+        alignItems: 'center', justifyContent: 'space-between',
       }}>
-
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-          <div style={{
-            width: '44px', height: '44px', borderRadius: '12px',
-            background: '#1A1714', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <span style={{ color: '#fff', fontSize: '22px' }}>🏠</span>
-          </div>
-          <div style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.03em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '22px' }}>🏠</span>
+          <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.03em' }}>
             KY<span style={{ color: '#1D9E75' }}>NC</span>
+          </span>
+          {familyName && (
+            <span style={{ fontSize: '13px', color: '#A09893', marginLeft: '6px' }}>
+              · {familyName}
+            </span>
+          )}
+        </div>
+        <LogoutButton />
+      </header>
+
+      {/* Main content */}
+      <main style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 24px' }}>
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ fontSize: '26px', fontWeight: 800, letterSpacing: '-0.03em', color: '#1A1714', marginBottom: '6px' }}>
+            Welcome back, {displayName.split(' ')[0]}! 👋
+          </div>
+          <div style={{ fontSize: '14px', color: '#6B6561' }}>
+            {new Date().toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
 
-        <div style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px' }}>
-          Welcome back
-        </div>
-        <div style={{ fontSize: '14px', color: '#6B6561', marginBottom: '28px', lineHeight: 1.5 }}>
-          Sign in to manage your family&apos;s calendar, tasks, and more.
-        </div>
-
-        {/* Error message */}
-        {error && (
-          <div style={{
-            background: '#FEF0F0', border: '1px solid #F09595',
-            borderRadius: '10px', padding: '10px 14px',
-            fontSize: '13px', color: '#A32D2D', marginBottom: '16px'
-          }}>
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin}>
-          {/* Email */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'block', fontSize: '12px', fontWeight: 600,
-              color: '#6B6561', marginBottom: '6px', letterSpacing: '0.02em'
-            }}>
-              Email address
-            </label>
-            <input
-              type="email"
-              placeholder="sarah@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{
-                width: '100%', padding: '11px 14px',
-                border: '1.5px solid #E8E4DF', borderRadius: '12px',
-                fontSize: '14px', color: '#1A1714', background: '#F7F5F2',
-                outline: 'none', boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* Password */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block', fontSize: '12px', fontWeight: 600,
-              color: '#6B6561', marginBottom: '6px', letterSpacing: '0.02em'
-            }}>
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: '100%', padding: '11px 14px',
-                border: '1.5px solid #E8E4DF', borderRadius: '12px',
-                fontSize: '14px', color: '#1A1714', background: '#F7F5F2',
-                outline: 'none', boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* Sign in button */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%', padding: '13px',
-              borderRadius: '12px', background: loading ? '#6B6561' : '#1A1714',
-              color: '#fff', fontSize: '14px', fontWeight: 700,
-              border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-              marginBottom: '12px'
-            }}
-          >
-            {loading ? 'Signing in…' : 'Sign in'}
-          </button>
-
-          {/* Sign up button */}
-          <button
-            type="button"
-            onClick={handleSignUp}
-            disabled={loading}
-            style={{
-              width: '100%', padding: '11px',
-              borderRadius: '12px', border: '1.5px solid #E8E4DF',
-              background: '#fff', fontSize: '13px', fontWeight: 600,
-              color: '#6B6561', cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            Create a new family account
-          </button>
-        </form>
-
+        {/* Quick links grid */}
         <div style={{
-          textAlign: 'center', marginTop: '24px',
-          fontSize: '12px', color: '#A09893'
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: '16px', marginBottom: '32px',
         }}>
-          By signing in you agree to KYNC&apos;s terms of service.
+          {sections.map(s => (
+            <a
+              key={s.href}
+              href={s.href}
+              style={{
+                background: '#fff', border: '1px solid #E8E4DF',
+                borderRadius: '18px', padding: '20px',
+                textDecoration: 'none', color: 'inherit',
+                display: 'block', boxShadow: '0 2px 12px rgba(0,0,0,.04)',
+                transition: 'box-shadow .15s',
+              }}
+            >
+              <div style={{ fontSize: '28px', marginBottom: '10px' }}>{s.icon}</div>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#1A1714', marginBottom: '3px' }}>{s.label}</div>
+              <div style={{ fontSize: '12px', color: '#A09893' }}>{s.desc}</div>
+            </a>
+          ))}
         </div>
-      </div>
+
+        {/* Coming soon notice */}
+        <div style={{
+          background: '#fff', border: '1.5px solid #E8E4DF',
+          borderRadius: '18px', padding: '24px',
+          textAlign: 'center', color: '#A09893', fontSize: '13px',
+        }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px' }}>🧙✨</div>
+          <div style={{ fontWeight: 700, color: '#6B6561', fontSize: '15px', marginBottom: '6px' }}>
+            Your family hub is being set up!
+          </div>
+          More features are on the way. Your data is safe and your account is ready.
+        </div>
+      </main>
     </div>
   )
 }
