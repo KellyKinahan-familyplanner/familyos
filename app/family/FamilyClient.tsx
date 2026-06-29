@@ -92,12 +92,14 @@ input,select,textarea{font-family:inherit;}
 .modal-tab.active{background:var(--text-1);color:#fff;}
 .form-row{margin-bottom:14px;}
 .form-label{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;display:block;}
-.form-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:13px;color:var(--text-1);outline:none;transition:border .15s;background:var(--surface);}
-.form-input:focus{border-color:var(--green);}
+.form-input{width:100%;padding:14px;min-height:52px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:15px;color:var(--text-1);outline:none;transition:border .15s;background:var(--surface);}
+.form-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
 .form-hint{font-size:11px;color:var(--text-3);margin-top:4px;}
-.pin-inputs{display:flex;gap:10px;justify-content:center;margin-top:6px;}
-.pin-input{width:52px;height:60px;border:2px solid var(--border);border-radius:var(--r-md);font-size:24px;font-weight:700;text-align:center;outline:none;background:var(--surface);color:var(--text-1);transition:border .15s;}
-.pin-input:focus{border-color:var(--green);}
+.pin-inputs{display:flex;gap:12px;justify-content:center;margin-top:6px;}
+.pin-input{width:64px;height:72px;border:2px solid var(--border);border-radius:var(--r-md);font-size:28px;font-weight:700;text-align:center;outline:none;background:var(--surface);color:var(--text-1);transition:border .15s;font-size:16px !important;}
+.pin-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
+/* Override global font-size rule for PIN display — show large digit visually */
+.pin-input{font-size:28px !important;}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;padding:16px 20px;border-top:1px solid var(--border-lt);}
 .modal-btn{padding:9px 20px;border-radius:var(--r-md);font-size:13px;font-weight:600;transition:all .15s;}
 .modal-btn-secondary{background:var(--bg);color:var(--text-2);}

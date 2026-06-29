@@ -156,8 +156,9 @@ input,select,textarea{font-family:inherit;}
 .modal-kync-logo{height:18px;display:block;margin-bottom:10px;opacity:.9;}
 .form-row{margin-bottom:14px;}
 .form-label{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;display:block;}
-.form-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:13px;color:var(--text-1);outline:none;transition:border .15s;background:var(--surface);}
-.form-input:focus{border-color:var(--green);}
+.form-input{width:100%;padding:14px;min-height:52px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:15px;color:var(--text-1);outline:none;transition:border .15s;background:var(--surface);}
+.form-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
+textarea.form-input{min-height:80px;}
 .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .role-pills{display:flex;gap:6px;flex-wrap:wrap;}
 .role-pill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s;}
@@ -526,7 +527,7 @@ export default function TasksClient({ displayName, familyName, initials, familyM
             {type === 'chore' && (
               <div className="form-row">
                 <label className="form-label">Points reward</label>
-                <input className="form-input" type="number" min="0" max="100" value={fPoints}
+                <input className="form-input" type="number" inputMode="numeric" min="0" max="100" value={fPoints}
                   onChange={e => setFPoints(e.target.value)} />
               </div>
             )}

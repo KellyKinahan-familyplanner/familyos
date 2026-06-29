@@ -131,7 +131,8 @@ input,select,textarea{font-family:inherit;}
 .modal-body{padding:0 24px 24px;}
 .modal-field{margin-bottom:14px;}
 .modal-field label{display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:6px;letter-spacing:.02em;}
-.modal-field input,.modal-field select,.modal-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:14px;color:var(--text-1);background:var(--bg);outline:none;transition:border-color .15s;}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;padding:14px;min-height:52px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:16px;color:var(--text-1);background:var(--bg);outline:none;transition:border-color .15s;}
+.modal-field textarea{min-height:80px;}
 .modal-field textarea{resize:vertical;min-height:80px;line-height:1.5;}
 .modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
 .modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}

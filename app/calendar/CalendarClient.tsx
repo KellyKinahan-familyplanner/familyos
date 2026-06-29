@@ -204,17 +204,18 @@ html,body{height:100%;overflow:hidden;}
 .modal-body{padding:14px 16px;}
 .modal-field{margin-bottom:14px;}
 .modal-field label{font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px;}
-.modal-field input[type=text],.modal-field input[type=date],.modal-field input[type=time],.modal-field input[type=number],.modal-field select,.modal-field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);outline:none;font-family:inherit;color:var(--text-1);transition:border-color .15s;}
-.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--green);}
+.modal-field input[type=text],.modal-field input[type=date],.modal-field input[type=time],.modal-field input[type=number],.modal-field select,.modal-field textarea{width:100%;padding:14px;min-height:52px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:16px;background:var(--bg);outline:none;font-family:inherit;color:var(--text-1);transition:border-color .15s;}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
+.modal-field textarea{min-height:80px;}
 .modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
-.modal-btn{padding:12px;border-radius:var(--r-lg);font-size:14px;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
+.modal-btn{padding:14px 20px;min-height:52px;border-radius:var(--r-lg);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
 .modal-btn-secondary{background:var(--bg);color:var(--text-1);}
 .modal-btn-primary{background:var(--text-1);color:#fff;}
 .modal-btn-primary:hover{background:#333;}
 .modal-kync-logo{height:18px;display:block;margin-bottom:10px;opacity:.9;}
 .role-pills{display:flex;flex-wrap:wrap;gap:6px;}
-.role-pill{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s;user-select:none;}
+.role-pill{padding:10px 16px;min-height:44px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s;user-select:none;display:inline-flex;align-items:center;}
 .role-pill.sel{background:var(--text-1);color:#fff;border-color:var(--text-1);}
 .colour-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 .colour-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .15s;}
@@ -834,7 +835,7 @@ function RecurPicker({
             <div className={`role-pill${monthType === 'day' ? ' sel' : ''}`} onClick={() => setMonthType('day')}>📆 Day (e.g. last Saturday)</div>
           </div>
           {monthType === 'date' ? (
-            <input type="number" min={1} max={31} value={monthDate}
+            <input type="number" inputMode="numeric" min={1} max={31} value={monthDate}
               onChange={e => setMonthDate(Number(e.target.value))}
               placeholder="Day of month (e.g. 15)"
               style={{ width:'100%', padding:'9px 12px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:13, background:'var(--bg)', outline:'none' }} />
@@ -867,9 +868,9 @@ function RecurPicker({
           )}
           {recurEnd === 'after' && (
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <input type="number" min={1} max={999} value={recurEndCount}
+              <input type="number" inputMode="numeric" min={1} max={999} value={recurEndCount}
                 onChange={e => setRecurEndCount(Number(e.target.value))}
-                style={{ width:90, padding:'9px 12px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:13, background:'var(--bg)', outline:'none' }} />
+                style={{ width:90, padding:'14px 12px', minHeight:52, border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:16, background:'var(--bg)', outline:'none' }} />
               <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences then stops</span>
             </div>
           )}
