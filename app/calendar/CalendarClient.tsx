@@ -41,6 +41,7 @@ type Props = {
   familyName: string
   initials: string
   userEmail: string
+  familyMembers?: Member[]
 }
 
 /* ─────────────────────────────────────────
@@ -954,18 +955,23 @@ function ScanPanel({ members, onSaved }: { members: Member[]; onSaved: (ev: CalE
 /* ─────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────── */
-export default function CalendarClient({ displayName, familyName, initials, userEmail }: Props) {
+export default function CalendarClient({ displayName, familyName, initials, userEmail, familyMembers }: Props) {
   const firstName = displayName.split(' ')[0]
   const today = new Date()
 
-  /* ── Members list ── */
-  const MEMBERS: Member[] = [
-    { id: 'all',    name: 'All',    initials: '★',     colour: 'sj', bg: '#1A1714', fg: '#fff' },
-    { id: 'admin',  name: firstName, initials,         colour: 'sj', bg: '#E8F7F2', fg: '#1D9E75' },
-    { id: 'partner',name: 'Partner', initials: 'P',    colour: 'oj', bg: '#FFF3E0', fg: '#F57C00' },
-    { id: 'child1', name: 'Child 1', initials: 'C1',   colour: 'lj', bg: '#E3F2FD', fg: '#1976D2' },
-    { id: 'child2', name: 'Child 2', initials: 'C2',   colour: 'fa', bg: '#F3F0FF', fg: '#7F77DD' },
-  ]
+  /* ── Members list — real from Supabase, fallback to placeholders ── */
+  const MEMBERS: Member[] = familyMembers && familyMembers.length > 0
+    ? [
+        { id: 'all', name: 'All', initials: '★', colour: 'all', bg: '#1A1714', fg: '#fff' },
+        ...familyMembers,
+      ]
+    : [
+        { id: 'all',    name: 'All',     initials: '★',  colour: 'sj', bg: '#1A1714', fg: '#fff' },
+        { id: 'admin',  name: firstName, initials,        colour: 'sj', bg: '#E8F7F2', fg: '#1D9E75' },
+        { id: 'partner',name: 'Partner', initials: 'P',   colour: 'oj', bg: '#FFF3E0', fg: '#F57C00' },
+        { id: 'child1', name: 'Child 1', initials: 'C1',  colour: 'lj', bg: '#E3F2FD', fg: '#1976D2' },
+        { id: 'child2', name: 'Child 2', initials: 'C2',  colour: 'fa', bg: '#F3F0FF', fg: '#7F77DD' },
+      ]
 
   /* ── State ── */
   const [year, setYear]         = useState(today.getFullYear())
