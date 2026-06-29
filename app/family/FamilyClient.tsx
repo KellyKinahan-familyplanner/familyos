@@ -109,7 +109,16 @@ input,select,textarea{font-family:inherit;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .empty-state{text-align:center;padding:32px;color:var(--text-3);}
 .empty-state i{font-size:28px;display:block;margin-bottom:8px;}
-@media(max-width:580px){.member-grid{grid-template-columns:1fr;}}
+@media(max-width:580px){
+  .member-grid{grid-template-columns:1fr;}
+  .topbar{padding:0 14px;}
+  .tb-nav{display:none;}
+  .page{padding:20px 14px 100px;}
+  .page-header{flex-direction:column;align-items:flex-start;}
+  .add-btn{width:100%;}
+  .member-card{padding:14px;}
+  .family-info-row{flex-direction:column;align-items:flex-start;gap:4px;}
+}
 `
 
 export default function FamilyClient({ displayName, familyName, familySlug, initials, isAdmin, members: initialMembers }: Props) {

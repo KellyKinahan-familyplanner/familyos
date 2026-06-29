@@ -190,7 +190,19 @@ input,select,textarea{font-family:inherit;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;text-align:center;}
 .stat-num{font-size:24px;font-weight:800;color:var(--text-1);}
 .stat-label{font-size:11px;color:var(--text-3);margin-top:2px;}
-@media(max-width:600px){.stats-strip{grid-template-columns:repeat(2,1fr);}.filter-bar{gap:6px;}}
+@media(max-width:600px){
+  .stats-strip{grid-template-columns:repeat(2,1fr);}
+  .filter-bar{gap:6px;}
+  .task-card{padding:12px 14px;gap:10px;}
+  .task-check{width:24px;height:24px;flex-shrink:0;}
+  .task-btn{width:36px;height:36px;}
+  .filter-pill{padding:7px 12px;font-size:12px;}
+  .member-pill-filter{width:36px;height:36px;}
+  .fab{bottom:calc(76px + env(safe-area-inset-bottom));right:16px;}
+  .topbar{padding:0 14px;}
+  .tb-nav{display:none;}
+  .page{padding:20px 14px 100px;}
+}
 `
 
 /* ─── Helpers ────────────────────────────────────────────────── */

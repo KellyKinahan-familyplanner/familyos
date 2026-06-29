@@ -242,6 +242,27 @@ html,body{height:100%;overflow:hidden;}
 .priority-item-meta{font-size:10px;opacity:.75;}
 .priority-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;letter-spacing:.04em;flex-shrink:0;}
 
+/* ── Mobile touch improvements ── */
+@media(max-width:640px){
+  .cal-topbar{padding:0 12px;}
+  .cal-topbar-right{gap:4px;}
+  .member-bar{padding:8px 12px;gap:6px;}
+  .cal-toolbar{padding:8px 12px;gap:6px;}
+  .view-btn{padding:6px 10px;font-size:12px;}
+  .cal-nav-btn{min-width:44px;min-height:44px;}
+  .cal-today-btn{min-height:44px;padding:0 12px;}
+  .cal-month-label{font-size:13px;min-width:120px;}
+  .cal-month-cell{min-height:64px;padding:4px;}
+  .cal-month-chip{font-size:10px;padding:2px 4px;}
+  .cal-month-day-num{font-size:11px;width:22px;height:22px;}
+  .cal-fab{bottom:calc(72px + env(safe-area-inset-bottom));right:16px;}
+  .cal-fab-btn{width:52px;height:52px;}
+  .member-avatar{width:32px;height:32px;font-size:10px;}
+  .cal-time-slot{font-size:10px;width:38px;padding-right:4px;}
+  .cal-hour-row{min-height:44px;}
+  .modal{border-radius:20px 20px 0 0;max-height:95vh;}
+}
+
 /* ── Print / export ── */
 @media print{
   .cal-topbar,.member-bar,.cal-toolbar,.cal-legend,.cal-fab,.modal-backdrop,.toast,.cal-sidebar{display:none!important;}
@@ -590,8 +611,25 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
   onSlotClick: (dateStr: string, hour: number) => void
   onEventClick: (ev: CalEvent, e: React.MouseEvent) => void
 }) {
-  const today = new Date()
-  const weekDays = getWeekDays(refDate)
+  const today    = new Date()
+  const allDays  = getWeekDays(refDate)
+  // On mobile show 3 days centred on refDate; on desktop show all 7
+  const [cols, setCols] = useState(7)
+  useEffect(() => {
+    const update = () => setCols(window.innerWidth < 640 ? 3 : 7)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  const weekDays = cols === 3
+    ? (() => {
+        const idx = allDays.findIndex(d => d.toDateString() === refDate.toDateString())
+        const centre = idx >= 0 ? idx : 0
+        const start  = Math.max(0, Math.min(centre - 1, allDays.length - 3))
+        return allDays.slice(start, start + 3)
+      })()
+    : allDays
 
   return (
     <div className="cal-week-grid">
@@ -601,8 +639,7 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
           <div key={h} className="cal-time-slot">{fmtHour(h)}</div>
         ))}
       </div>
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', overflow: 'hidden' }}>
-        {/* Headers */}
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${weekDays.length},1fr)`, overflow: 'hidden' }}>
         {weekDays.map((d, i) => {
           const isToday = d.toDateString() === today.toDateString()
           return (
@@ -612,7 +649,6 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
             </div>
           )
         })}
-        {/* Hour slots for each day */}
         {weekDays.map((d, dayIdx) => {
           const dateStr = d.toISOString().slice(0, 10)
           return (
@@ -1292,7 +1328,23 @@ export default function CalendarClient({ displayName, familyName, initials, user
 
       {/* ── Content: calendar + sidebar ── */}
       <div className="cal-content">
-        <div className="cal-main">
+        <div
+          className="cal-main"
+          onTouchStart={e => {
+            const t = e.touches[0]
+            ;(e.currentTarget as HTMLElement).dataset.touchX = String(t.clientX)
+            ;(e.currentTarget as HTMLElement).dataset.touchY = String(t.clientY)
+          }}
+          onTouchEnd={e => {
+            const el  = e.currentTarget as HTMLElement
+            const dx  = e.changedTouches[0].clientX - Number(el.dataset.touchX || 0)
+            const dy  = Math.abs(e.changedTouches[0].clientY - Number(el.dataset.touchY || 0))
+            if (Math.abs(dx) > 50 && dy < 60) {
+              if (dx < 0) nextPeriod()
+              else prevPeriod()
+            }
+          }}
+        >
           {view === 'month' && (
             <MonthView
               year={year} month={month}
