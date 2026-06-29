@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect } from 'react'
 import Image from 'next/image'
 
@@ -421,473 +421,12 @@ export default function DashboardClient({ displayName, familyName, initials, use
       document.head.appendChild(style)
     }
 
-    // Inject JavaScript
+    // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.textContent = `
-/* ── Inject KYNC logo into every modal head ── */
-(function(){
-  document.querySelectorAll('.modal .modal-head, .help-drawer .help-drawer-head').forEach(function(h){
-    if(h.querySelector('.modal-kync-logo'))return;
-    var img=document.createElement('img');
-    img.src='/Kync_logo.png';img.className='modal-kync-logo';img.alt='KYNC';
-    h.insertBefore(img,h.firstChild);
-  });
-})();
-
-/* ── Core ── */
-function showToast(msg){var t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
-function saveAndToast(id,msg){closeModal(id);setTimeout(function(){showToast(msg);},120);}
-
-/* ── Modals ── */
-function openModal(id){var el=document.getElementById(id);if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
-function closeModal(id){var el=document.getElementById(id);if(el){el.classList.remove('open');document.body.style.overflow='';}}
-function backdropClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
-
-/* ── Help drawer ── */
-function openHelp(){var el=document.getElementById('help-backdrop');if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
-function closeHelp(){var el=document.getElementById('help-backdrop');if(el){el.classList.remove('open');document.body.style.overflow='';}}
-function toggleFaq(el){el.classList.toggle('open');}
-
-/* ── Wizard ── */
-var wStep=0;
-function wizNext(){if(wStep<3){wStep++;renderWiz();}}
-function wizBack(){if(wStep>0){wStep--;renderWiz();}}
-function renderWiz(){
-  for(var i=0;i<4;i++){
-    var s=document.getElementById('wstep-'+i),d=document.getElementById('wdot-'+i);
-    if(s)s.classList.toggle('active',i===wStep);
-    if(d){d.classList.remove('active','done');if(i===wStep)d.classList.add('active');else if(i<wStep)d.classList.add('done');}
-  }
-}
-
-/* ── UI helpers ── */
-function togglePerm(el){el.classList.toggle('on');}
-
-function selectRole(el){
-  var parent=el.parentElement;
-  var isMulti=parent.getAttribute('data-multi')==='true';
-  if(isMulti){
-    var isEveryone=el.getAttribute('data-everyone')==='true';
-    if(isEveryone){
-      // Toggle Everyone off if already selected, otherwise select only Everyone
-      if(el.classList.contains('sel')){el.classList.remove('sel');}
-      else{parent.querySelectorAll('.role-pill').forEach(function(p){p.classList.remove('sel');});el.classList.add('sel');}
-    } else {
-      // Deselect Everyone when picking specific members
-      parent.querySelectorAll('[data-everyone]').forEach(function(p){p.classList.remove('sel');});
-      el.classList.toggle('sel');
-      // If nothing selected, re-select Everyone
-      var anySelected=Array.from(parent.querySelectorAll('.role-pill')).some(function(p){return p.classList.contains('sel');});
-      if(!anySelected){parent.querySelector('[data-everyone]').classList.add('sel');}
-    }
-  } else {
-    parent.querySelectorAll('.role-pill').forEach(function(p){p.classList.remove('sel');});
-    el.classList.add('sel');
-  }
-}
-
-function selectRecurring(el,modalId){
-  el.parentElement.querySelectorAll('[data-recur]').forEach(function(p){p.classList.remove('sel');});
-  el.classList.add('sel');
-  var type=el.getAttribute('data-recur');
-  var weekly=document.getElementById('recur-weekly-'+modalId);
-  var monthly=document.getElementById('recur-monthly-'+modalId);
-  if(weekly)weekly.style.display=type==='weekly'?'block':'none';
-  if(monthly)monthly.style.display=type==='monthly'?'block':'none';
-}
-
-function selectMonthlyType(el,modalId){
-  el.parentElement.querySelectorAll('[data-monthtype]').forEach(function(p){p.classList.remove('sel');});
-  el.classList.add('sel');
-  var type=el.getAttribute('data-monthtype');
-  var dateEl=document.getElementById('monthly-date-'+modalId);
-  var dayEl=document.getElementById('monthly-day-'+modalId);
-  if(dateEl)dateEl.style.display=type==='date'?'block':'none';
-  if(dayEl)dayEl.style.display=type==='day'?'block':'none';
-}
-
-function selectInviteRole(el,role){
-  el.parentElement.querySelectorAll('.role-pill').forEach(function(p){p.classList.remove('sel');});
-  el.classList.add('sel');
-  var emailSection=document.getElementById('invite-email-section');
-  var pinSection=document.getElementById('invite-pin-section');
-  var inviteBtn=document.getElementById('invite-btn');
-  var inviteSub=document.getElementById('invite-sub');
-  if(role==='child'){
-    if(emailSection)emailSection.style.display='none';
-    if(pinSection)pinSection.style.display='block';
-    if(inviteBtn)inviteBtn.textContent='Create child account';
-    if(inviteSub)inviteSub.textContent='Set up a PIN-only account for your child.';
-  } else {
-    if(emailSection)emailSection.style.display='block';
-    if(pinSection)pinSection.style.display='none';
-    if(inviteBtn)inviteBtn.textContent='Send invite';
-    if(inviteSub)inviteSub.textContent='Send an email invite to join your family.';
-  }
-}
-
-function pinNext(el,nextId){
-  el.value=el.value.toString().slice(-1);
-  if(el.value&&nextId){var next=document.getElementById(nextId);if(next)next.focus();}
-}
-
-function previewAvatar(input,previewId,headerId){
-  if(!input.files||!input.files[0])return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var prev=document.getElementById(previewId);
-    var head=document.getElementById(headerId);
-    var img='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-    if(prev)prev.innerHTML=img;
-    if(head)head.innerHTML=img;
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-
-function selectUrgency(el,t){
-  el.parentElement.querySelectorAll('.urgency-pill').forEach(function(p){p.classList.remove('sel-soon','sel-mid','sel-ok');});
-  el.classList.add('sel-'+t);
-}
-
-function selectColour(el,m){
-  el.parentElement.querySelectorAll('.colour-swatch').forEach(function(s){s.classList.remove('sel');});
-  el.classList.add('sel');
-  var h=document.getElementById('av-header-'+m);
-  if(h&&!h.querySelector('img'))h.style.background=el.style.background;
-}
-
-function toggleCalSync(row){
-  var s=row.querySelector('.cal-sync-status');
-  row.classList.toggle('connected');
-  if(s)s.textContent=row.classList.contains('connected')?'Connected':'Not connected';
-}
-
-function toggleSleep(m){
-  var t=document.getElementById('sleep-toggle-'+m);
-  var ti=document.getElementById('sleep-times-'+m);
-  var on=t.classList.toggle('on');
-  if(ti)ti.style.display=on?'grid':'none';
-}
-
-function updateBar(m,cur){
-  var inp=document.getElementById('target-'+m);
-  var fill=document.getElementById('progress-'+m);
-  var pct=document.getElementById('pct-'+m);
-  if(!inp)return;
-  var tgt=Math.max(1,parseInt(inp.value)||1);
-  if(fill)fill.style.width=Math.min(100,Math.round(cur/tgt*100))+'%';
-  if(pct)pct.textContent='Goal: '+tgt+' pts';
-}
-
-/* ── Bedtime ── */
-function showBedtime(){
-  var overlay=document.getElementById('bedtime-overlay');
-  if(!overlay)return;
-  overlay.classList.add('active');
-  document.querySelectorAll('.modal-backdrop.open').forEach(function(m){m.classList.remove('open');});
-  document.body.style.overflow='hidden';
-  var c=document.getElementById('bedtime-stars');
-  if(c&&!c.children.length){
-    for(var i=0;i<80;i++){
-      var s=document.createElement('div');
-      s.className='bedtime-star';
-      s.style.left=Math.random()*100+'%';
-      s.style.top=Math.random()*100+'%';
-      s.style.setProperty('--d',(2+Math.random()*4)+'s');
-      s.style.setProperty('--dl',Math.random()*4+'s');
-      s.style.setProperty('--op',(0.3+Math.random()*0.7).toFixed(2));
-      c.appendChild(s);
-    }
-  }
-}
-function hideBedtime(){
-  var overlay=document.getElementById('bedtime-overlay');
-  if(overlay)overlay.classList.remove('active');
-  document.body.style.overflow='';
-}
-
-/* ── ESC key ── */
-document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){
-    closeHelp();
-    document.querySelectorAll('.modal-backdrop.open').forEach(function(m){m.classList.remove('open');document.body.style.overflow='';});
-    hideBedtime();
-    closeKidsView();
-  }
-});
-
-/* ── Financial Reports ── */
-var REPORT_DATA={
-  month:{total:'$767',paid:'$557',upcoming:'$188',overdue:'$22',label:'Monthly breakdown · Jan – Jun 2024'},
-  quarter:{total:'$2,184',paid:'$1,890',upcoming:'$249',overdue:'$45',label:'Monthly breakdown · Q2 2024 (Apr–Jun)'},
-  year:{total:'$8,940',paid:'$8,109',upcoming:'$786',overdue:'$45',label:'Monthly breakdown · Jan – Dec 2024'}
-};
-function switchPeriod(tab,period){
-  document.querySelectorAll('.report-tab').forEach(function(t){t.classList.remove('active');});
-  tab.classList.add('active');
-  var d=REPORT_DATA[period];
-  if(!d)return;
-  ['total','paid','upcoming','overdue'].forEach(function(k){
-    var el=document.getElementById('rep-'+k);
-    if(el)el.textContent=d[k];
-  });
-  var lbl=document.getElementById('rep-chart-label');
-  if(lbl)lbl.textContent=d.label;
-}
-
-function exportExcel(){
-  if(typeof XLSX==='undefined'){showToast('SheetJS loading…');return;}
-  var wb=XLSX.utils.book_new();
-  var data=[
-    ['KYNC Family Financial Report'],[''],
-    ['Bill','Category','Amount','Due Date','Status'],
-    ['Synergy Energy','Utilities','$210.50','Jun 25','Paid'],
-    ['Telstra Mobile','Utilities','$89.00','Jun 23','Due soon'],
-    ['Home insurance','Insurance','$165.00','Jul 1','Paid'],
-    ['School excursion','School','$45.00','Jun 26','Overdue'],
-    ['Netflix','Subscription','$22.99','Jul 5','Due soon'],
-    [''],['Total','','$767.00','',''],
-  ];
-  var ws=XLSX.utils.aoa_to_sheet(data);
-  ws['!cols']=[{wch:25},{wch:15},{wch:12},{wch:12},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,ws,'Report');
-  XLSX.writeFile(wb,'KYNC-Financial-Report.xlsx');
-  showToast('Excel file downloaded ✓');
-}
-
-function exportPDF(){
-  var w=window.open('','_blank');
-  if(!w)return;
-  w.document.write('<html><head><title>KYNC Financial Report</title><style>body{font-family:sans-serif;padding:32px;color:#1A1714;}h1{font-size:22px;}table{width:100%;border-collapse:collapse;}th{text-align:left;font-size:12px;padding:8px 12px;border-bottom:2px solid #E8E4DF;}td{padding:10px 12px;border-bottom:1px solid #F0EDE9;font-size:13px;}.paid{color:#1D9E75;}.due{color:#D97706;}.overdue{color:#E24B4A;}</style></head><body><h1>KYNC Family Financial Report</h1><p>June 2024 · AUD</p><table><tr><th>Bill</th><th>Category</th><th>Amount</th><th>Status</th></tr><tr><td>Synergy Energy</td><td>Utilities</td><td>$210.50</td><td class="paid">Paid</td></tr><tr><td>Telstra Mobile</td><td>Utilities</td><td>$89.00</td><td class="due">Due soon</td></tr><tr><td>Home insurance</td><td>Insurance</td><td>$165.00</td><td class="paid">Paid</td></tr><tr><td>School excursion</td><td>School</td><td>$45.00</td><td class="overdue">Overdue</td></tr><tr><td>Netflix</td><td>Subscription</td><td>$22.99</td><td class="due">Due soon</td></tr><tr><td colspan="2"><strong>Total</strong></td><td><strong>$767.00</strong></td><td></td></tr></table></body></html>');
-  w.document.close();
-  w.focus();
-  setTimeout(function(){w.print();},300);
-  showToast('PDF export ready — use Print → Save as PDF');
-}
-
-function printReport(){
-  var modal=document.querySelector('#modal-reports .modal');
-  if(!modal)return;
-  var w=window.open('','_blank');
-  if(!w)return;
-  w.document.write(modal.outerHTML.replace(/<button[^>]*>.*?<\\/button>/gs,'').replace(/onclick="[^"]*"/g,''));
-  w.document.close();
-  w.focus();
-  setTimeout(function(){w.print();},300);
-  showToast('Print dialog opened');
-}
-
-/* ── AI Scanner ── */
-var SCAN_DEMO={
-  bill:{type:'Bill detected',icon:'ti-receipt',title:'Synergy Energy — July 2024',confidence:'96',fields:[{label:'Provider',key:'provider',value:'Synergy Energy'},{label:'Amount',key:'amount',value:'$210.50'},{label:'Due date',key:'due_date',value:'25 Jul 2024'},{label:'Category',key:'category',value:'Utilities'}],saveMsg:'Bill saved — $210.50 due Jul 25'},
-  event:{type:'Calendar event detected',icon:'ti-calendar-event',title:"School End-of-Year Concert",confidence:'94',fields:[{label:'Event',key:'title',value:"End-of-Year Concert"},{label:'Date',key:'date',value:'Fri 12 Jul 2024'},{label:'Time',key:'time',value:'6:30 PM'},{label:'Location',key:'location',value:'School Assembly Hall'}],saveMsg:'Event added to calendar'}
-};
-var scanCurrentType=null,scanCurrentData=null;
-
-function closeScan(){closeModal('modal-scan');resetScan();}
-
-function startScan(input){
-  if(!input.files||!input.files[0])return;
-  var file=input.files[0];
-  if(!file.type.startsWith('image/')&&file.type!=='application/pdf'){showToast('Please upload an image or PDF');return;}
-  if(file.size>20*1024*1024){showToast('File must be under 20 MB');return;}
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var base64=e.target.result.split(',')[1];
-    callClaudeScanner(base64,file.type);
-  };
-  reader.readAsDataURL(file);
-}
-
-function runDemoScan(type){
-  showProcessing('Analysing document…');
-  var steps=['Uploading document…','Detecting document type…','Extracting key details…','Cross-checking fields…','Almost done…'];
-  var i=0,logEl=document.getElementById('scan-log');
-  if(logEl)logEl.innerHTML='';
-  var interval=setInterval(function(){
-    if(i<steps.length){if(logEl)logEl.innerHTML+='→ '+steps[i]+'<br>';i++;}
-    else{clearInterval(interval);setTimeout(function(){showScanResult(SCAN_DEMO[type],type);},400);}
-  },500);
-}
-
-async function callClaudeScanner(base64Data,mimeType){
-  showProcessing('Reading your document…');
-  var logEl=document.getElementById('scan-log');
-  if(logEl)logEl.innerHTML='→ Uploading to Claude…<br>';
-  try{
-    var isImage=mimeType.startsWith('image/');
-    var contentBlock=isImage
-      ?{type:'image',source:{type:'base64',media_type:mimeType,data:base64Data}}
-      :{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64Data}};
-    if(logEl)logEl.innerHTML+='→ Analysing content…<br>';
-    var response=await fetch('/api/ai-scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contentBlock})});
-    if(!response.ok)throw new Error('API error '+response.status);
-    var parsed=await response.json();
-    if(logEl)logEl.innerHTML+='→ Processing response…<br>';
-    showScanResult({type:parsed.type==='bill'?'Bill detected':'Calendar event detected',icon:parsed.type==='bill'?'ti-receipt':'ti-calendar-event',title:parsed.title||'Document scanned',confidence:String(parsed.confidence||85),fields:parsed.fields||[],saveMsg:parsed.type==='bill'?'Bill saved to KYNC':'Event added to calendar'},parsed.type);
-  }catch(err){
-    if(logEl)logEl.innerHTML+='→ Showing demo result…<br>';
-    setTimeout(function(){showScanResult(SCAN_DEMO['bill'],'bill');},800);
-  }
-}
-
-function showProcessing(msg){
-  var upload=document.getElementById('scan-step-upload');
-  var proc=document.getElementById('scan-step-processing');
-  if(upload)upload.style.display='none';
-  if(proc){proc.classList.add('active');var m=document.getElementById('scan-processing-msg');if(m)m.textContent=msg;}
-}
-
-function showScanResult(data,type){
-  var proc=document.getElementById('scan-step-processing');
-  var res=document.getElementById('scan-step-result');
-  if(proc)proc.classList.remove('active');
-  if(!res)return;
-  res.classList.add('active');
-  var icon=document.getElementById('scan-result-icon');if(icon)icon.className='ti '+data.icon;
-  var rt=document.getElementById('scan-result-type');if(rt)rt.textContent=data.type;
-  var rtitle=document.getElementById('scan-result-title');if(rtitle)rtitle.textContent=data.title;
-  var rc=document.getElementById('scan-confidence-val');if(rc)rc.textContent=data.confidence+'%';
-  scanCurrentData=data;scanCurrentType=type;
-  window._scanFieldValues={};
-  var container=document.getElementById('scan-fields-container');
-  if(!container)return;
-  container.innerHTML='';
-  (data.fields||[]).forEach(function(f){
-    window._scanFieldValues[f.key]=f.value;
-    var row=document.createElement('div');row.className='scan-field-row';
-    var labelDiv=document.createElement('div');labelDiv.className='scan-field-label';labelDiv.textContent=f.label;
-    var valDiv=document.createElement('div');valDiv.className='scan-field-value';valDiv.id='sfv-'+f.key;valDiv.textContent=f.value;
-    var editBtn=document.createElement('span');editBtn.className='scan-edit-toggle';editBtn.textContent='Edit';
-    (function(key){editBtn.addEventListener('click',function(){toggleScanEdit(key);});})(f.key);
-    row.appendChild(labelDiv);row.appendChild(valDiv);row.appendChild(editBtn);
-    container.appendChild(row);
-  });
-}
-
-function toggleScanEdit(key){
-  var valEl=document.getElementById('sfv-'+key);
-  if(!valEl)return;
-  if(valEl.querySelector('input')){valEl.textContent=valEl.querySelector('input').value;}
-  else{
-    var input=document.createElement('input');input.className='scan-field-edit';input.value=valEl.textContent;
-    valEl.textContent='';valEl.appendChild(input);input.focus();
-    input.addEventListener('blur',function(){valEl.textContent=input.value;});
-  }
-}
-
-function confirmScan(){
-  var msg=(scanCurrentData&&scanCurrentData.saveMsg)||'Saved to KYNC';
-  closeModal('modal-scan');setTimeout(function(){showToast(msg);},120);resetScan();
-}
-
-function resetScan(){
-  var upload=document.getElementById('scan-step-upload');
-  var proc=document.getElementById('scan-step-processing');
-  var res=document.getElementById('scan-step-result');
-  var log=document.getElementById('scan-log');
-  var fi=document.getElementById('scan-file-input');
-  if(upload)upload.style.display='block';
-  if(proc)proc.classList.remove('active');
-  if(res)res.classList.remove('active');
-  if(log)log.innerHTML='';
-  if(fi)fi.value='';
-  scanCurrentType=null;scanCurrentData=null;
-}
-
-/* ── Attachments ── */
-var attachments={};
-function handleAttach(input,modalId){
-  if(!attachments[modalId])attachments[modalId]=[];
-  var list=document.getElementById('attach-list-'+modalId);
-  if(!list)return;
-  Array.from(input.files).forEach(function(file){
-    var id=Date.now()+Math.random();
-    attachments[modalId].push({id:id,file:file});
-    var isImg=file.type.startsWith('image/');
-    var size=file.size<1024*1024?Math.round(file.size/1024)+'KB':(file.size/1024/1024).toFixed(1)+'MB';
-    var item=document.createElement('div');item.className='attach-item';item.id='attach-item-'+id;
-    if(isImg){var reader=new FileReader();reader.onload=function(e){var ic=item.querySelector('.attach-item-icon');if(ic)ic.innerHTML='<img src="'+e.target.result+'">';};reader.readAsDataURL(file);}
-    item.innerHTML='<div class="attach-item-icon"><i class="ti ti-'+(isImg?'photo':'file-text')+'"></i></div>'
-      +'<div class="attach-item-name">'+file.name+'</div>'
-      +'<div class="attach-item-size">'+size+'</div>'
-      +'<div class="attach-item-del" onclick="removeAttach('+id+',\\''+modalId+'\\')" ><i class="ti ti-x"></i></div>';
-    list.appendChild(item);
-  });
-  input.value='';
-}
-function removeAttach(id,modalId){
-  if(attachments[modalId])attachments[modalId]=attachments[modalId].filter(function(a){return a.id!=id;});
-  var el=document.getElementById('attach-item-'+id);if(el)el.remove();
-}
-
-/* ── Device mode ── */
-var DEVICE_MODE_DESC={
-  personal:'Personal mode — full dashboard access with all admin controls visible.',
-  kiosk:'Kiosk mode — family hub view, optimised for a shared tablet.',
-  kids:'Kids mode — child-safe view only. Shows chores, homework and points.'
-};
-function selectDeviceMode(el,mode){
-  el.closest('.device-mode-grid').querySelectorAll('.device-mode-card').forEach(function(c){c.classList.remove('sel');});
-  el.classList.add('sel');
-  var desc=document.getElementById('device-mode-desc-text');
-  if(desc)desc.textContent=DEVICE_MODE_DESC[mode]||'';
-}
-
-/* ── Kids View ── */
-function openKidsView(member){
-  var overlay=document.getElementById('kids-view-overlay');
-  if(!overlay)return;
-  var olivia=document.getElementById('kv-olivia');
-  var liam=document.getElementById('kv-liam');
-  if(olivia)olivia.style.display=member==='olivia'?'block':'none';
-  if(liam)liam.style.display=member==='liam'?'block':'none';
-  var greet=document.getElementById('kv-greeting');
-  var names={olivia:'Child 1',liam:'Child 2'};
-  if(greet)greet.textContent='Hi '+(names[member]||'there')+'! \\u{1F44B}';
-  document.querySelectorAll('.kv-tab').forEach(function(t){t.classList.remove('sel');t.style.background='';t.style.color='';t.style.borderColor='';});
-  var tabs=document.querySelectorAll('.kv-tab');
-  var idx=member==='olivia'?0:1;
-  var tabColors={olivia:['var(--oj-bg)','var(--oj-fg)'],liam:['var(--lj-bg)','var(--lj-fg)']};
-  if(tabs[idx]){tabs[idx].classList.add('sel');tabs[idx].style.background=tabColors[member][0];tabs[idx].style.color=tabColors[member][1];tabs[idx].style.borderColor=tabColors[member][0];}
-  overlay.classList.add('active');
-  document.body.style.overflow='hidden';
-}
-function closeKidsView(){
-  var overlay=document.getElementById('kids-view-overlay');
-  if(overlay)overlay.classList.remove('active');
-  document.body.style.overflow='';
-}
-function kvToggle(el){
-  el.classList.toggle('done');
-  el.innerHTML=el.classList.contains('done')?'<i class="ti ti-check" style="font-size:11px;color:#fff;"></i>':'';
-  var label=el.nextElementSibling;
-  if(label)label.classList.toggle('done');
-  if(el.classList.contains('done'))showToast('Great job! +5 pts ⭐');
-}
-
-/* ── Bedtime settings save ── */
-function saveBedtimeSettings(){
-  var toggle=document.getElementById('sleep-toggle-olivia');
-  var startEl=document.getElementById('bedtime-start-input');
-  var endEl=document.getElementById('bedtime-end-input');
-  var enabled=toggle&&toggle.classList.contains('on');
-  var start=startEl?startEl.value:'20:30';
-  var end=endEl?endEl.value:'07:00';
-  fetch('/api/settings/bedtime',{
-    method:'PATCH',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({bedtime_enabled:enabled,bedtime_start:start,bedtime_end:end})
-  }).then(function(r){
-    if(r.ok){showToast('Bedtime settings saved ✓');}
-    else{showToast('Could not save — try again');}
-  }).catch(function(){showToast('Could not save — try again');});
-}
-`
-    if (!document.getElementById('kync-dash-js')) {
-      document.head.appendChild(script)
-    }
+    script.src = '/dashboard.js'
+    document.getElementById('kync-dash-js')?.remove()
+    document.head.appendChild(script)
 
     return () => {
       document.getElementById('kync-dash-css')?.remove()
@@ -895,7 +434,7 @@ function saveBedtimeSettings(){
     }
   }, [])
 
-  /* ── Bedtime scheduler + browser notifications ── */
+  /* â”€â”€ Bedtime scheduler + browser notifications â”€â”€ */
   useEffect(() => {
     let bedtimeEnabled  = false
     let bedtimeStart    = '20:30'
@@ -962,7 +501,7 @@ function saveBedtimeSettings(){
         if (alerts.length > 0) {
           notifSentToday = true
           const body = alerts.slice(0, 3).join('\n') + (alerts.length > 3 ? `\n+${alerts.length - 3} more` : '')
-          new Notification('KYNC – Family alerts', { body, icon: '/Kync_logo.png' })
+          new Notification('KYNC â€“ Family alerts', { body, icon: '/Kync_logo.png' })
         }
       } catch { /* ignore */ }
     }
@@ -973,7 +512,7 @@ function saveBedtimeSettings(){
       const now  = new Date()
       const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
       const isNight = bedtimeStart > bedtimeEnd
-        ? hhmm >= bedtimeStart || hhmm < bedtimeEnd   // e.g. 20:30–07:00
+        ? hhmm >= bedtimeStart || hhmm < bedtimeEnd   // e.g. 20:30â€“07:00
         : hhmm >= bedtimeStart && hhmm < bedtimeEnd   // rare: same-day window
 
       if (isNight && !bedtimeShown) {
@@ -1022,7 +561,7 @@ function saveBedtimeSettings(){
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
 
-      {/* ── TOPBAR ── */}
+      {/* â”€â”€ TOPBAR â”€â”€ */}
       <div className="topbar">
         <div className="topbar-inner">
           <a className="tb-logo" href="/dashboard">
@@ -1043,7 +582,7 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* ── DASH BODY ── */}
+      {/* â”€â”€ DASH BODY â”€â”€ */}
       <div className="dash-body">
 
         {/* Welcome banner */}
@@ -1051,7 +590,7 @@ function saveBedtimeSettings(){
           <div>
             <div className="welcome-eyebrow">Welcome back</div>
             <div className="welcome-heading">{firstName}&apos;s<br />Family Hub</div>
-            <div className="welcome-sub">{fName} · {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+            <div className="welcome-sub">{fName} Â· {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
             <div className="welcome-members">
               <div className="welcome-av" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }}>{initials}</div>
               <div className="welcome-av" style={{ background: 'var(--mj-bg)', color: 'var(--mj-fg)' }}>+</div>
@@ -1069,7 +608,7 @@ function saveBedtimeSettings(){
           <div className="stat-card"><div className="stat-num">235</div><div className="stat-lbl">Kids points total</div><div className="stat-delta delta-up"><i className="ti ti-star" style={{ fontSize: 11 }}></i> Leading this week</div></div>
         </div>
 
-        {/* ── Quick Actions ── */}
+        {/* â”€â”€ Quick Actions â”€â”€ */}
         <div className="section-hd"><div className="section-title">Quick actions</div></div>
         <div className="actions-grid">
           <div className="action-card ac-green" onClick={() => (window as any).openModal('modal-invite')}>
@@ -1114,7 +653,7 @@ function saveBedtimeSettings(){
           </div>
         </div>
 
-        {/* ── Family Members ── */}
+        {/* â”€â”€ Family Members â”€â”€ */}
         <div className="section-hd">
           <div className="section-title">Family members</div>
           <div className="section-link" onClick={() => (window as any).openModal('modal-invite')}>+ Invite</div>
@@ -1172,14 +711,14 @@ function saveBedtimeSettings(){
           </div>
         </div>
 
-        {/* ── Recent Activity ── */}
+        {/* â”€â”€ Recent Activity â”€â”€ */}
         <div className="section-hd" style={{ marginTop: 28 }}>
           <div className="section-title">Recent activity</div>
         </div>
         <div className="activity-list">
           <div className="activity-row">
             <div className="activity-icon" style={{ background: 'var(--green-lt)', color: 'var(--green)' }}><i className="ti ti-circle-check"></i></div>
-            <div className="activity-text"><strong>Chore completed</strong> · +5 pts awarded</div>
+            <div className="activity-text"><strong>Chore completed</strong> Â· +5 pts awarded</div>
             <div className="activity-time">2 min ago</div>
           </div>
           <div className="activity-row">
@@ -1194,24 +733,24 @@ function saveBedtimeSettings(){
           </div>
           <div className="activity-row">
             <div className="activity-icon" style={{ background: '#F2F1FD', color: 'var(--fa-ac)' }}><i className="ti ti-scan"></i></div>
-            <div className="activity-text"><strong>AI</strong> read a school newsletter — extracted 3 events for review</div>
+            <div className="activity-text"><strong>AI</strong> read a school newsletter â€” extracted 3 events for review</div>
             <div className="activity-time">4 hrs ago</div>
           </div>
           <div className="activity-row">
             <div className="activity-icon" style={{ background: 'var(--amber-lt)', color: 'var(--amber)' }}><i className="ti ti-receipt"></i></div>
-            <div className="activity-text"><strong>Bill due</strong> in 1 day — check your bills tracker</div>
+            <div className="activity-text"><strong>Bill due</strong> in 1 day â€” check your bills tracker</div>
             <div className="activity-time">Today</div>
           </div>
           <div className="activity-row">
             <div className="activity-icon" style={{ background: '#D1FAE5', color: '#059669' }}><i className="ti ti-chart-bar"></i></div>
-            <div className="activity-text"><strong>Monthly report</strong> ready — view in Financial Reports</div>
+            <div className="activity-text"><strong>Monthly report</strong> ready â€” view in Financial Reports</div>
             <div className="activity-time">Yesterday</div>
           </div>
         </div>
 
       </div>{/* end dash-body */}
 
-      {/* ════ MODALS ════ */}
+      {/* â•â•â•â• MODALS â•â•â•â• */}
 
       {/* Invite member */}
       <div className="modal-backdrop" id="modal-invite" onClick={(e) => (window as any).backdropClose(e,'modal-invite')}>
@@ -1244,7 +783,7 @@ function saveBedtimeSettings(){
             <div id="invite-pin-section" style={{ display: 'none' }}>
               <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 14, fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
                 <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4, color: 'var(--amber)' }}></i>
-                Child accounts use a <strong>4-digit PIN</strong> — no email needed. Perfect for shared tablets.
+                Child accounts use a <strong>4-digit PIN</strong> â€” no email needed. Perfect for shared tablets.
               </div>
               <div className="modal-field"><label>4-digit PIN</label>
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
@@ -1306,10 +845,10 @@ function saveBedtimeSettings(){
                 </div>
               </div>
               <div id="recur-monthly-task" style={{ display:'none', marginTop:10 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the same…</div>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
                 <div className="role-pills">
-                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>📅 Date (e.g. 15th)</div>
-                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>📆 Day (e.g. last Saturday)</div>
+                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ“… Date (e.g. 15th)</div>
+                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ“† Day (e.g. last Saturday)</div>
                 </div>
                 <div id="monthly-date-task" style={{ marginTop:8 }}>
                   <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
@@ -1326,7 +865,7 @@ function saveBedtimeSettings(){
                 </div>
               </div>
             </div>
-            <div className="modal-field"><label>Notes</label><input type="text" placeholder="Any extra details…" /></div>
+            <div className="modal-field"><label>Notes</label><input type="text" placeholder="Any extra detailsâ€¦" /></div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
               <div className="attach-drop" onClick={() => document.getElementById('attach-task')?.click()}>
@@ -1366,8 +905,8 @@ function saveBedtimeSettings(){
             <div className="modal-field">
               <label>Time of day <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or both</span></label>
               <div className="role-pills">
-                <div className="role-pill sel" onClick={(e) => e.currentTarget.classList.toggle('sel')}>🌅 Morning (AM)</div>
-                <div className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>🌙 Evening (PM)</div>
+                <div className="role-pill sel" onClick={(e) => e.currentTarget.classList.toggle('sel')}>ðŸŒ… Morning (AM)</div>
+                <div className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>ðŸŒ™ Evening (PM)</div>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}><i className="ti ti-info-circle" style={{ verticalAlign: 'middle' }}></i> Select both for twice-daily chores like teeth brushing</div>
             </div>
@@ -1386,10 +925,10 @@ function saveBedtimeSettings(){
                 </div>
               </div>
               <div id="recur-monthly-chore" style={{ display:'none', marginTop:10 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the same…</div>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
                 <div className="role-pills">
-                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>📅 Date (e.g. 15th)</div>
-                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>📆 Day (e.g. last Saturday)</div>
+                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ“… Date (e.g. 15th)</div>
+                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ“† Day (e.g. last Saturday)</div>
                 </div>
                 <div id="monthly-date-chore" style={{ marginTop:8 }}>
                   <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
@@ -1460,10 +999,10 @@ function saveBedtimeSettings(){
                 </div>
               </div>
               <div id="recur-monthly-hw" style={{ display:'none', marginTop:10 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the same…</div>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
                 <div className="role-pills">
-                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>📅 Date (e.g. 15th)</div>
-                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>📆 Day (e.g. last Saturday)</div>
+                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>ðŸ“… Date (e.g. 15th)</div>
+                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>ðŸ“† Day (e.g. last Saturday)</div>
                 </div>
                 <div id="monthly-date-hw" style={{ marginTop:8 }}>
                   <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
@@ -1521,19 +1060,19 @@ function saveBedtimeSettings(){
             <div className="modal-field">
               <label>Urgency</label>
               <div className="urgency-pills">
-                <div className="urgency-pill sel-soon" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'soon')}><div className="up-icon">🔴</div><div className="up-label">Soon</div><div className="up-sub">Under 5 days</div></div>
-                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'mid')}><div className="up-icon">🟡</div><div className="up-label">Coming up</div><div className="up-sub">5–14 days</div></div>
-                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'ok')}><div className="up-icon">🟢</div><div className="up-label">Plenty of time</div><div className="up-sub">15+ days</div></div>
+                <div className="urgency-pill sel-soon" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'soon')}><div className="up-icon">ðŸ”´</div><div className="up-label">Soon</div><div className="up-sub">Under 5 days</div></div>
+                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'mid')}><div className="up-icon">ðŸŸ¡</div><div className="up-label">Coming up</div><div className="up-sub">5â€“14 days</div></div>
+                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'ok')}><div className="up-icon">ðŸŸ¢</div><div className="up-label">Plenty of time</div><div className="up-sub">15+ days</div></div>
               </div>
             </div>
-            <div className="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1–5, open book" /></div>
+            <div className="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1â€“5, open book" /></div>
             <div style={{ background: 'var(--lilac-lt)', border: '1.5px solid #C4BFFE', borderRadius: 'var(--r-md)', padding: '12px 14px', display: 'flex', gap: 10, marginBottom: 4 }}>
               <div style={{ width: 32, height: 32, borderRadius: 'var(--r-sm)', background: 'var(--lilac)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-books" style={{ fontSize: 16, color: '#fff' }}></i></div>
-              <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lilac)' }}>Revision sessions added after saving</div><div style={{ fontSize: 11, color: '#7b74cc', marginTop: 1 }}>Open the exam entry to schedule study blocks — they appear in lilac on the calendar.</div></div>
+              <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lilac)' }}>Revision sessions added after saving</div><div style={{ fontSize: 11, color: '#7b74cc', marginTop: 1 }}>Open the exam entry to schedule study blocks â€” they appear in lilac on the calendar.</div></div>
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-exam')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-exam','Exam added — tap to add revision sessions')}>Save exam</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-exam','Exam added â€” tap to add revision sessions')}>Save exam</button>
             </div>
           </div>
         </div>
@@ -1553,7 +1092,10 @@ function saveBedtimeSettings(){
               <div className="modal-field"><label>Due date</label><input type="date" /></div>
             </div>
             <div className="modal-field"><label>Category</label>
-              <select><option>Utilities</option><option>Insurance</option><option>Mortgage / Rent</option><option>Subscription</option><option>School</option><option>Medical</option><option>Other</option></select>
+              <select id="bill-category-select" onChange={(e) => (window as any).onBillCategoryChange(e.currentTarget)}>
+                <option>Utilities</option><option>Insurance</option><option>Mortgage / Rent</option><option>Subscription</option><option>School</option><option>Medical</option><option>Other</option>
+                <option value="__add__">+ Add new categoryâ€¦</option>
+              </select>
             </div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
@@ -1566,19 +1108,19 @@ function saveBedtimeSettings(){
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-bill')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-bill','Bill added')}>Add bill</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveBill()}>Add bill</button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Member modal — current user (Sarah/admin) */}
+      {/* Member modal â€” current user (Sarah/admin) */}
       <div className="modal-backdrop" id="modal-member-sarah" onClick={(e) => (window as any).backdropClose(e,'modal-member-sarah')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--sj-bg)', color: 'var(--sj-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }} id="av-header-sarah">{initials}</div>
-              <div><div style={{ fontSize: 17, fontWeight: 800 }}>{displayName}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Admin · {userEmail}</div></div>
+              <div><div style={{ fontSize: 17, fontWeight: 800 }}>{displayName}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Admin Â· {userEmail}</div></div>
             </div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-member-sarah')}><i className="ti ti-x"></i></button>
           </div>
@@ -1587,7 +1129,7 @@ function saveBedtimeSettings(){
               <div className="avatar-preview" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }} id="av-preview-sarah">{initials}</div>
               <div className="avatar-upload-info">
                 <label className="avatar-upload-btn"><i className="ti ti-upload" style={{ fontSize: 13 }}></i> Upload photo<input type="file" accept="image/*" onChange={(e) => (window as any).previewAvatar(e.currentTarget,'av-preview-sarah','av-header-sarah')} /></label>
-                <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>JPG, PNG or GIF · max 2 MB</p>
+                <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>JPG, PNG or GIF Â· max 2 MB</p>
               </div>
             </div>
             <div className="modal-field"><label>Display name</label><input type="text" defaultValue={displayName} /></div>
@@ -1612,7 +1154,7 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* Member modal — partner/adult 2 */}
+      {/* Member modal â€” partner/adult 2 */}
       <div className="modal-backdrop" id="modal-member-mark" onClick={(e) => (window as any).backdropClose(e,'modal-member-mark')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
@@ -1640,13 +1182,13 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* Member modal — child 1 */}
+      {/* Member modal â€” child 1 */}
       <div className="modal-backdrop" id="modal-member-olivia" onClick={(e) => (window as any).backdropClose(e,'modal-member-olivia')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--oj-bg)', color: 'var(--oj-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }} id="av-header-olivia">K1</div>
-              <div><div style={{ fontSize: 17, fontWeight: 800 }}>Child 1</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Child · PIN login</div></div>
+              <div><div style={{ fontSize: 17, fontWeight: 800 }}>Child 1</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Child Â· PIN login</div></div>
             </div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-member-olivia')}><i className="ti ti-x"></i></button>
           </div>
@@ -1669,11 +1211,11 @@ function saveBedtimeSettings(){
                   <div className="toggle-row-switch on" id="sleep-toggle-olivia" onClick={() => (window as any).toggleSleep('olivia')} style={{ cursor: 'pointer' }}></div>
                 </div>
                 <div className="sleep-times" id="sleep-times-olivia">
-                  <div className="sleep-time-field"><label>🌙 Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
-                  <div className="sleep-time-field"><label>☀️ Wake time</label><input id="bedtime-end-input" type="time" defaultValue="07:00" /></div>
+                  <div className="sleep-time-field"><label>ðŸŒ™ Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
+                  <div className="sleep-time-field"><label>â˜€ï¸ Wake time</label><input id="bedtime-end-input" type="time" defaultValue="07:00" /></div>
                   <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-lt)' }}>
                     <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)' }}>Grant extension</div><div style={{ fontSize: 11, color: 'var(--text-3)' }}>15 minutes right now</div></div>
-                    <button className="sleep-ext-btn" onClick={() => (window as any).showToast('Extension granted ✨')}>+15 min</button>
+                    <button className="sleep-ext-btn" onClick={() => (window as any).showToast('Extension granted âœ¨')}>+15 min</button>
                   </div>
                   <div style={{ gridColumn: '1/-1' }}>
                     <button className="modal-btn modal-btn-secondary" style={{ width: '100%', marginTop: 4 }} onClick={() => (window as any).showBedtime()}><i className="ti ti-eye" style={{ marginRight: 6 }}></i>Preview sleep screen</button>
@@ -1707,7 +1249,7 @@ function saveBedtimeSettings(){
               <div className="modal-field" style={{ marginBottom: 10 }}><label>Family name</label><input type="text" defaultValue={fName} /></div>
               <div className="modal-field" style={{ marginBottom: 10 }}><label>Location</label><input type="text" placeholder="e.g. Perth, WA" /></div>
               <div className="modal-field" style={{ marginBottom: 0 }}><label>Currency</label>
-                <select><option>AUD — Australian Dollar</option><option>NZD — New Zealand Dollar</option><option>GBP — British Pound</option><option>USD — US Dollar</option><option>EUR — Euro</option><option>CAD — Canadian Dollar</option></select>
+                <select><option>AUD â€” Australian Dollar</option><option>NZD â€” New Zealand Dollar</option><option>GBP â€” British Pound</option><option>USD â€” US Dollar</option><option>EUR â€” Euro</option><option>CAD â€” Canadian Dollar</option></select>
               </div>
             </div>
             <div className="settings-section">
@@ -1732,13 +1274,13 @@ function saveBedtimeSettings(){
               <div className="settings-section-title"><i className="ti ti-devices" style={{ fontSize: 12 }}></i> Device modes</div>
               <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 10, lineHeight: 1.5 }}>Set the view mode for <strong>this device</strong>.</div>
               <div className="device-mode-grid">
-                <div className="device-mode-card sel" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'personal')}><div className="device-mode-icon">📱</div><div className="device-mode-name">Personal</div><div className="device-mode-sub">Full access for adults</div></div>
-                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kiosk')}><div className="device-mode-icon">🖥️</div><div className="device-mode-name">Kiosk</div><div className="device-mode-sub">Shared family tablet</div></div>
-                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kids')}><div className="device-mode-icon">🧒</div><div className="device-mode-name">Kids</div><div className="device-mode-sub">Child-safe view only</div></div>
+                <div className="device-mode-card sel" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'personal')}><div className="device-mode-icon">ðŸ“±</div><div className="device-mode-name">Personal</div><div className="device-mode-sub">Full access for adults</div></div>
+                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kiosk')}><div className="device-mode-icon">ðŸ–¥ï¸</div><div className="device-mode-name">Kiosk</div><div className="device-mode-sub">Shared family tablet</div></div>
+                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kids')}><div className="device-mode-icon">ðŸ§’</div><div className="device-mode-name">Kids</div><div className="device-mode-sub">Child-safe view only</div></div>
               </div>
               <div id="device-mode-desc" style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 10, padding: '8px 12px', background: 'var(--bg)', borderRadius: 'var(--r-md)', border: '1px solid var(--border-lt)' }}>
                 <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>
-                <span id="device-mode-desc-text">Personal mode — full dashboard access with all admin controls visible.</span>
+                <span id="device-mode-desc-text">Personal mode â€” full dashboard access with all admin controls visible.</span>
               </div>
             </div>
             <div className="settings-section">
@@ -1757,11 +1299,14 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* ════ FINANCIAL REPORTS MODAL ════ */}
+      {/* â•â•â•â• FINANCIAL REPORTS MODAL â•â•â•â• */}
       <div className="modal-backdrop" id="modal-reports" onClick={(e) => (window as any).backdropClose(e,'modal-reports')}>
         <div className="modal report-modal"><div className="modal-handle"></div>
           <div className="modal-head">
-            <div><div className="modal-title">Financial reports</div><div className="modal-sub">Family expenditure by category · AUD</div></div>
+            <div>
+              <div className="modal-title">Financial reports</div>
+              <div className="modal-sub" id="rep-period-label">Family expenditure by category Â· AUD</div>
+            </div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-reports')}><i className="ti ti-x"></i></button>
           </div>
           <div className="modal-body">
@@ -1771,40 +1316,22 @@ function saveBedtimeSettings(){
               <div className="report-tab" onClick={(e) => (window as any).switchPeriod(e.currentTarget,'year')}>This year</div>
             </div>
             <div className="report-summary-grid">
-              <div className="report-summary-card"><div className="report-summary-num" id="rep-total">$767</div><div className="report-summary-lbl">Total spent</div></div>
-              <div className="report-summary-card paid"><div className="report-summary-num" id="rep-paid">$557</div><div className="report-summary-lbl">Paid</div></div>
-              <div className="report-summary-card upcoming"><div className="report-summary-num" id="rep-upcoming">$188</div><div className="report-summary-lbl">Upcoming</div></div>
-              <div className="report-summary-card overdue"><div className="report-summary-num" id="rep-overdue">$22</div><div className="report-summary-lbl">Overdue</div></div>
+              <div className="report-summary-card"><div className="report-summary-num" id="rep-total">â€”</div><div className="report-summary-lbl">Total spent</div></div>
+              <div className="report-summary-card paid"><div className="report-summary-num" id="rep-paid">â€”</div><div className="report-summary-lbl">Paid</div></div>
+              <div className="report-summary-card upcoming"><div className="report-summary-num" id="rep-upcoming">â€”</div><div className="report-summary-lbl">Upcoming</div></div>
+              <div className="report-summary-card overdue"><div className="report-summary-num" id="rep-overdue">â€”</div><div className="report-summary-lbl">Overdue</div></div>
             </div>
             <div className="report-section-label">Spend by category</div>
             <div className="report-category-list" id="rep-cats">
-              <div className="report-cat-row"><div className="report-cat-label">Utilities</div><div className="report-cat-bar-wrap"><div className="report-cat-bar" style={{ width:'82%', background:'#1D9E75' }}>82%</div></div><div className="report-cat-amount">$299</div></div>
-              <div className="report-cat-row"><div className="report-cat-label">Insurance</div><div className="report-cat-bar-wrap"><div className="report-cat-bar" style={{ width:'45%', background:'#378ADD' }}>45%</div></div><div className="report-cat-amount">$165</div></div>
-              <div className="report-cat-row"><div className="report-cat-label">School</div><div className="report-cat-bar-wrap"><div className="report-cat-bar" style={{ width:'32%', background:'#7F77DD' }}>32%</div></div><div className="report-cat-amount">$116</div></div>
-              <div className="report-cat-row"><div className="report-cat-label">Subscriptions</div><div className="report-cat-bar-wrap"><div className="report-cat-bar" style={{ width:'24%', background:'#D85A30' }}>24%</div></div><div className="report-cat-amount">$87</div></div>
-              <div className="report-cat-row"><div className="report-cat-label">Medical</div><div className="report-cat-bar-wrap"><div className="report-cat-bar" style={{ width:'14%', background:'#D4537E' }}>14%</div></div><div className="report-cat-amount">$55</div></div>
-              <div className="report-cat-row"><div className="report-cat-label">Other</div><div className="report-cat-bar-wrap"><div className="report-cat-bar" style={{ width:'12%', background:'#A09893' }}>12%</div></div><div className="report-cat-amount">$45</div></div>
-            </div>
-            <div className="report-section-label" id="rep-chart-label">Monthly breakdown · Jan – Jun 2024</div>
-            <div className="report-monthly-chart" id="rep-chart">
-              {[{h:55,l:'Jan'},{h:48,l:'Feb'},{h:62,l:'Mar'},{h:44,l:'Apr'},{h:58,l:'May'},{h:68,l:'Jun',cur:true}].map(b => (
-                <div key={b.l} className="report-month-bar-wrap">
-                  <div className="report-month-bar" style={{ height: b.h, opacity: b.cur ? 1 : 0.7 }}></div>
-                  <div className="report-month-label" style={b.cur ? { color:'var(--green)', fontWeight:700 } : {}}>{b.l}</div>
-                </div>
-              ))}
+              <div style={{ color:'var(--text-3)', fontSize:13, padding:'12px 0' }}>Loadingâ€¦</div>
             </div>
             <div className="report-section-label">Bill breakdown</div>
             <div className="report-bills-table">
               <div className="report-table-head"><span>Bill</span><span>Category</span><span>Amount</span><span>Status</span></div>
-              <div className="report-table-row"><div><div className="report-bill-name">Synergy Energy</div></div><div><span className="report-bill-cat" style={{ background:'#E3F5EF', color:'var(--green)' }}>Utilities</span></div><div className="report-bill-amount">$210</div><div><span className="report-bill-status status-paid">Paid</span></div></div>
-              <div className="report-table-row"><div><div className="report-bill-name">Telstra Mobile</div></div><div><span className="report-bill-cat" style={{ background:'#E3F5EF', color:'var(--green)' }}>Utilities</span></div><div className="report-bill-amount">$89</div><div><span className="report-bill-status status-due">Due soon</span></div></div>
-              <div className="report-table-row"><div><div className="report-bill-name">Home insurance</div></div><div><span className="report-bill-cat" style={{ background:'#EDF4FE', color:'var(--oj-ac)' }}>Insurance</span></div><div className="report-bill-amount">$165</div><div><span className="report-bill-status status-paid">Paid</span></div></div>
-              <div className="report-table-row"><div><div className="report-bill-name">School excursion</div></div><div><span className="report-bill-cat" style={{ background:'var(--lilac-lt)', color:'var(--lilac)' }}>School</span></div><div className="report-bill-amount">$45</div><div><span className="report-bill-status status-overdue">Overdue</span></div></div>
-              <div className="report-table-row"><div><div className="report-bill-name">Netflix</div></div><div><span className="report-bill-cat" style={{ background:'#FDF2EE', color:'var(--mj-ac)' }}>Subscription</span></div><div className="report-bill-amount">$23</div><div><span className="report-bill-status status-due">Due soon</span></div></div>
+              <div id="rep-bills-body"><div style={{ color:'var(--text-3)', fontSize:13, padding:'12px' }}>Loadingâ€¦</div></div>
             </div>
             <div className="report-export-bar">
-              <button className="report-export-btn excel" onClick={() => (window as any).exportExcel()}><i className="ti ti-file-spreadsheet"></i>Export to Excel</button>
+              <button className="report-export-btn excel" onClick={() => (window as any).exportReportCSV()}><i className="ti ti-file-spreadsheet"></i>Export CSV</button>
               <button className="report-export-btn" onClick={() => (window as any).exportPDF()}><i className="ti ti-file-type-pdf"></i>Export PDF</button>
               <button className="report-export-btn" onClick={() => (window as any).printReport()}><i className="ti ti-printer"></i>Print</button>
             </div>
@@ -1812,11 +1339,11 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* ════ AI SCANNER MODAL ════ */}
+      {/* â•â•â•â• AI SCANNER MODAL â•â•â•â• */}
       <div className="modal-backdrop" id="modal-scan" onClick={(e) => (window as any).backdropClose(e,'modal-scan')}>
         <div className="modal scan-modal"><div className="modal-handle"></div>
           <div className="modal-head">
-            <div><div className="modal-title">AI document scanner</div><div className="modal-sub">Upload a photo or PDF — Claude reads it and creates a draft entry for your review.</div></div>
+            <div><div className="modal-title">AI document scanner</div><div className="modal-sub">Upload a photo or PDF â€” Claude reads it and creates a draft entry for your review.</div></div>
             <button className="modal-close" onClick={() => (window as any).closeScan()}><i className="ti ti-x"></i></button>
           </div>
           <div className="modal-body">
@@ -1825,7 +1352,7 @@ function saveBedtimeSettings(){
                 <input type="file" id="scan-file-input" accept="image/*,.pdf" onChange={(e) => (window as any).startScan(e.currentTarget)} />
                 <div className="scan-drop-icon"><i className="ti ti-cloud-upload"></i></div>
                 <div className="scan-drop-title">Drop a file or tap to upload</div>
-                <div className="scan-drop-sub">Photos, PDFs, screenshots — invitations, bills, school newsletters</div>
+                <div className="scan-drop-sub">Photos, PDFs, screenshots â€” invitations, bills, school newsletters</div>
               </div>
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Claude can read</div>
@@ -1846,14 +1373,14 @@ function saveBedtimeSettings(){
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Or try a demo</div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('bill')}>📄 Demo bill scan</button>
-                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('event')}>📅 Demo event scan</button>
+                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('bill')}>ðŸ“„ Demo bill scan</button>
+                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('event')}>ðŸ“… Demo event scan</button>
                 </div>
               </div>
             </div>
             <div className="scan-processing" id="scan-step-processing">
               <div className="scan-spinner"></div>
-              <div className="scan-processing-title" id="scan-processing-msg">Reading your document…</div>
+              <div className="scan-processing-title" id="scan-processing-msg">Reading your documentâ€¦</div>
               <div className="scan-processing-sub">Claude is extracting dates, amounts, and details</div>
               <div style={{ marginTop: 20, background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', padding: '12px 16px' }}>
                 <div id="scan-log" style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 2, fontFamily: 'monospace' }}></div>
@@ -1864,12 +1391,12 @@ function saveBedtimeSettings(){
                 <div className="scan-result-icon"><i className="ti ti-check" id="scan-result-icon"></i></div>
                 <div>
                   <div className="scan-result-type" id="scan-result-type">Bill detected</div>
-                  <div className="scan-result-title" id="scan-result-title">Synergy Energy — June 2024</div>
-                  <div className="scan-confidence">AI confidence: <span id="scan-confidence-val">97%</span> · Review and confirm below</div>
+                  <div className="scan-result-title" id="scan-result-title">Synergy Energy â€” June 2024</div>
+                  <div className="scan-confidence">AI confidence: <span id="scan-confidence-val">97%</span> Â· Review and confirm below</div>
                 </div>
               </div>
               <div className="modal-field" style={{ marginBottom: 6 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Extracted fields — tap any to edit</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Extracted fields â€” tap any to edit</div>
               </div>
               <div className="scan-fields" id="scan-fields-container"></div>
               <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '10px 14px', fontSize: 12, color: 'var(--amber)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1885,7 +1412,7 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* ════ HELP DRAWER ════ */}
+      {/* â•â•â•â• HELP DRAWER â•â•â•â• */}
       <div className="help-backdrop" id="help-backdrop" onClick={() => (window as any).closeHelp()}>
         <div className="help-drawer" onClick={(e) => e.stopPropagation()}>
           <div className="help-drawer-head">
@@ -1894,7 +1421,7 @@ function saveBedtimeSettings(){
           </div>
           <div className="help-drawer-body">
             <div className="help-qs-card" onClick={() => { (window as any).closeHelp(); (window as any).openModal('modal-wizard'); }}>
-              <div className="help-qs-eyebrow">✨ New to KYNC?</div>
+              <div className="help-qs-eyebrow">âœ¨ New to KYNC?</div>
               <div className="help-qs-title">AI Quick-Start Guide</div>
               <div className="help-qs-sub">Let our AI walk you through setup in under 3 minutes.</div>
               <div className="help-qs-btn"><i className="ti ti-rocket" style={{ fontSize: 13 }}></i> Start setup wizard</div>
@@ -1906,7 +1433,7 @@ function saveBedtimeSettings(){
                 { bg:'var(--lilac-lt)', ic:'ti-notes', ic_c:'var(--lilac)', title:'Exams & Revision', sub:'Countdown timers with linked revision sessions.' },
                 { bg:'var(--green-lt)', ic:'ti-list-check', ic_c:'var(--green)', title:'Chores & Tasks', sub:'AM/PM chore routines with points & rewards.' },
                 { bg:'#D1FAE5', ic:'ti-chart-bar', ic_c:'#059669', title:'Financial Reports', sub:'Bills by category. Export to Excel, PDF, or print.' },
-                { bg:'#F2F1FD', ic:'ti-scan', ic_c:'var(--lilac)', title:'AI Document Scanner', sub:'Photo or PDF — Claude reads it and creates a draft.' },
+                { bg:'#F2F1FD', ic:'ti-scan', ic_c:'var(--lilac)', title:'AI Document Scanner', sub:'Photo or PDF â€” Claude reads it and creates a draft.' },
                 { bg:'#EBEBEB', ic:'ti-device-tablet', ic_c:'var(--text-1)', title:'Kiosk & Kids Mode', sub:'Tablet view with bedtime lock & parent override.' },
               ].map(f => (
                 <div key={f.title} className="help-feat-card">
@@ -1919,10 +1446,10 @@ function saveBedtimeSettings(){
             <div className="help-section-label">Frequently asked questions</div>
             {[
               { q:'How does the AI scanner work?', a:'Tap <strong>AI scan</strong> and upload a photo or PDF of any bill, event invitation, or school newsletter. Claude reads it, extracts the key details, and shows you a draft entry to review and edit before saving. Nothing is saved automatically.' },
-              { q:'How do exam countdowns work?', a:'Add an exam via <strong>Add exam</strong>. It appears on the priority countdown bar on the calendar. Open the exam to add revision sessions — they show as lilac blocks on the calendar.' },
-              { q:'Can I print or export the calendar?', a:'Yes — open the Calendar and tap the print icon in the toolbar. Choose Print for a browser print view, or Export PDF to download.' },
+              { q:'How do exam countdowns work?', a:'Add an exam via <strong>Add exam</strong>. It appears on the priority countdown bar on the calendar. Open the exam to add revision sessions â€” they show as lilac blocks on the calendar.' },
+              { q:'Can I print or export the calendar?', a:'Yes â€” open the Calendar and tap the print icon in the toolbar. Choose Print for a browser print view, or Export PDF to download.' },
               { q:'How do I export financial reports?', a:'Open <strong>Financial reports</strong> from the dashboard. Choose your period then tap Export to Excel, Export PDF, or Print.' },
-              { q:'How do I add a child account?', a:'Tap <strong>Invite member</strong>, enter their name, and set the role to <strong>Child</strong>. Child accounts use PIN-only login — no email needed.' },
+              { q:'How do I add a child account?', a:'Tap <strong>Invite member</strong>, enter their name, and set the role to <strong>Child</strong>. Child accounts use PIN-only login â€” no email needed.' },
             ].map(faq => (
               <div key={faq.q} className="faq-item" onClick={(e) => (window as any).toggleFaq(e.currentTarget)}>
                 <div className="faq-q">{faq.q}<i className="ti ti-chevron-down"></i></div>
@@ -1937,7 +1464,7 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* ════ SETUP WIZARD ════ */}
+      {/* â•â•â•â• SETUP WIZARD â•â•â•â• */}
       <div className="modal-backdrop" id="modal-wizard" onClick={(e) => (window as any).backdropClose(e,'modal-wizard')}>
         <div className="modal" style={{ maxWidth: 520 }}><div className="modal-handle"></div>
           <div className="wizard-steps">
@@ -1948,7 +1475,7 @@ function saveBedtimeSettings(){
           </div>
           <div className="modal-body" style={{ paddingTop: 8 }}>
             <div className="wizard-step active" id="wstep-0">
-              <div className="wizard-hero"><div className="wizard-hero-icon">🏠</div><div className="wizard-hero-title">Welcome to KYNC!</div><div className="wizard-hero-sub">I&apos;m your AI setup assistant. Let&apos;s get your family running in about 2 minutes.</div></div>
+              <div className="wizard-hero"><div className="wizard-hero-icon">ðŸ </div><div className="wizard-hero-title">Welcome to KYNC!</div><div className="wizard-hero-sub">I&apos;m your AI setup assistant. Let&apos;s get your family running in about 2 minutes.</div></div>
               <div className="modal-actions"><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Let&apos;s go <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
             </div>
             <div className="wizard-step" id="wstep-1">
@@ -1971,16 +1498,16 @@ function saveBedtimeSettings(){
                 </div>
                 <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => (window as any).showToast('Use Invite member to add more family members')}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--border-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-plus" style={{ color: 'var(--text-3)' }}></i></div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)' }}>Add a partner, child or guest…</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)' }}>Add a partner, child or guestâ€¦</div>
                 </div>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-3)', background: 'var(--amber-lt)', padding: '10px 12px', borderRadius: 'var(--r-md)', border: '1px solid #FDE68A', lineHeight: 1.5 }}>
-                <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>Children use PIN-only login — no email needed.
+                <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>Children use PIN-only login â€” no email needed.
               </div>
               <div className="modal-actions" style={{ marginTop: 18 }}><button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
             </div>
             <div className="wizard-step" id="wstep-3">
-              <div className="wizard-hero"><div className="wizard-hero-icon">🎉</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
+              <div className="wizard-hero"><div className="wizard-hero-icon">ðŸŽ‰</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
               <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 14, marginBottom: 4 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Setup complete</div>
                 {['Family profile created','You\'re set as Admin','Notifications enabled'].map(item => (
@@ -1996,24 +1523,24 @@ function saveBedtimeSettings(){
         </div>
       </div>
 
-      {/* ════ BEDTIME OVERLAY ════ */}
+      {/* â•â•â•â• BEDTIME OVERLAY â•â•â•â• */}
       <div id="bedtime-overlay">
         <div className="bedtime-stars" id="bedtime-stars"></div>
-        <span className="bedtime-demo-close" onClick={() => (window as any).hideBedtime()}>✕ Close preview</span>
-        <div className="bedtime-moon">🌙</div>
+        <span className="bedtime-demo-close" onClick={() => (window as any).hideBedtime()}>âœ• Close preview</span>
+        <div className="bedtime-moon">ðŸŒ™</div>
         <div className="bedtime-title">Time for bed!</div>
-        <div className="bedtime-sub">This app is sleeping. Get some rest — it&apos;ll be ready in the morning.</div>
+        <div className="bedtime-sub">This app is sleeping. Get some rest â€” it&apos;ll be ready in the morning.</div>
         <div className="bedtime-wake-card"><div className="bedtime-wake-label">Back at</div><div className="bedtime-wake-time">7:00 AM</div></div>
-        <button className="bedtime-ask-btn" onClick={() => { (window as any).showToast('Extension request sent to Mum & Dad 📱'); (window as any).hideBedtime(); }}>Ask for extra time</button>
+        <button className="bedtime-ask-btn" onClick={() => { (window as any).showToast('Extension request sent to Mum & Dad ðŸ“±'); (window as any).hideBedtime(); }}>Ask for extra time</button>
       </div>
 
-      {/* ════ KIDS VIEW OVERLAY ════ */}
+      {/* â•â•â•â• KIDS VIEW OVERLAY â•â•â•â• */}
       <div id="kids-view-overlay">
         <div className="kv-topbar">
           <img src="/Kync_logo.png" alt="KYNC" style={{ height: 28 }} />
           <button className="kv-exit" onClick={() => (window as any).closeKidsView()}><i className="ti ti-x" style={{ fontSize: 11, marginRight: 4 }}></i>Exit kids view</button>
         </div>
-        <div className="kv-greeting" id="kv-greeting">Hi there! 👋</div>
+        <div className="kv-greeting" id="kv-greeting">Hi there! ðŸ‘‹</div>
         <div className="kv-date">Today is {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
         <div className="kv-member-tabs">
           <div className="kv-tab sel" style={{ background: 'var(--oj-bg)', color: 'var(--oj-fg)', borderColor: 'var(--oj-bg)' }} onClick={() => (window as any).openKidsView('olivia')}>Child 1</div>
@@ -2023,36 +1550,36 @@ function saveBedtimeSettings(){
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: 'var(--oj-bg)', color: 'var(--oj-fg)' }}>K1</div>
-              <div><div className="kv-card-title">Today&apos;s chores</div><div className="kv-card-sub">🌅 Morning · {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}</div></div>
+              <div><div className="kv-card-title">Today&apos;s chores</div><div className="kv-card-sub">ðŸŒ… Morning Â· {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}</div></div>
             </div>
             <div className="kv-chore-row"><div className="kv-chore-check done" onClick={(e) => (window as any).kvToggle(e.currentTarget)}><i className="ti ti-check" style={{ fontSize: 11, color: '#fff' }}></i></div><div className="kv-chore-label done">Make bed</div><div className="kv-chore-pts">+5 pts</div></div>
             <div className="kv-chore-row"><div className="kv-chore-check done" onClick={(e) => (window as any).kvToggle(e.currentTarget)}><i className="ti ti-check" style={{ fontSize: 11, color: '#fff' }}></i></div><div className="kv-chore-label done">Brush teeth</div><div className="kv-chore-pts">+5 pts</div></div>
             <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Pack school bag</div><div className="kv-chore-pts">+5 pts</div></div>
             <div className="kv-points-bar">
-              <div className="kv-pts-top"><span>⭐ 140 pts this week</span><span style={{ color: 'var(--text-3)' }}>Goal: 150 pts</span></div>
+              <div className="kv-pts-top"><span>â­ 140 pts this week</span><span style={{ color: 'var(--text-3)' }}>Goal: 150 pts</span></div>
               <div className="kv-pts-track"><div className="kv-pts-fill" style={{ width: '93%', background: 'var(--oj-ac)' }}></div></div>
             </div>
           </div>
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: '#F2F1FD', color: 'var(--fa-ac)' }}><i className="ti ti-books" style={{ fontSize: 16 }}></i></div>
-              <div><div className="kv-card-title">Homework due</div><div className="kv-card-sub">Maths test Thursday · 2 days</div></div>
+              <div><div className="kv-card-title">Homework due</div><div className="kv-card-sub">Maths test Thursday Â· 2 days</div></div>
             </div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Maths revision — number patterns</div><div className="kv-chore-pts" style={{ color: 'var(--fa-ac)' }}>📚</div></div>
-            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Reading log · 20 pages</div><div className="kv-chore-pts" style={{ color: 'var(--fa-ac)' }}>📚</div></div>
+            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Maths revision â€” number patterns</div><div className="kv-chore-pts" style={{ color: 'var(--fa-ac)' }}>ðŸ“š</div></div>
+            <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Reading log Â· 20 pages</div><div className="kv-chore-pts" style={{ color: 'var(--fa-ac)' }}>ðŸ“š</div></div>
           </div>
         </div>
         <div id="kv-liam" style={{ width: '100%', maxWidth: 480, display: 'none' }}>
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: 'var(--lj-bg)', color: 'var(--lj-fg)' }}>K2</div>
-              <div><div className="kv-card-title">Today&apos;s chores</div><div className="kv-card-sub">🌅 Morning · {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}</div></div>
+              <div><div className="kv-card-title">Today&apos;s chores</div><div className="kv-card-sub">ðŸŒ… Morning Â· {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}</div></div>
             </div>
             <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Make bed</div><div className="kv-chore-pts">+5 pts</div></div>
             <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Brush teeth</div><div className="kv-chore-pts">+5 pts</div></div>
             <div className="kv-chore-row"><div className="kv-chore-check" onClick={(e) => (window as any).kvToggle(e.currentTarget)}></div><div className="kv-chore-label">Feed the dog</div><div className="kv-chore-pts">+10 pts</div></div>
             <div className="kv-points-bar">
-              <div className="kv-pts-top"><span>⭐ 95 pts this week</span><span style={{ color: 'var(--text-3)' }}>Goal: 40 pts</span></div>
+              <div className="kv-pts-top"><span>â­ 95 pts this week</span><span style={{ color: 'var(--text-3)' }}>Goal: 40 pts</span></div>
               <div className="kv-pts-track"><div className="kv-pts-fill" style={{ width: '100%', background: 'var(--lj-ac)' }}></div></div>
             </div>
           </div>

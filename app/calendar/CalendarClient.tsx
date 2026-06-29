@@ -24,7 +24,7 @@ export type CalEvent = {
   recurEndDate?: string
   recurEndCount?: number
   notes?: string
-  type: 'event' | 'task' | 'chore' | 'homework' | 'exam' | 'revision'
+  type: 'event' | 'task' | 'chore' | 'homework' | 'exam' | 'revision' | 'birthday' | 'school-holiday' | 'family-holiday' | 'public-holiday'
 }
 
 export type Member = {
@@ -243,6 +243,16 @@ html,body{height:100%;overflow:hidden;}
 .priority-item-meta{font-size:10px;opacity:.75;}
 .priority-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;letter-spacing:.04em;flex-shrink:0;}
 
+/* ── Special events strip ── */
+.special-strip{background:var(--surface);border-bottom:1.5px solid var(--border);padding:6px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;overflow-x:auto;min-height:36px;}
+.special-strip::-webkit-scrollbar{display:none;}
+.special-strip-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);white-space:nowrap;flex-shrink:0;}
+.special-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;cursor:default;flex-shrink:0;}
+.cal-cell-special{position:absolute;top:2px;right:3px;display:flex;gap:2px;}
+.cal-day-shade{position:absolute;inset:0;pointer-events:none;border-radius:inherit;}
+/* ── Calendar day shading for specials ── */
+.cal-cell{position:relative;}
+
 /* ── Mobile touch improvements ── */
 @media(max-width:640px){
   .cal-topbar{padding:0 12px;}
@@ -303,13 +313,26 @@ function buildSampleEvents(displayName: string): CalEvent[] {
    HELPERS
 ───────────────────────────────────────── */
 export const TYPE_ICONS: Record<string, string> = {
-  event:    'ti-calendar-event',
-  task:     'ti-circle-check',
-  chore:    'ti-home',
-  homework: 'ti-books',
-  exam:     'ti-school',
-  revision: 'ti-pencil',
-  bill:     'ti-receipt',
+  event:           'ti-calendar-event',
+  task:            'ti-circle-check',
+  chore:           'ti-home',
+  homework:        'ti-books',
+  exam:            'ti-school',
+  revision:        'ti-pencil',
+  bill:            'ti-receipt',
+  birthday:        'ti-cake',
+  'school-holiday':'ti-school-off',
+  'family-holiday':'ti-beach',
+  'public-holiday':'ti-flag',
+}
+
+export const SPECIAL_TYPES = ['birthday', 'school-holiday', 'family-holiday', 'public-holiday']
+
+export const SPECIAL_META: Record<string, { emoji: string; shade: string; label: string }> = {
+  'birthday':       { emoji: '🎂', shade: 'rgba(236,72,153,0.08)', label: 'Birthday' },
+  'school-holiday': { emoji: '🏫', shade: 'rgba(59,130,246,0.08)', label: 'School holiday' },
+  'family-holiday': { emoji: '🌴', shade: 'rgba(16,185,129,0.08)', label: 'Family holiday' },
+  'public-holiday': { emoji: '🎉', shade: 'rgba(245,158,11,0.08)', label: 'Public holiday' },
 }
 
 /** Resolve the display colour for an event based on its assignees */
@@ -487,6 +510,58 @@ function eventsForDateHour(events: CalEvent[], dateStr: string, hour: number) {
 /* ─────────────────────────────────────────
    PRIORITY BAR
 ───────────────────────────────────────── */
+/* ─────────────────────────────────────────
+   SPECIAL EVENTS STRIP
+───────────────────────────────────────── */
+function SpecialEventsStrip({ events }: { events: CalEvent[] }) {
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const in30  = new Date(today); in30.setDate(today.getDate() + 30)
+
+  const upcoming = events
+    .filter(ev => SPECIAL_TYPES.includes(ev.type))
+    .flatMap(ev => {
+      const results: { ev: CalEvent; date: Date; daysAway: number }[] = []
+      for (let d = new Date(today); d <= in30; d.setDate(d.getDate() + 1)) {
+        const ds = d.toISOString().slice(0, 10)
+        if (eventOccursOn(ev, ds)) {
+          const daysAway = Math.round((d.getTime() - today.getTime()) / 86400000)
+          results.push({ ev, date: new Date(d), daysAway })
+        }
+      }
+      return results
+    })
+    .sort((a, b) => a.daysAway - b.daysAway)
+    .slice(0, 10)
+
+  if (!upcoming.length) return null
+
+  return (
+    <div className="special-strip">
+      <span className="special-strip-label">✨ Upcoming</span>
+      {upcoming.map(({ ev, date, daysAway }, i) => {
+        const meta = SPECIAL_META[ev.type] || { emoji: '📅', shade: '#eee', label: ev.type }
+        const dayLabel = daysAway === 0 ? 'Today' : daysAway === 1 ? 'Tomorrow'
+          : date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+        const bg = ev.type === 'birthday' ? '#FDF2F8'
+          : ev.type === 'school-holiday' ? '#EFF6FF'
+          : ev.type === 'family-holiday' ? '#ECFDF5'
+          : '#FFFBEB'
+        const fg = ev.type === 'birthday' ? '#BE185D'
+          : ev.type === 'school-holiday' ? '#1D4ED8'
+          : ev.type === 'family-holiday' ? '#065F46'
+          : '#92400E'
+        return (
+          <div key={i} className="special-chip" style={{ background: bg, color: fg }}>
+            <span>{meta.emoji}</span>
+            <span>{ev.title}</span>
+            <span style={{ opacity: 0.65, fontWeight: 500 }}>· {dayLabel}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function PriorityBar({ events, members, onEventClick }: {
   events: CalEvent[]
   members: Member[]
@@ -513,12 +588,14 @@ function PriorityBar({ events, members, onEventClick }: {
 
   if (!upcoming.length) return (
     <div className="priority-bar">
+      <Image src="/countdown_image.png" alt="" width={32} height={32} style={{ height: 32, width: 'auto', flexShrink: 0 }} />
       <div className="priority-bar-label"><i className="ti ti-circle-check" style={{ color: 'var(--green)' }}></i>Nothing due in the next 3 days</div>
     </div>
   )
 
   return (
     <div className="priority-bar">
+      <Image src="/countdown_image.png" alt="" width={32} height={32} style={{ height: 32, width: 'auto', flexShrink: 0 }} />
       <div className="priority-bar-label"><i className="ti ti-bolt"></i>Up next</div>
       <div className="priority-bar-scroll">
         {upcoming.map(({ ev, dateStr, daysAway }) => {
@@ -567,21 +644,35 @@ function MonthView({ year, month, events, members, onCellClick, onEventClick }: 
         {cells.map((cell, idx) => {
           const isToday = cell.date.toDateString() === today.toDateString()
           const dateStr = cell.date.toISOString().slice(0, 10)
-          const dayEvs = events.filter(e => eventOccursOn(e, dateStr))
+          const dayEvs  = events.filter(e => eventOccursOn(e, dateStr))
+          const specials = dayEvs.filter(e => SPECIAL_TYPES.includes(e.type))
+          const regular  = dayEvs.filter(e => !SPECIAL_TYPES.includes(e.type))
+          // Compute blended shade from all specials on this day
+          const shade = specials.length ? SPECIAL_META[specials[0].type]?.shade : null
           return (
             <div
               key={idx}
               className={`cal-cell${!cell.thisMonth ? ' other-month' : ''}${isToday ? ' today' : ''}`}
               onClick={() => onCellClick(dateStr)}
             >
-              <div className="cal-date">{cell.date.getDate()}</div>
-              {dayEvs.slice(0, 3).map(ev => {
+              {shade && <div className="cal-day-shade" style={{ background: shade }} />}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+                <div className="cal-date">{cell.date.getDate()}</div>
+                {specials.length > 0 && (
+                  <div style={{ display: 'flex', gap: 1, fontSize: 10 }} title={specials.map(s => s.title).join(', ')}>
+                    {specials.slice(0, 3).map((s, si) => (
+                      <span key={si}>{SPECIAL_META[s.type]?.emoji}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {regular.slice(0, 3).map(ev => {
                 const cs = getEventChipStyle(ev.assignees, members)
                 return (
                   <div
                     key={ev.id}
                     className="cal-event-chip"
-                    style={{ background: cs.background, color: cs.color, borderLeft: `3px solid ${cs.borderLeftColor}` }}
+                    style={{ background: cs.background, color: cs.color, borderLeft: `3px solid ${cs.borderLeftColor}`, position: 'relative' }}
                     onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
                     title={`${ev.title} · ${ev.assignees.join(', ')}`}
                   >
@@ -591,9 +682,9 @@ function MonthView({ year, month, events, members, onCellClick, onEventClick }: 
                   </div>
                 )
               })}
-              {dayEvs.length > 3 && (
-                <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600, padding: '1px 4px' }}>
-                  +{dayEvs.length - 3} more
+              {regular.length > 3 && (
+                <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600, padding: '1px 4px', position: 'relative' }}>
+                  +{regular.length - 3} more
                 </div>
               )}
             </div>
@@ -642,26 +733,36 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
       </div>
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${weekDays.length},1fr)`, overflow: 'hidden' }}>
         {weekDays.map((d, i) => {
-          const isToday = d.toDateString() === today.toDateString()
+          const isToday   = d.toDateString() === today.toDateString()
+          const dateStr   = d.toISOString().slice(0, 10)
+          const specials  = events.filter(e => SPECIAL_TYPES.includes(e.type) && eventOccursOn(e, dateStr))
           return (
             <div key={`h${i}`} className="cal-week-day-header">
               <div className="cal-week-day-name">{DAYS_SHORT[d.getDay()]}</div>
               <div className={`cal-week-day-num${isToday ? ' today' : ''}`}>{d.getDate()}</div>
+              {specials.length > 0 && (
+                <div style={{ fontSize: 11, lineHeight: 1 }} title={specials.map(s => s.title).join(', ')}>
+                  {specials.slice(0, 2).map((s, si) => <span key={si}>{SPECIAL_META[s.type]?.emoji}</span>)}
+                </div>
+              )}
             </div>
           )
         })}
         {weekDays.map((d, dayIdx) => {
-          const dateStr = d.toISOString().slice(0, 10)
+          const dateStr  = d.toISOString().slice(0, 10)
+          const specials = events.filter(e => SPECIAL_TYPES.includes(e.type) && eventOccursOn(e, dateStr))
+          const shade    = specials.length ? SPECIAL_META[specials[0].type]?.shade : null
           return (
             <div key={`d${dayIdx}`} className="cal-day-col" style={{ gridRow: '2 / -1', position: 'relative' }}>
+              {shade && <div style={{ position: 'absolute', inset: 0, background: shade, pointerEvents: 'none', zIndex: 0 }} />}
               {HOURS.map(h => {
-                const slotEvs = eventsForDateHour(events, dateStr, h)
+                const slotEvs = eventsForDateHour(events, dateStr, h).filter(e => !SPECIAL_TYPES.includes(e.type))
                 return (
                   <div
                     key={h}
                     className="cal-hour-row"
                     onClick={() => onSlotClick(dateStr, h)}
-                    style={{ position: 'relative' }}
+                    style={{ position: 'relative', zIndex: 1 }}
                   >
                     {slotEvs.map((ev, ei) => {
                       const cs = getEventChipStyle(ev.assignees, members)
@@ -1325,6 +1426,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
       {/* Legend removed — member colours shown in avatar bar above */}
 
       {/* ── Priority countdown bar ── */}
+      <SpecialEventsStrip events={filteredEvents} />
       <PriorityBar events={filteredEvents} members={MEMBERS} onEventClick={openDetail} />
 
       {/* ── Content: calendar + sidebar ── */}

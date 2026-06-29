@@ -616,8 +616,13 @@ export default function TasksClient({ displayName, familyName, initials, familyM
       {/* Page */}
       <main className="page">
         <div className="page-header">
-          <div className="page-title">Tasks &amp; Chores</div>
-          <div className="page-sub">{familyName ? `${familyName} · ` : ''}{totalCount} active · {overdueCount > 0 ? `${overdueCount} overdue · ` : ''}{progress}% complete</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Image src="/task_image.png" alt="" width={56} height={56} style={{ height: 56, width: 'auto', flexShrink: 0 }} />
+            <div>
+              <div className="page-title">Tasks &amp; Chores</div>
+              <div className="page-sub">{familyName ? `${familyName} · ` : ''}{totalCount} active · {overdueCount > 0 ? `${overdueCount} overdue · ` : ''}{progress}% complete</div>
+            </div>
+          </div>
           <div className="progress-bar-wrap" style={{ marginTop: 10 }}>
             <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
           </div>

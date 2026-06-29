@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
       recur_end:          body.recurEnd          || 'never',
       recur_end_date:     body.recurEndDate      || null,
       recur_end_count:    body.recurEndCount     || null,
+      bill_amount:        body.bill_amount       ?? null,
+      bill_category:      body.bill_category     || null,
+      bill_status:        body.bill_status       || null,
     })
     .select()
     .single()

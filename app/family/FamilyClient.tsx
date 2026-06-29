@@ -139,6 +139,21 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
   const [adultName, setAdultName] = useState('')
   const [adultEmail, setAdultEmail] = useState('')
 
+  // Calendar feeds
+  const [feeds, setFeeds]               = useState<any[]>([])
+  const [feedName, setFeedName]         = useState('')
+  const [feedUrl, setFeedUrl]           = useState('')
+  const [feedColour, setFeedColour]     = useState('#378ADD')
+  const [feedSyncing, setFeedSyncing]   = useState(false)
+
+  // Special events
+  const [specials, setSpecials]         = useState<any[]>([])
+  const [specTitle, setSpecTitle]       = useState('')
+  const [specType, setSpecType]         = useState('birthday')
+  const [specDate, setSpecDate]         = useState('')
+  const [specEndDate, setSpecEndDate]   = useState('')
+  const [specRecur, setSpecRecur]       = useState('none')
+
   useEffect(() => {
     const s = document.createElement('style')
     s.id = 'kync-family-css'
@@ -152,6 +167,61 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
     const t = setTimeout(() => setToastVisible(false), 2600)
     return () => clearTimeout(t)
   }, [toastVisible])
+
+  useEffect(() => {
+    fetch('/api/calendar-feeds').then(r => r.json()).then(d => { if (Array.isArray(d)) setFeeds(d) }).catch(() => {})
+    fetch('/api/entries').then(r => r.json()).then(d => {
+      if (Array.isArray(d)) setSpecials(d.filter((e: any) => ['birthday','school-holiday','family-holiday','public-holiday'].includes(e.type)))
+    }).catch(() => {})
+  }, [])
+
+  async function addFeed() {
+    if (!feedName.trim() || !feedUrl.trim()) { showToast('Enter a name and URL'); return }
+    setSaving(true)
+    const res = await fetch('/api/calendar-feeds', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: feedName.trim(), url: feedUrl.trim(), colour: feedColour }) })
+    const data = await res.json()
+    if (!res.ok) { showToast(data.error || 'Failed'); setSaving(false); return }
+    setFeeds(f => [...f, data])
+    setFeedName(''); setFeedUrl(''); setFeedColour('#378ADD')
+    showToast('Feed added — syncing now…')
+    setSaving(false)
+    syncFeed(data.id)
+  }
+
+  async function removeFeed(id: string) {
+    if (!confirm('Remove this calendar feed and its imported events?')) return
+    await fetch('/api/calendar-feeds', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    setFeeds(f => f.filter(x => x.id !== id))
+    showToast('Feed removed')
+  }
+
+  async function syncFeed(id?: string) {
+    setFeedSyncing(true)
+    const res = await fetch('/api/calendar-feeds/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(id ? { feed_id: id } : {}) })
+    const data = await res.json()
+    showToast(data.synced > 0 ? `Synced ${data.synced} events ✓` : 'No new events found')
+    setFeedSyncing(false)
+    if (id) setFeeds(f => f.map(x => x.id === id ? { ...x, last_synced: new Date().toISOString() } : x))
+  }
+
+  async function addSpecialEvent() {
+    if (!specTitle.trim() || !specDate) { showToast('Enter a title and date'); return }
+    setSaving(true)
+    const body: any = { title: specTitle.trim(), date: specDate, type: specType, colour: specType === 'birthday' ? 'pink' : specType === 'school-holiday' ? 'blue' : specType === 'family-holiday' ? 'green' : 'amber', assignees: ['Everyone'], recur: specRecur === 'yearly' ? 'yearly' : 'none', notes: specEndDate ? `Until ${specEndDate}` : undefined }
+    const res = await fetch('/api/entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const data = await res.json()
+    if (!res.ok) { showToast(data.error || 'Failed'); setSaving(false); return }
+    setSpecials(s => [...s, data])
+    setSpecTitle(''); setSpecDate(''); setSpecEndDate(''); setSpecRecur('none')
+    showToast(`${specType === 'birthday' ? '🎂' : specType === 'school-holiday' ? '🏫' : '🌴'} ${specTitle} added`)
+    setSaving(false)
+  }
+
+  async function removeSpecial(id: string | number) {
+    await fetch(`/api/entries/${id}`, { method: 'DELETE' })
+    setSpecials(s => s.filter(x => x.id !== id))
+    showToast('Removed')
+  }
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setModal(null) }
@@ -349,6 +419,115 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
             ? <div className="empty-state"><i className="ti ti-star" /><p>No children added yet — use Add member above.</p></div>
             : <div className="member-grid">{children.map((m, i) => renderMember(m, admins.length + adults.length + i))}</div>
           }
+        </div>
+
+        {/* ── Special Events & Holidays ── */}
+        <div className="section" style={{ marginTop: 28 }}>
+          <div className="section-label">✨ Special Events &amp; Holidays</div>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 14, lineHeight: 1.5 }}>
+            Birthdays, school holidays, and family holidays appear as emoji icons on the calendar with a soft background shade.
+          </p>
+          <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr', marginBottom: 12 }}>
+            <div className="modal-field" style={{ margin: 0 }}>
+              <label>Title</label>
+              <input type="text" placeholder="e.g. Mia's Birthday" value={specTitle} onChange={e => setSpecTitle(e.target.value)} />
+            </div>
+            <div className="modal-field" style={{ margin: 0 }}>
+              <label>Type</label>
+              <select value={specType} onChange={e => setSpecType(e.target.value)}>
+                <option value="birthday">🎂 Birthday</option>
+                <option value="school-holiday">🏫 School holiday</option>
+                <option value="family-holiday">🌴 Family holiday</option>
+                <option value="public-holiday">🎉 Public holiday</option>
+              </select>
+            </div>
+            <div className="modal-field" style={{ margin: 0 }}>
+              <label>Start date</label>
+              <input type="date" value={specDate} onChange={e => setSpecDate(e.target.value)} />
+            </div>
+            <div className="modal-field" style={{ margin: 0 }}>
+              <label>End date <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(optional)</span></label>
+              <input type="date" value={specEndDate} onChange={e => setSpecEndDate(e.target.value)} />
+            </div>
+            <div className="modal-field" style={{ margin: 0 }}>
+              <label>Repeat</label>
+              <select value={specRecur} onChange={e => setSpecRecur(e.target.value)}>
+                <option value="none">One-off</option>
+                <option value="yearly">Every year</option>
+              </select>
+            </div>
+          </div>
+          <button className="modal-btn modal-btn-primary" style={{ marginBottom: 16 }} onClick={addSpecialEvent} disabled={saving}>
+            {saving ? 'Adding…' : '+ Add special event'}
+          </button>
+          {specials.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {specials.map(s => {
+                const emoji = s.type === 'birthday' ? '🎂' : s.type === 'school-holiday' ? '🏫' : s.type === 'family-holiday' ? '🌴' : '🎉'
+                return (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--bg)', borderRadius: 'var(--r-md)', border: '1.5px solid var(--border)' }}>
+                    <span style={{ fontSize: 18 }}>{emoji}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{s.title}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{s.date}{s.recur !== 'none' ? ' · Repeats yearly' : ''}</div>
+                    </div>
+                    {isAdmin && <button onClick={() => removeSpecial(s.id)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 16, padding: 4 }}><i className="ti ti-trash" /></button>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Connected Calendars ── */}
+        <div className="section" style={{ marginTop: 28, marginBottom: 40 }}>
+          <div className="section-label">🔗 Connected Calendars</div>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 14, lineHeight: 1.5 }}>
+            Paste an iCal URL from Google Calendar, Outlook, or Square Appointments. Events sync automatically each time you open the calendar.
+          </p>
+          <div style={{ background: 'var(--amber-lt)', borderRadius: 'var(--r-md)', padding: '10px 12px', fontSize: 12, color: '#92400E', marginBottom: 14, lineHeight: 1.5 }}>
+            <strong>How to get your iCal URL:</strong><br />
+            <b>Google Calendar:</b> Settings → your calendar → "Secret address in iCal format"<br />
+            <b>Outlook:</b> Calendar settings → Shared calendars → Publish → ICS link<br />
+            <b>Square Appointments:</b> Dashboard → Appointments → Calendar → Share → Copy iCal link
+          </div>
+          <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr', marginBottom: 8 }}>
+            <div className="modal-field" style={{ margin: 0, gridColumn: '1 / -1' }}>
+              <label>Calendar name</label>
+              <input type="text" placeholder="e.g. Kelly's Google Calendar" value={feedName} onChange={e => setFeedName(e.target.value)} />
+            </div>
+            <div className="modal-field" style={{ margin: 0, gridColumn: '1 / -1' }}>
+              <label>iCal URL</label>
+              <input type="url" placeholder="https://calendar.google.com/calendar/ical/..." value={feedUrl} onChange={e => setFeedUrl(e.target.value)} style={{ fontFamily: 'monospace', fontSize: 11 }} />
+            </div>
+            <div className="modal-field" style={{ margin: 0 }}>
+              <label>Colour</label>
+              <input type="color" value={feedColour} onChange={e => setFeedColour(e.target.value)} style={{ height: 44, padding: 4 }} />
+            </div>
+          </div>
+          <button className="modal-btn modal-btn-primary" style={{ marginBottom: 16 }} onClick={addFeed} disabled={saving || feedSyncing}>
+            {saving ? 'Adding…' : '+ Connect calendar'}
+          </button>
+          {feeds.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {feeds.map(f => (
+                <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--bg)', borderRadius: 'var(--r-md)', border: '1.5px solid var(--border)' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: f.colour, flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{f.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{f.last_synced ? `Last synced ${new Date(f.last_synced).toLocaleString('en-AU', { dateStyle: 'short', timeStyle: 'short' })}` : 'Never synced'}</div>
+                  </div>
+                  <button onClick={() => syncFeed(f.id)} disabled={feedSyncing} style={{ background: 'var(--green-lt)', border: 'none', color: 'var(--green)', borderRadius: 'var(--r-md)', padding: '6px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                    {feedSyncing ? '…' : '↻ Sync'}
+                  </button>
+                  {isAdmin && <button onClick={() => removeFeed(f.id)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 16, padding: 4 }}><i className="ti ti-trash" /></button>}
+                </div>
+              ))}
+              <button onClick={() => syncFeed()} disabled={feedSyncing} style={{ alignSelf: 'flex-start', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', color: 'var(--text-2)' }}>
+                {feedSyncing ? 'Syncing all…' : '↻ Sync all feeds'}
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
