@@ -1,5 +1,5 @@
 ﻿﻿'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
 interface FamilyMember {
@@ -562,9 +562,62 @@ export default function DashboardClient({ displayName, familyName, initials, use
     return () => clearInterval(interval)
   }, [])
 
+  const [todayStr, setTodayStr] = useState('')
+  useEffect(() => {
+    setTodayStr(new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }))
+  }, [])
+
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
+  }
+
+  async function saveInvite() {
+    const name = (document.getElementById('invite-name') as HTMLInputElement)?.value?.trim() ?? ''
+    const selectedPill = document.querySelector('#modal-invite .role-pill.sel')
+    const role = selectedPill?.textContent?.trim().toLowerCase() ?? 'member'
+    const btn = document.getElementById('invite-btn') as HTMLButtonElement
+
+    if (!name) { alert('Please enter a name.'); return }
+
+    if (role === 'child') {
+      const pin = ['pin-1','pin-2','pin-3','pin-4']
+        .map(id => (document.getElementById(id) as HTMLInputElement)?.value ?? '')
+        .join('')
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { alert('Please enter a 4-digit PIN.'); return }
+
+      btn.disabled = true; btn.textContent = 'Saving…'
+      try {
+        const res = await fetch('/api/members/add-child', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, pin }),
+        })
+        const data = await res.json()
+        if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
+        ;(window as any).closeModal('modal-invite')
+        setTimeout(() => (window as any).showToast('Child account created! 🎉'), 120)
+        setTimeout(() => location.reload(), 800)
+      } catch { alert('Network error — please try again.') }
+      finally { btn.disabled = false; btn.textContent = 'Create child account' }
+    } else {
+      const email = (document.querySelector('#invite-email-section input[type=email]') as HTMLInputElement)?.value?.trim() ?? ''
+      if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return }
+
+      btn.disabled = true; btn.textContent = 'Sending…'
+      try {
+        const res = await fetch('/api/members/invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email }),
+        })
+        const data = await res.json()
+        if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
+        ;(window as any).closeModal('modal-invite')
+        setTimeout(() => (window as any).showToast('Invite sent!'), 120)
+      } catch { alert('Network error — please try again.') }
+      finally { btn.disabled = false; btn.textContent = 'Send invite' }
+    }
   }
 
   return (
@@ -604,7 +657,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <div>
             <div className="welcome-eyebrow">Welcome back</div>
             <div className="welcome-heading">{firstName}&apos;s<br />Family Hub</div>
-            <div className="welcome-sub">{fName} Â· {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+            <div className="welcome-sub">{fName}{todayStr ? ` · ${todayStr}` : ''}</div>
             <div className="welcome-members">
               <div className="welcome-av" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }}>{initials}</div>
               <div className="welcome-av" style={{ background: 'var(--mj-bg)', color: 'var(--mj-fg)' }}>+</div>
@@ -748,7 +801,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
       <div className="modal-backdrop" id="modal-invite" onClick={(e) => (window as any).backdropClose(e,'modal-invite')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
-            <div><div className="modal-title">Invite a member</div><div className="modal-sub" id="invite-sub">Send an email invite to join your family.</div></div>
+            <div><div className="modal-title">Add a member</div><div className="modal-sub" id="invite-sub">Set up a PIN-only account for your child.</div></div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-invite')}><i className="ti ti-x"></i></button>
           </div>
           <div className="modal-body">
@@ -756,13 +809,13 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="modal-field"><label>Role</label>
               <div className="role-pills">
                 <div className="role-pill" onClick={(e) => (window as any).selectInviteRole(e.currentTarget,'admin')}>Admin</div>
-                <div className="role-pill sel" onClick={(e) => (window as any).selectInviteRole(e.currentTarget,'member')}>Member</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectInviteRole(e.currentTarget,'child')}>Child</div>
+                <div className="role-pill" onClick={(e) => (window as any).selectInviteRole(e.currentTarget,'member')}>Member</div>
+                <div className="role-pill sel" onClick={(e) => (window as any).selectInviteRole(e.currentTarget,'child')}>Child</div>
                 <div className="role-pill" onClick={(e) => (window as any).selectInviteRole(e.currentTarget,'guest')}>Guest</div>
               </div>
             </div>
-            <div id="invite-email-section">
-              <div className="modal-field"><label>Email address</label><input type="email" placeholder="email@example.com" /></div>
+            <div id="invite-email-section" style={{ display: 'none' }}>
+              <div className="modal-field"><label>Email address</label><input type="email" placeholder="email@example.com" autoComplete="off" /></div>
               <div className="modal-field"><label>Task permissions</label>
                 <div className="perm-grid">
                   <div className="perm-toggle on" onClick={(e) => (window as any).togglePerm(e.currentTarget)}><span className="perm-toggle-lbl">Add tasks</span><div className="toggle-switch"></div></div>
@@ -772,7 +825,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 </div>
               </div>
             </div>
-            <div id="invite-pin-section" style={{ display: 'none' }}>
+            <div id="invite-pin-section">
               <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 14, fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
                 <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4, color: 'var(--amber)' }}></i>
                 Child accounts use a <strong>4-digit PIN</strong> â€” no email needed. Perfect for shared tablets.
@@ -796,7 +849,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-invite')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" id="invite-btn" onClick={() => (window as any).saveAndToast('modal-invite','Invite sent!')}>Send invite</button>
+              <button className="modal-btn modal-btn-primary" id="invite-btn" onClick={saveInvite}>Create child account</button>
             </div>
           </div>
         </div>
@@ -1529,7 +1582,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <button className="kv-exit" onClick={() => (window as any).closeKidsView()}><i className="ti ti-x" style={{ fontSize: 11, marginRight: 4 }}></i>Exit kids view</button>
         </div>
         <div className="kv-greeting" id="kv-greeting">Hi there! ðŸ‘‹</div>
-        <div className="kv-date">Today is {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        <div className="kv-date">{todayStr ? `Today is ${todayStr}` : ''}</div>
         <div className="kv-member-tabs">
           {members.filter(m => m.role === 'child').map((m, i) => {
             const slot = i === 0 ? 'olivia' : 'liam'
