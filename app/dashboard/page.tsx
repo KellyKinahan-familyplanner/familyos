@@ -1,4 +1,4 @@
-import { createServerSideClient } from '@/lib/supabase'
+import { createServerSideClient, createAdminClient } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
 import DashboardClient from './DashboardClient'
 
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     .eq('id', member.family_id)
     .maybeSingle()
 
-  const { data: allMembers } = await supabase
+  const { data: allMembers } = await createAdminClient()
     .from('family_members')
     .select('id, display_name, role, avatar_initials')
     .eq('family_id', member.family_id)

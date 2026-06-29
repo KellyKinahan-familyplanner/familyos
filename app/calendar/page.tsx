@@ -1,4 +1,4 @@
-import { createServerSideClient } from '@/lib/supabase'
+import { createServerSideClient, createAdminClient } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
 import CalendarClient from './CalendarClient'
 
@@ -31,8 +31,8 @@ export default async function CalendarPage() {
     .eq('id', member.family_id)
     .maybeSingle()
 
-  // Fetch all members of this family
-  const { data: allMembers } = await supabase
+  // Fetch all members via admin client so children (user_id=null) are visible past RLS
+  const { data: allMembers } = await createAdminClient()
     .from('family_members')
     .select('id, display_name, role, avatar_initials')
     .eq('family_id', member.family_id)
