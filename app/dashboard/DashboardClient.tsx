@@ -7,7 +7,6 @@ interface FamilyMember {
   display_name: string
   role: string
   avatar_initials: string
-  invite_status?: string
 }
 
 interface Props {
@@ -682,19 +681,6 @@ export default function DashboardClient({ displayName, familyName, initials, use
             const av = m.avatar_initials || m.display_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
             const isAdmin = m.role === 'admin'
             const isChild = m.role === 'child'
-            const isPending = m.invite_status === 'pending'
-            if (isPending) {
-              return (
-                <div key={m.id} className="member-row pending">
-                  <div className="member-av" style={{ background: '#F0EDE9', color: 'var(--text-3)' }}><i className="ti ti-mail" style={{ fontSize: 16 }}></i></div>
-                  <div className="member-info">
-                    <div className="member-name" style={{ color: 'var(--text-2)' }}>{m.display_name}</div>
-                    <div className="member-meta"><span className="pending-badge">Invite pending</span></div>
-                  </div>
-                  <i className="ti ti-chevron-right member-chevron"></i>
-                </div>
-              )
-            }
             return (
               <div key={m.id} className="member-row">
                 <div className="member-av" style={{ background: bg, color: fg }}>{av}</div>
@@ -829,7 +815,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                {members.map(m => (
                   <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
                 ))}
               </div>
@@ -901,7 +887,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                {members.map(m => (
                   <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
                 ))}
               </div>
@@ -980,7 +966,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                {members.map(m => (
                   <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
                 ))}
               </div>
@@ -1052,7 +1038,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                {members.map(m => (
                   <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
                 ))}
               </div>

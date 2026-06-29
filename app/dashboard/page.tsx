@@ -28,7 +28,7 @@ export default async function DashboardPage() {
 
   const { data: allMembers } = await supabase
     .from('family_members')
-    .select('id, display_name, role, avatar_initials, invite_status')
+    .select('id, display_name, role, avatar_initials')
     .eq('family_id', member.family_id)
     .order('created_at', { ascending: true })
 
