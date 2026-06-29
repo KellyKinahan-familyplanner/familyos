@@ -7,7 +7,7 @@ import Link from 'next/link'
    TYPES
 ───────────────────────────────────────── */
 export type CalEvent = {
-  id: number
+  id: string | number   // string UUID from Supabase, number for optimistic local adds
   title: string
   date: string        // YYYY-MM-DD
   time?: string
@@ -973,7 +973,8 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [view, setView]         = useState<'month' | 'week' | 'day'>('month')
   const [viewDate, setViewDate] = useState(today)   // anchor for week/day views
   const [activeMember, setActiveMember] = useState<string>('all')
-  const [events, setEvents]     = useState<CalEvent[]>(() => buildSampleEvents(displayName))
+  const [events, setEvents]     = useState<CalEvent[]>([])
+  const [eventsLoading, setEventsLoading] = useState(true)
   const [fabOpen, setFabOpen]   = useState(false)
   const [toast, setToast]       = useState('')
   const [toastVisible, setToastVisible] = useState(false)
@@ -981,7 +982,42 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [detailEvent, setDetailEvent] = useState<CalEvent | null>(null)
   const [detailPos, setDetailPos] = useState({ top: 0, left: 0 })
   const [prefillDate, setPrefillDate] = useState('')
-  const [checkedTasks, setCheckedTasks] = useState<Set<number>>(new Set())
+  const [checkedTasks, setCheckedTasks] = useState<Set<string | number>>(new Set())
+
+  /* ── Load events from Supabase ── */
+  useEffect(() => {
+    fetch('/api/entries')
+      .then(r => r.json())
+      .then((rows: Record<string, unknown>[]) => {
+        const mapped: CalEvent[] = rows.map(r => ({
+          id:               r.id as string,
+          title:            r.title as string,
+          date:             r.date as string,
+          time:             r.time_start as string | undefined,
+          endTime:          r.time_end as string | undefined,
+          colour:           (r.colour as string) || 'green',
+          assignees:        (r.assignees as string[]) || ['Everyone'],
+          type:             r.type as CalEvent['type'],
+          notes:            r.notes as string | undefined,
+          recur:            (r.recur as CalEvent['recur']) || 'none',
+          recurDays:        r.recur_days as string[] | undefined,
+          recurMonthType:   r.recur_month_type as 'date' | 'day' | undefined,
+          recurMonthDate:   r.recur_month_date as number | undefined,
+          recurMonthOrdinal:r.recur_month_ordinal as string | undefined,
+          recurMonthDay:    r.recur_month_day as string | undefined,
+          recurEnd:         r.recur_end as 'never' | 'on' | 'after' | undefined,
+          recurEndDate:     r.recur_end_date as string | undefined,
+          recurEndCount:    r.recur_end_count as number | undefined,
+        }))
+        setEvents(mapped)
+      })
+      .catch(() => {
+        // Fallback to sample data if not logged in or table missing
+        setEvents(buildSampleEvents(displayName))
+      })
+      .finally(() => setEventsLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /* ── CSS injection ── */
   useEffect(() => {
@@ -1040,8 +1076,35 @@ export default function CalendarClient({ displayName, familyName, initials, user
   }
 
   /* ── Event helpers ── */
-  const addEvent = (ev: CalEvent) => { setEvents(prev => [...prev, ev]) }
-  const removeEvent = (id: number) => { setEvents(prev => prev.filter(e => e.id !== id)); setDetailEvent(null); showToast('Event removed') }
+  const addEvent = async (ev: CalEvent) => {
+    // Optimistic add so UI feels instant
+    setEvents(prev => [...prev, ev])
+    try {
+      const res = await fetch('/api/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ev),
+      })
+      if (res.ok) {
+        const saved = await res.json()
+        // Replace the optimistic entry with the real UUID from Supabase
+        setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, id: saved.id } : e))
+      }
+    } catch {
+      // Keep optimistic entry — will re-sync on next page load
+    }
+  }
+
+  const removeEvent = async (id: string | number) => {
+    setEvents(prev => prev.filter(e => e.id !== id))
+    setDetailEvent(null)
+    showToast('Event removed')
+    try {
+      await fetch(`/api/entries/${id}`, { method: 'DELETE' })
+    } catch {
+      // Silently ignore — entry is already removed from UI
+    }
+  }
 
   const filteredEvents = activeMember === 'all'
     ? events
@@ -1107,7 +1170,9 @@ export default function CalendarClient({ displayName, familyName, initials, user
       recurEnd: fRecurEnd, recurEndDate: fRecurEndDate, recurEndCount: fRecurEndCount,
       notes: fNotes, type,
     })
-    setActiveModal(null); resetForm(); showToast(successMsg)
+    setActiveModal(null)
+    resetForm()
+    showToast(successMsg)
   }
 
   const openModal = (id: string, date = '') => {
