@@ -235,6 +235,90 @@ function onBillCategoryChange(sel){
   }
 }
 
+/* Save chore */
+function saveChore(){
+  var titleEl=document.querySelector('#modal-kids-chore input[type=text]');
+  var title=titleEl&&titleEl.value.trim();
+  if(!title){showToast('Enter a chore title');return;}
+
+  // Assignees — selected role-pills (excluding Everyone logic)
+  var assigneePills=document.querySelectorAll('#modal-kids-chore .modal-field:nth-child(2) .role-pill.sel');
+  var assignees=[];
+  assigneePills.forEach(function(p){assignees.push(p.textContent.trim());});
+  if(!assignees.length)assignees=['Everyone'];
+
+  // Time of day
+  var todPills=document.querySelectorAll('#modal-kids-chore [data-tod].sel');
+  var tod=[];
+  todPills.forEach(function(p){tod.push(p.getAttribute('data-tod'));});
+  var notes=tod.length?'Time: '+tod.join(', '):undefined;
+
+  // Recur
+  var recurPill=document.querySelector('#modal-kids-chore [data-recur].sel');
+  var recur=recurPill?recurPill.getAttribute('data-recur'):'none';
+
+  // Points
+  var ptsEl=document.querySelector('#modal-kids-chore input[type=number]');
+  var points=ptsEl?parseInt(ptsEl.value)||5:5;
+
+  // Today as default date
+  var today=new Date().toISOString().slice(0,10);
+
+  fetch('/api/entries',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:title,date:today,type:'chore',colour:'green',assignees:assignees,recur:recur,notes:notes||null,points:points})
+  }).then(function(r){
+    if(r.ok){
+      closeModal('modal-kids-chore');
+      showToast('Chore added – '+title);
+      if(titleEl)titleEl.value='';
+    } else {showToast('Could not save chore');}
+  }).catch(function(){showToast('Could not save chore');});
+}
+
+/* Save task */
+function saveTask(){
+  var titleEl=document.querySelector('#modal-add-task input[type=text]');
+  var title=titleEl&&titleEl.value.trim();
+  if(!title){showToast('Enter a task title');return;}
+  var dateEl=document.querySelector('#modal-add-task input[type=date]');
+  var date=dateEl&&dateEl.value||new Date().toISOString().slice(0,10);
+  var assigneePills=document.querySelectorAll('#modal-add-task .role-pill.sel');
+  var assignees=[];
+  assigneePills.forEach(function(p){assignees.push(p.textContent.trim());});
+  if(!assignees.length)assignees=['Everyone'];
+  var recurPill=document.querySelector('#modal-add-task [data-recur].sel');
+  var recur=recurPill?recurPill.getAttribute('data-recur'):'none';
+  var notesEl=document.querySelector('#modal-add-task input[placeholder*="detail"]');
+  var notes=notesEl&&notesEl.value.trim()||null;
+  fetch('/api/entries',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:title,date:date,type:'task',colour:'blue',assignees:assignees,recur:recur,notes:notes})
+  }).then(function(r){
+    if(r.ok){closeModal('modal-add-task');showToast('Task added – '+title);if(titleEl)titleEl.value='';}
+    else{showToast('Could not save task');}
+  }).catch(function(){showToast('Could not save task');});
+}
+
+/* Save event */
+function saveEvent(){
+  var titleEl=document.querySelector('#modal-add-event input[type=text]');
+  var title=titleEl&&titleEl.value.trim();
+  if(!title){showToast('Enter an event title');return;}
+  var dateEl=document.querySelector('#modal-add-event input[type=date]');
+  var date=dateEl&&dateEl.value||new Date().toISOString().slice(0,10);
+  var assigneePills=document.querySelectorAll('#modal-add-event .role-pill.sel');
+  var assignees=[];
+  assigneePills.forEach(function(p){assignees.push(p.textContent.trim());});
+  if(!assignees.length)assignees=['Everyone'];
+  var recurPill=document.querySelector('#modal-add-event [data-recur].sel');
+  var recur=recurPill?recurPill.getAttribute('data-recur'):'none';
+  fetch('/api/entries',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:title,date:date,type:'event',colour:'purple',assignees:assignees,recur:recur})
+  }).then(function(r){
+    if(r.ok){closeModal('modal-add-event');showToast('Event added – '+title);if(titleEl)titleEl.value='';}
+    else{showToast('Could not save event');}
+  }).catch(function(){showToast('Could not save event');});
+}
+
 /* Save bill */
 function saveBill(){
   var nameEl=document.querySelector('#modal-add-bill input[type=text]');

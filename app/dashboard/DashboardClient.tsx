@@ -1,4 +1,4 @@
-﻿'use client'
+﻿﻿'use client'
 import { useEffect } from 'react'
 import Image from 'next/image'
 
@@ -877,7 +877,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-task')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-task','Task added')}>Add task</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveTask()}>Add task</button>
             </div>
           </div>
         </div>
@@ -905,8 +905,8 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="modal-field">
               <label>Time of day <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or both</span></label>
               <div className="role-pills">
-                <div className="role-pill sel" onClick={(e) => e.currentTarget.classList.toggle('sel')}>ðŸŒ… Morning (AM)</div>
-                <div className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>ðŸŒ™ Evening (PM)</div>
+                <div className="role-pill sel" onClick={(e) => e.currentTarget.classList.toggle('sel')} data-tod="am">Morning (AM)</div>
+                <div className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')} data-tod="pm">Evening (PM)</div>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}><i className="ti ti-info-circle" style={{ verticalAlign: 'middle' }}></i> Select both for twice-daily chores like teeth brushing</div>
             </div>
@@ -957,7 +957,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-kids-chore')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-kids-chore','Chore added')}>Add chore</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveChore()}>Add chore</button>
             </div>
           </div>
         </div>
