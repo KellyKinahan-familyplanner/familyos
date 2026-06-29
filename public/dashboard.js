@@ -568,14 +568,16 @@ function selectDeviceMode(el,mode){
 }
 
 /* Kids View — load chores from Supabase */
-function loadKidsChores(member){
+function loadKidsChores(member, displayName){
   var slotId = member === 'olivia' ? 'kv-chores-olivia' : 'kv-chores-liam';
   var dateId = member === 'olivia' ? 'kv-date-olivia' : 'kv-date-liam';
   var ptsId  = member === 'olivia' ? 'kv-pts-olivia' : 'kv-pts-liam';
   var fillId = member === 'olivia' ? 'kv-pts-fill-olivia' : 'kv-pts-fill-liam';
 
-  // The child label that was used when adding the chore (e.g. "Child 1" or "Child 2")
-  var memberLabel = member === 'olivia' ? 'Child 1' : 'Child 2';
+  // Use the real display name if provided, fallback to slot-based default
+  var memberLabel = displayName || (member === 'olivia' ? 'Child 1' : 'Child 2');
+  // Also match just the first name (the pill label that was selected when adding the chore)
+  var firstName = memberLabel.split(' ')[0];
   var today = new Date().toISOString().slice(0, 10);
 
   var dateEl = document.getElementById(dateId);
@@ -590,7 +592,7 @@ function loadKidsChores(member){
     var chores = (entries || []).filter(function(e){
       if (e.type !== 'chore') return false;
       var assignees = e.assignees || [];
-      var mine = assignees.some(function(a){ return a === memberLabel || a === 'Everyone'; });
+      var mine = assignees.some(function(a){ return a === memberLabel || a === firstName || a === 'Everyone'; });
       if (!mine) return false;
       // Show if recurring (daily/weekly/monthly) or specifically today
       return e.recur !== 'none' || e.date === today;
@@ -622,7 +624,7 @@ function loadKidsChores(member){
   });
 }
 
-function openKidsView(member){
+function openKidsView(member, displayName){
   var overlay=document.getElementById('kids-view-overlay');
   if(!overlay)return;
   var olivia=document.getElementById('kv-olivia');
@@ -630,8 +632,8 @@ function openKidsView(member){
   if(olivia)olivia.style.display=member==='olivia'?'block':'none';
   if(liam)liam.style.display=member==='liam'?'block':'none';
   var greet=document.getElementById('kv-greeting');
-  var names={olivia:'Child 1',liam:'Child 2'};
-  if(greet)greet.textContent='Hi '+(names[member]||'there')+'!';
+  var firstName=displayName?(displayName.split(' ')[0]):(member==='olivia'?'Child 1':'Child 2');
+  if(greet)greet.textContent='Hi '+firstName+'! 👋';
   document.querySelectorAll('.kv-tab').forEach(function(t){t.classList.remove('sel');t.style.background='';t.style.color='';t.style.borderColor='';});
   var tabs=document.querySelectorAll('.kv-tab');
   var idx=member==='olivia'?0:1;
@@ -639,7 +641,7 @@ function openKidsView(member){
   if(tabs[idx]){tabs[idx].classList.add('sel');tabs[idx].style.background=tabColors[member][0];tabs[idx].style.color=tabColors[member][1];tabs[idx].style.borderColor=tabColors[member][0];}
   overlay.classList.add('active');
   document.body.style.overflow='hidden';
-  loadKidsChores(member);
+  loadKidsChores(member, displayName);
 }
 function closeKidsView(){
   var overlay=document.getElementById('kids-view-overlay');

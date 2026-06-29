@@ -2,11 +2,20 @@
 import { useEffect } from 'react'
 import Image from 'next/image'
 
+interface FamilyMember {
+  id: string
+  display_name: string
+  role: string
+  avatar_initials: string
+  invite_status?: string
+}
+
 interface Props {
   displayName: string
   familyName: string
   initials: string
   userEmail?: string
+  members?: FamilyMember[]
 }
 
 const DASHBOARD_CSS = `
@@ -408,7 +417,7 @@ input,select,textarea{font-family:inherit;}
 @media print{.topbar,.modal-backdrop,.help-backdrop,.toast,#bedtime-overlay{display:none!important;}.dash-body{padding:0;}}
 `
 
-export default function DashboardClient({ displayName, familyName, initials, userEmail }: Props) {
+export default function DashboardClient({ displayName, familyName, initials, userEmail, members = [] }: Props) {
   const firstName = displayName.split(' ')[0]
   const fName = familyName || 'My Family'
 
@@ -420,6 +429,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
     if (!document.getElementById('kync-dash-css')) {
       document.head.appendChild(style)
     }
+
+    // Embed family members as a global so dashboard.js can use real names
+    ;(window as any).__KYNC_MEMBERS = members
 
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
@@ -574,7 +586,10 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <button className="tb-nav-btn" onClick={() => (window as any).openModal?.('modal-reports')}><i className="ti ti-chart-bar"></i>Reports</button>
           </nav>
           <div className="tb-right">
-            <button className="kids-view-btn" onClick={() => (window as any).openKidsView?.('olivia')}><i className="ti ti-device-tablet"></i>Kids view</button>
+            <button className="kids-view-btn" onClick={() => {
+              const children = members.filter(m => m.role === 'child')
+              if (children.length) (window as any).openKidsView?.('olivia', children[0].display_name)
+            }}><i className="ti ti-device-tablet"></i>Kids view</button>
             <button className="tb-help-btn" onClick={() => (window as any).openHelp?.()}>?</button>
             <div className="tb-avatar" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }} onClick={() => (window as any).openModal?.('modal-member-sarah')}>{initials}</div>
             <button onClick={handleLogout} style={{ padding: '6px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: 12, fontWeight: 700, color: 'var(--text-2)', background: 'transparent', cursor: 'pointer' }}>Sign out</button>
@@ -659,56 +674,47 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <div className="section-link" onClick={() => (window as any).openModal('modal-invite')}>+ Invite</div>
         </div>
         <div className="members-list">
-          <div className="member-row" onClick={() => (window as any).openModal('modal-member-sarah')}>
-            <div className="member-av" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }}>{initials}</div>
-            <div className="member-info">
-              <div className="member-name">{displayName}</div>
-              <div className="member-meta"><span className="member-role-badge role-admin">Admin</span><span>{userEmail}</span></div>
-            </div>
-            <div className="member-perms">
-              <div className="perm-dot perm-on"><i className="ti ti-plus" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-on"><i className="ti ti-pencil" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-on"><i className="ti ti-trash" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-on"><i className="ti ti-check" style={{ fontSize: 9 }}></i></div>
-            </div>
-            <i className="ti ti-chevron-right member-chevron"></i>
-          </div>
-          <div className="member-row" onClick={() => (window as any).openModal('modal-member-mark')}>
-            <div className="member-av" style={{ background: 'var(--mj-bg)', color: 'var(--mj-fg)' }}>P2</div>
-            <div className="member-info">
-              <div className="member-name">Partner / Adult 2</div>
-              <div className="member-meta"><span className="member-role-badge role-member">Member</span><span>Invite pending or active</span></div>
-            </div>
-            <div className="member-perms">
-              <div className="perm-dot perm-on"><i className="ti ti-plus" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-on"><i className="ti ti-pencil" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-off"><i className="ti ti-trash" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-on"><i className="ti ti-check" style={{ fontSize: 9 }}></i></div>
-            </div>
-            <i className="ti ti-chevron-right member-chevron"></i>
-          </div>
-          <div className="member-row" onClick={() => (window as any).openModal('modal-member-olivia')}>
-            <div className="member-av" style={{ background: 'var(--oj-bg)', color: 'var(--oj-fg)' }}>K1</div>
-            <div className="member-info">
-              <div className="member-name">Child 1</div>
-              <div className="member-meta"><span className="member-role-badge role-child">Child</span><span>PIN login</span></div>
-            </div>
-            <div className="member-perms">
-              <div className="perm-dot perm-off"><i className="ti ti-plus" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-off"><i className="ti ti-pencil" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-off"><i className="ti ti-trash" style={{ fontSize: 9 }}></i></div>
-              <div className="perm-dot perm-on"><i className="ti ti-check" style={{ fontSize: 9 }}></i></div>
-            </div>
-            <i className="ti ti-chevron-right member-chevron"></i>
-          </div>
-          <div className="member-row pending">
-            <div className="member-av" style={{ background: '#F0EDE9', color: 'var(--text-3)' }}><i className="ti ti-mail" style={{ fontSize: 16 }}></i></div>
-            <div className="member-info">
-              <div className="member-name" style={{ color: 'var(--text-2)' }}>Pending invite</div>
-              <div className="member-meta"><span className="pending-badge">Invite pending</span></div>
-            </div>
-            <i className="ti ti-chevron-right member-chevron"></i>
-          </div>
+          {members.map((m, i) => {
+            const avatarColors = ['var(--sj-bg)', 'var(--mj-bg)', 'var(--oj-bg)', 'var(--lj-bg)']
+            const avatarFgColors = ['var(--sj-fg)', 'var(--mj-fg)', 'var(--oj-fg)', 'var(--lj-fg)']
+            const bg = avatarColors[i] || 'var(--sj-bg)'
+            const fg = avatarFgColors[i] || 'var(--sj-fg)'
+            const av = m.avatar_initials || m.display_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+            const isAdmin = m.role === 'admin'
+            const isChild = m.role === 'child'
+            const isPending = m.invite_status === 'pending'
+            if (isPending) {
+              return (
+                <div key={m.id} className="member-row pending">
+                  <div className="member-av" style={{ background: '#F0EDE9', color: 'var(--text-3)' }}><i className="ti ti-mail" style={{ fontSize: 16 }}></i></div>
+                  <div className="member-info">
+                    <div className="member-name" style={{ color: 'var(--text-2)' }}>{m.display_name}</div>
+                    <div className="member-meta"><span className="pending-badge">Invite pending</span></div>
+                  </div>
+                  <i className="ti ti-chevron-right member-chevron"></i>
+                </div>
+              )
+            }
+            return (
+              <div key={m.id} className="member-row">
+                <div className="member-av" style={{ background: bg, color: fg }}>{av}</div>
+                <div className="member-info">
+                  <div className="member-name">{m.display_name}</div>
+                  <div className="member-meta">
+                    <span className={`member-role-badge role-${m.role}`}>{m.role.charAt(0).toUpperCase() + m.role.slice(1)}</span>
+                    <span>{isChild ? 'PIN login' : isAdmin ? userEmail : ''}</span>
+                  </div>
+                </div>
+                <div className="member-perms">
+                  <div className={`perm-dot ${isAdmin ? 'perm-on' : 'perm-off'}`}><i className="ti ti-plus" style={{ fontSize: 9 }}></i></div>
+                  <div className={`perm-dot ${isAdmin ? 'perm-on' : 'perm-off'}`}><i className="ti ti-pencil" style={{ fontSize: 9 }}></i></div>
+                  <div className={`perm-dot ${isAdmin ? 'perm-on' : 'perm-off'}`}><i className="ti ti-trash" style={{ fontSize: 9 }}></i></div>
+                  <div className="perm-dot perm-on"><i className="ti ti-check" style={{ fontSize: 9 }}></i></div>
+                </div>
+                <i className="ti ti-chevron-right member-chevron"></i>
+              </div>
+            )
+          })}
         </div>
 
         {/* â”€â”€ Recent Activity â”€â”€ */}
@@ -823,10 +829,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{displayName.split(' ')[0]}</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Partner</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 1</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 2</div>
+                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
+                ))}
               </div>
             </div>
             <div className="modal-field"><label>Due date</label><input type="date" /></div>
@@ -896,10 +901,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{displayName.split(' ')[0]}</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Partner</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 1</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 2</div>
+                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
+                ))}
               </div>
             </div>
             <div className="modal-field">
@@ -976,10 +980,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{displayName.split(' ')[0]}</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Partner</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 1</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 2</div>
+                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
+                ))}
               </div>
             </div>
             <div className="modal-field"><label>Subject</label><select><option>Maths</option><option>English</option><option>Science</option><option>History</option><option>Reading</option><option>Other</option></select></div>
@@ -1049,10 +1052,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
               <div className="role-pills" data-multi="true">
                 <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{displayName.split(' ')[0]}</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Partner</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 1</div>
-                <div className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Child 2</div>
+                {members.filter(m => m.invite_status !== 'pending').map(m => (
+                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
+                ))}
               </div>
             </div>
             <div className="modal-field"><label>Subject</label><select><option>Maths</option><option>English</option><option>Science</option><option>History</option><option>Spelling</option><option>Other</option></select></div>
@@ -1543,8 +1545,18 @@ export default function DashboardClient({ displayName, familyName, initials, use
         <div className="kv-greeting" id="kv-greeting">Hi there! ðŸ‘‹</div>
         <div className="kv-date">Today is {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
         <div className="kv-member-tabs">
-          <div className="kv-tab sel" style={{ background: 'var(--oj-bg)', color: 'var(--oj-fg)', borderColor: 'var(--oj-bg)' }} onClick={() => (window as any).openKidsView('olivia')}>Child 1</div>
-          <div className="kv-tab" onClick={() => (window as any).openKidsView('liam')}>Child 2</div>
+          {members.filter(m => m.role === 'child').map((m, i) => {
+            const slot = i === 0 ? 'olivia' : 'liam'
+            const bg = i === 0 ? 'var(--oj-bg)' : 'var(--lj-bg)'
+            const fg = i === 0 ? 'var(--oj-fg)' : 'var(--lj-fg)'
+            return (
+              <div key={m.id} className={'kv-tab' + (i === 0 ? ' sel' : '')}
+                style={i === 0 ? { background: bg, color: fg, borderColor: bg } : {}}
+                onClick={() => (window as any).openKidsView(slot, m.display_name)}>
+                {m.display_name.split(' ')[0]}
+              </div>
+            )
+          })}
         </div>
         <div id="kv-olivia" style={{ width: '100%', maxWidth: 480 }}>
           <div className="kv-card">

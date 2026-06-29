@@ -26,6 +26,12 @@ export default async function DashboardPage() {
     .eq('id', member.family_id)
     .maybeSingle()
 
+  const { data: allMembers } = await supabase
+    .from('family_members')
+    .select('id, display_name, role, avatar_initials, invite_status')
+    .eq('family_id', member.family_id)
+    .order('created_at', { ascending: true })
+
   const displayName = member?.display_name ?? user.email ?? 'there'
   const familyName = family?.name ?? ''
   const initials = displayName
@@ -41,6 +47,7 @@ export default async function DashboardPage() {
       familyName={familyName}
       initials={initials}
       userEmail={user.email}
+      members={allMembers ?? []}
     />
   )
 }
