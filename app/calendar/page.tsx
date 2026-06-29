@@ -1,24 +1,18 @@
 import { createServerSideClient } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
-import DashboardClient from './DashboardClient'
+import CalendarClient from './CalendarClient'
 
-export default async function DashboardPage() {
+export default async function CalendarPage() {
   const supabase = await createServerSideClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
+  if (!user) redirect('/login')
 
   const { data: member } = await supabase
     .from('family_members')
     .select('display_name, role, family_id')
     .eq('user_id', user.id)
     .maybeSingle()
-
-  if (!member) {
-    redirect('/onboarding')
-  }
+  if (!member) redirect('/onboarding')
 
   const { data: family } = await supabase
     .from('families')
@@ -28,19 +22,14 @@ export default async function DashboardPage() {
 
   const displayName = member?.display_name ?? user.email ?? 'there'
   const familyName = family?.name ?? ''
-  const initials = displayName
-    .split(' ')
-    .map((n: string) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
+  const initials = displayName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
 
   return (
-    <DashboardClient
+    <CalendarClient
       displayName={displayName}
       familyName={familyName}
       initials={initials}
-      userEmail={user.email}
+      userEmail={user.email ?? ''}
     />
   )
 }

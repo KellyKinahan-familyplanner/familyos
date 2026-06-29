@@ -1,0 +1,21 @@
+import { createServerSideClient } from '@/lib/supabase'
+import { NextResponse } from 'next/server'
+
+export async function GET() {
+  const supabase = await createServerSideClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  const { data: member } = user ? await supabase
+    .from('family_members')
+    .select('id, role, family_id, display_name')
+    .eq('user_id', user.id)
+    .maybeSingle() : { data: null }
+
+  return NextResponse.json({
+    authenticated: !!user,
+    user_id: user?.id ?? null,
+    email: user?.email ?? null,
+    error: error?.message ?? null,
+    member: member ?? null,
+  })
+}
