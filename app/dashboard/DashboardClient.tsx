@@ -856,6 +856,24 @@ function kvToggle(el){
   if(label)label.classList.toggle('done');
   if(el.classList.contains('done'))showToast('Great job! +5 pts ⭐');
 }
+
+/* ── Bedtime settings save ── */
+function saveBedtimeSettings(){
+  var toggle=document.getElementById('sleep-toggle-olivia');
+  var startEl=document.getElementById('bedtime-start-input');
+  var endEl=document.getElementById('bedtime-end-input');
+  var enabled=toggle&&toggle.classList.contains('on');
+  var start=startEl?startEl.value:'20:30';
+  var end=endEl?endEl.value:'07:00';
+  fetch('/api/settings/bedtime',{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({bedtime_enabled:enabled,bedtime_start:start,bedtime_end:end})
+  }).then(function(r){
+    if(r.ok){showToast('Bedtime settings saved ✓');}
+    else{showToast('Could not save — try again');}
+  }).catch(function(){showToast('Could not save — try again');});
+}
 `
     if (!document.getElementById('kync-dash-js')) {
       document.head.appendChild(script)
@@ -865,6 +883,123 @@ function kvToggle(el){
       document.getElementById('kync-dash-css')?.remove()
       document.getElementById('kync-dash-js')?.remove()
     }
+  }, [])
+
+  /* ── Bedtime scheduler + browser notifications ── */
+  useEffect(() => {
+    let bedtimeEnabled  = false
+    let bedtimeStart    = '20:30'
+    let bedtimeEnd      = '07:00'
+    let notifEnabled    = true
+    let notifSentToday  = false
+    let bedtimeShown    = false
+
+    // Load settings then start polling
+    fetch('/api/settings/bedtime')
+      .then(r => r.json())
+      .then(s => {
+        bedtimeEnabled = s.bedtime_enabled ?? false
+        bedtimeStart   = s.bedtime_start   ?? '20:30'
+        bedtimeEnd     = s.bedtime_end     ?? '07:00'
+        notifEnabled   = s.notifications_enabled ?? true
+      })
+      .catch(() => {})
+
+    // Request browser notification permission once
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+
+    // Check for upcoming alerts and fire browser notifications
+    const fireNotifications = async () => {
+      if (!notifEnabled) return
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+      if (notifSentToday) return
+
+      try {
+        const res  = await fetch('/api/entries')
+        const rows = await res.json() as Record<string, unknown>[]
+        const today = new Date()
+        const todayStr = today.toISOString().slice(0, 10)
+        const in3Days  = new Date(today); in3Days.setDate(today.getDate() + 3)
+        const in3Str   = in3Days.toISOString().slice(0, 10)
+
+        const alerts: string[] = []
+
+        rows.forEach(r => {
+          const date = r.date as string
+          const type = r.type as string
+          const title = r.title as string
+          const completed = r.completed as boolean
+
+          if (completed) return
+
+          // Overdue tasks/chores/homework
+          if (date < todayStr && ['task','chore','homework'].includes(type)) {
+            alerts.push(`Overdue: ${title}`)
+          }
+          // Exams within 3 days
+          if (type === 'exam' && date >= todayStr && date <= in3Str) {
+            const daysLeft = Math.round((new Date(date + 'T00:00:00').getTime() - today.getTime()) / 86400000)
+            alerts.push(`Exam in ${daysLeft === 0 ? 'TODAY' : daysLeft + (daysLeft === 1 ? ' day' : ' days')}: ${title}`)
+          }
+          // Bills due within 3 days (events with amber/bill colour)
+          if (type === 'event' && date >= todayStr && date <= in3Str && (r.colour === 'amber')) {
+            alerts.push(`Bill due: ${title}`)
+          }
+        })
+
+        if (alerts.length > 0) {
+          notifSentToday = true
+          const body = alerts.slice(0, 3).join('\n') + (alerts.length > 3 ? `\n+${alerts.length - 3} more` : '')
+          new Notification('KYNC – Family alerts', { body, icon: '/Kync_logo.png' })
+        }
+      } catch { /* ignore */ }
+    }
+
+    // Bedtime check
+    const checkBedtime = () => {
+      if (!bedtimeEnabled) return
+      const now  = new Date()
+      const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+      const isNight = bedtimeStart > bedtimeEnd
+        ? hhmm >= bedtimeStart || hhmm < bedtimeEnd   // e.g. 20:30–07:00
+        : hhmm >= bedtimeStart && hhmm < bedtimeEnd   // rare: same-day window
+
+      if (isNight && !bedtimeShown) {
+        bedtimeShown = true
+        // Update wake time display
+        const wakeEl = document.querySelector('.bedtime-wake-time')
+        if (wakeEl) {
+          const [h, m] = bedtimeEnd.split(':')
+          const hNum = parseInt(h)
+          wakeEl.textContent = `${hNum > 12 ? hNum - 12 : hNum || 12}:${m} ${hNum >= 12 ? 'PM' : 'AM'}`
+        }
+        ;(window as any).showBedtime?.()
+      } else if (!isNight) {
+        bedtimeShown = false
+        // Reset daily notification flag at midnight
+        if (hhmm === '00:00') notifSentToday = false
+      }
+    }
+
+    // Run immediately then every minute
+    setTimeout(() => {
+      checkBedtime()
+      fireNotifications()
+    }, 2000)
+
+    const interval = setInterval(() => {
+      checkBedtime()
+      // Fire notifications once per day at 8am
+      const now = new Date()
+      if (now.getHours() === 8 && now.getMinutes() === 0) {
+        notifSentToday = false
+        fireNotifications()
+      }
+    }, 60_000)
+
+    return () => clearInterval(interval)
   }, [])
 
   async function handleLogout() {
@@ -1524,17 +1659,19 @@ function kvToggle(el){
                   <div className="toggle-row-switch on" id="sleep-toggle-olivia" onClick={() => (window as any).toggleSleep('olivia')} style={{ cursor: 'pointer' }}></div>
                 </div>
                 <div className="sleep-times" id="sleep-times-olivia">
-                  <div className="sleep-time-field"><label>🌙 Bedtime</label><input type="time" defaultValue="20:30" /></div>
-                  <div className="sleep-time-field"><label>☀️ Wake time</label><input type="time" defaultValue="07:00" /></div>
+                  <div className="sleep-time-field"><label>🌙 Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
+                  <div className="sleep-time-field"><label>☀️ Wake time</label><input id="bedtime-end-input" type="time" defaultValue="07:00" /></div>
                   <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-lt)' }}>
                     <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)' }}>Grant extension</div><div style={{ fontSize: 11, color: 'var(--text-3)' }}>15 minutes right now</div></div>
                     <button className="sleep-ext-btn" onClick={() => (window as any).showToast('Extension granted ✨')}>+15 min</button>
                   </div>
                   <div style={{ gridColumn: '1/-1' }}>
-                    <div className="sleep-note"><i className="ti ti-info-circle"></i> Syncs in real-time via Supabase Realtime.</div>
+                    <button className="modal-btn modal-btn-secondary" style={{ width: '100%', marginTop: 4 }} onClick={() => (window as any).showBedtime()}><i className="ti ti-eye" style={{ marginRight: 6 }}></i>Preview sleep screen</button>
                   </div>
                   <div style={{ gridColumn: '1/-1' }}>
-                    <button className="modal-btn modal-btn-secondary" style={{ width: '100%', marginTop: 4 }} onClick={() => (window as any).showBedtime()}><i className="ti ti-eye" style={{ marginRight: 6 }}></i>Preview sleep screen</button>
+                    <button className="modal-btn modal-btn-primary" style={{ width: '100%' }} onClick={() => (window as any).saveBedtimeSettings()}>
+                      <i className="ti ti-device-floppy" style={{ marginRight: 6 }}></i>Save bedtime settings
+                    </button>
                   </div>
                 </div>
               </div>
