@@ -1440,7 +1440,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const childNames = new Set(
     (familyMembers ?? []).filter(m => m.colour === 'child' || MEMBERS.find(mb => mb.id === m.id)?.colour === 'child').map(m => m.name)
   )
-  const kidsMembers = (familyMembers ?? []).filter(m => m.role === 'child')
+  const kidsMembers = (familyMembers ?? []).filter(m => m.role?.toLowerCase() === 'child')
 
   const filteredEvents = (() => {
     let base = activeMember === 'all'
@@ -2171,6 +2171,16 @@ export default function CalendarClient({ displayName, familyName, initials, user
                   {m.name.split(' ')[0]}
                 </div>
               ))}
+            </div>
+          )}
+          {kidsMembers.length === 0 && (
+            <div style={{ width: '100%', maxWidth: 480, textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>👶</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>No children added yet</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 24 }}>Add a child account from the dashboard. Children log in with a PIN and see their own tasks here.</div>
+              <button onClick={closeKidsView} style={{ padding: '10px 20px', background: 'var(--pink)', color: '#fff', border: 'none', borderRadius: 20, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                Go back
+              </button>
             </div>
           )}
           {kidsMembers.filter(m => m.id === (kidsActiveMember ?? kidsMembers[0]?.id)).map(kid => {

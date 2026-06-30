@@ -648,8 +648,13 @@ export default function DashboardClient({ displayName, familyName, initials, use
           </nav>
           <div className="tb-right">
             <button className="kids-view-btn" onClick={() => {
-              const children = members.filter(m => m.role === 'child')
-              if (children.length) (window as any).openKidsView?.('olivia', children[0].display_name)
+              const children = members.filter(m => m.role?.toLowerCase() === 'child')
+              if (children.length) {
+                (window as any).openKidsView?.('olivia', children[0].display_name)
+              } else {
+                const overlay = document.getElementById('kids-view-overlay')
+                if (overlay) { overlay.classList.add('active'); document.body.style.overflow = 'hidden' }
+              }
             }}><i className="ti ti-device-tablet"></i>Kids view</button>
             <button className="tb-help-btn" onClick={() => (window as any).openHelp?.()}>?</button>
             <div className="tb-avatar" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }} onClick={() => (window as any).openModal?.('modal-member-sarah')}>{initials}</div>
@@ -1919,7 +1924,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         <div className="kv-greeting" id="kv-greeting">Hi there! 👋</div>
         <div className="kv-date">{todayStr ? `Today is ${todayStr}` : ''}</div>
         <div className="kv-member-tabs">
-          {members.filter(m => m.role === 'child').map((m, i) => {
+          {members.filter(m => m.role?.toLowerCase() === 'child').map((m, i) => {
             const slot = i === 0 ? 'olivia' : 'liam'
             const bg = i === 0 ? 'var(--oj-bg)' : 'var(--lj-bg)'
             const fg = i === 0 ? 'var(--oj-fg)' : 'var(--lj-fg)'
@@ -1931,6 +1936,17 @@ export default function DashboardClient({ displayName, familyName, initials, use
               </div>
             )
           })}
+          {members.filter(m => m.role?.toLowerCase() === 'child').length === 0 && (
+            <div style={{ width: '100%', maxWidth: 480, textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>👶</div>
+              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>No children added yet</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 20, lineHeight: 1.5 }}>Add a child account from the family member settings. Children log in with a PIN and see their own tasks and chores here.</div>
+              <button onClick={() => { (window as any).closeKidsView(); (window as any).openModal?.('modal-invite') }}
+                style={{ padding: '10px 20px', background: 'var(--pink)', color: '#fff', border: 'none', borderRadius: 'var(--r-md)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                <i className="ti ti-user-plus" style={{ marginRight: 6 }}></i>Add a child
+              </button>
+            </div>
+          )}
         </div>
         <div id="kv-olivia" style={{ width: '100%', maxWidth: 480 }}>
           <div className="kv-card">
