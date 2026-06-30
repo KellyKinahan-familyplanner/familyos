@@ -28,12 +28,10 @@ export default async function DashboardPage() {
     .eq('id', member.family_id)
     .maybeSingle()
 
-  const { data: allMembers, error: membersErr } = await createAdminClient()
+  const { data: allMembers } = await createAdminClient()
     .from('family_members')
     .select('id, display_name, role, avatar_initials')
     .eq('family_id', member.family_id)
-    .order('created_at', { ascending: true })
-  console.log('[dashboard] family_id:', member.family_id, 'count:', allMembers?.length, 'err:', membersErr?.message)
 
   const displayName = member?.display_name ?? user.email ?? 'there'
   const familyName = family?.name ?? ''

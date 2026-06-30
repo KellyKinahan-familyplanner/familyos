@@ -31,12 +31,10 @@ export default async function CalendarPage() {
     .eq('id', member.family_id)
     .maybeSingle()
 
-  // Fetch all members via admin client so children (user_id=null) are visible past RLS
   const { data: allMembers } = await createAdminClient()
     .from('family_members')
     .select('id, display_name, role, avatar_initials')
     .eq('family_id', member.family_id)
-    .order('created_at', { ascending: true })
 
   const displayName = member?.display_name ?? user.email ?? 'there'
   const familyName  = family?.name ?? ''
