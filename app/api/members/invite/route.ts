@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
   if (member.role !== 'admin') return NextResponse.json({ error: 'Admin only' }, { status: 403 })
 
   const body = await request.json()
-  const { name, email } = body
+  const { name, email, role } = body
+  const allowedRoles = ['admin', 'member', 'guest']
+  const memberRole = allowedRoles.includes(role) ? role : 'member'
 
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 })
   if (!email?.trim()) return NextResponse.json({ error: 'Email required' }, { status: 400 })
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
     .insert({
       family_id:       member.family_id,
       display_name:    name.trim(),
-      role:            'member',
+      role:            memberRole,
       avatar_initials: initials,
       invite_email:    email.trim().toLowerCase(),
       invite_status:   'pending',

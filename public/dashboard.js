@@ -135,6 +135,11 @@ function selectInviteRole(el,role){
     if(pinSection)pinSection.style.display='block';
     if(inviteBtn)inviteBtn.textContent='Create child account';
     if(inviteSub)inviteSub.textContent='Set up a PIN-only account for your child.';
+  } else if(role==='guest'){
+    if(emailSection)emailSection.style.display='block';
+    if(pinSection)pinSection.style.display='none';
+    if(inviteBtn)inviteBtn.textContent='Send guest invite';
+    if(inviteSub)inviteSub.textContent='Guest access is read-only. Set their restrictions after they join.';
   } else {
     if(emailSection)emailSection.style.display='block';
     if(pinSection)pinSection.style.display='none';

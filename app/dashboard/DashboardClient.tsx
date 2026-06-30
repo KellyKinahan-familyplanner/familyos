@@ -444,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260701b'
+    script.src = '/dashboard.js?v=20260701c'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -618,7 +618,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         const res = await fetch('/api/members/invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email }),
+          body: JSON.stringify({ name, email, role }),
         })
         const data = await res.json()
         if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
