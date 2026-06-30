@@ -67,7 +67,8 @@ export const COLOUR_OPTIONS = [
 const CALENDAR_CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --green:#1D9E75;--green-lt:#E8F7F2;
+  --green:#1D9E75;--green-lt:#E8F7F2;--green-mid:#9FE1CB;
+  --pink:#E8497A;--pink-lt:#FDE8EE;--pink-mid:#F4A4BE;
   --text-1:#1A1714;--text-2:#4A4540;--text-3:#A09893;
   --bg:#F5F2EF;--surface:#FFFFFF;--border:#E8E4DF;--border-lt:#F0EDE9;
   --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:18px;
@@ -77,7 +78,7 @@ const CALENDAR_CSS = `
   --fa-bg:#F3F0FF;--fa-fg:#5B4FCF;--fa-ac:#7F77DD;
   --lilac:#7F77DD;--lilac-lt:#F2F1FD;
   --amber:#D97706;--amber-lt:#FEF3C7;
-  --mj-bg:#FDF2EE;--mj-ac:#D85A30;
+  --mj-bg:#FDE8EE;--mj-ac:#E8497A;
 }
 html,body{height:100%;overflow:hidden;}
 .cal-shell{display:flex;flex-direction:column;height:100vh;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text-1);}
@@ -86,9 +87,11 @@ html,body{height:100%;overflow:hidden;}
 .cal-topbar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:50;}
 .cal-topbar-sep{width:1.5px;height:18px;background:var(--border);}
 .cal-page-title{font-size:14px;font-weight:800;flex:1;white-space:nowrap;}
-.cal-topbar-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;text-decoration:none;white-space:nowrap;transition:border-color .15s,color .15s;}
-.cal-topbar-btn:hover{border-color:var(--green);color:var(--green);}
-.cal-topbar-btn.active{background:var(--text-1);color:#fff;border-color:var(--text-1);}
+.cal-topbar-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-md);border:1.5px solid var(--green-mid);background:var(--green-lt);font-size:12px;font-weight:700;color:var(--green);cursor:pointer;text-decoration:none;white-space:nowrap;transition:all .15s;}
+.cal-topbar-btn:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.cal-topbar-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+.cal-topbar-btn.pink{border-color:var(--pink-mid);background:var(--pink-lt);color:var(--pink);}
+.cal-topbar-btn.pink:hover{background:var(--pink);color:#fff;border-color:var(--pink);}
 
 /* ── Member avatar bar ── */
 .member-bar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-shrink:0;}
@@ -104,12 +107,12 @@ html,body{height:100%;overflow:hidden;}
 .cal-toolbar{background:var(--surface);border-bottom:1px solid var(--border-lt);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .cal-month-nav{display:flex;align-items:center;gap:4px;}
 .cal-month-label{font-size:15px;font-weight:800;min-width:155px;text-align:center;}
-.cal-icon-btn{width:30px;height:30px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--text-2);transition:border-color .15s;flex-shrink:0;}
-.cal-icon-btn:hover{border-color:var(--green);color:var(--green);}
+.cal-icon-btn{width:30px;height:30px;border-radius:var(--r-sm);border:1.5px solid var(--green-mid);background:var(--green-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--green);transition:all .15s;flex-shrink:0;}
+.cal-icon-btn:hover{background:var(--green);color:#fff;border-color:var(--green);}
 .cal-today-btn{padding:0 10px;font-size:11px;font-weight:700;width:auto;}
-.cal-view-tabs{display:flex;gap:2px;background:var(--bg);border-radius:var(--r-md);padding:3px;margin-left:auto;}
-.cal-view-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:700;color:var(--text-3);cursor:pointer;transition:all .15s;user-select:none;}
-.cal-view-tab.active{background:var(--surface);color:var(--text-1);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.cal-view-tabs{display:flex;gap:2px;background:var(--green-lt);border-radius:var(--r-md);padding:3px;margin-left:auto;border:1px solid var(--green-mid);}
+.cal-view-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:700;color:var(--green);cursor:pointer;transition:all .15s;user-select:none;}
+.cal-view-tab.active{background:var(--green);color:#fff;box-shadow:0 1px 4px rgba(29,158,117,.25);}
 
 /* ── Legend ── */
 .cal-legend{display:flex;align-items:center;gap:10px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--border-lt);flex-wrap:wrap;flex-shrink:0;}
@@ -170,9 +173,9 @@ html,body{height:100%;overflow:hidden;}
 
 /* ── FAB ── */
 .cal-fab{position:fixed;bottom:24px;right:20px;z-index:150;}
-.cal-fab-btn{width:52px;height:52px;border-radius:50%;background:var(--text-1);color:#fff;border:none;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.22);transition:transform .2s,background .15s;}
-.cal-fab-btn:hover{background:#333;}
-.cal-fab-btn.open{transform:rotate(45deg);}
+.cal-fab-btn{width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;border:none;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(29,158,117,.4);transition:transform .2s,background .15s;}
+.cal-fab-btn:hover{background:#178a64;}
+.cal-fab-btn.open{transform:rotate(45deg);background:var(--pink);box-shadow:0 4px 16px rgba(232,73,122,.4);}
 .cal-fab-menu{position:absolute;bottom:60px;right:0;background:var(--surface);border-radius:var(--r-xl);box-shadow:0 8px 32px rgba(0,0,0,.16);border:1.5px solid var(--border);overflow:hidden;min-width:190px;opacity:0;transform:translateY(10px) scale(.96);pointer-events:none;transition:all .18s cubic-bezier(.34,1.56,.64,1);}
 .cal-fab-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
 .cal-fab-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:background .12s;}
@@ -210,14 +213,15 @@ html,body{height:100%;overflow:hidden;}
 .modal-field textarea{min-height:80px;}
 .modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
-.modal-btn{padding:14px 20px;min-height:52px;border-radius:var(--r-lg);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
-.modal-btn-secondary{background:var(--bg);color:var(--text-1);}
-.modal-btn-primary{background:var(--text-1);color:#fff;}
-.modal-btn-primary:hover{background:#333;}
+.modal-btn{padding:14px 20px;min-height:52px;border-radius:var(--r-lg);font-size:15px;font-weight:700;border:1.5px solid transparent;cursor:pointer;transition:all .15s;}
+.modal-btn-secondary{background:var(--green-lt);color:var(--green);border-color:var(--green-mid);}
+.modal-btn-secondary:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.modal-btn-primary{background:var(--pink);color:#fff;border-color:var(--pink);}
+.modal-btn-primary:hover{background:#d43870;border-color:#d43870;}
 .modal-kync-logo{height:18px;display:block;margin-bottom:10px;opacity:.9;}
 .role-pills{display:flex;flex-wrap:wrap;gap:6px;}
-.role-pill{padding:10px 16px;min-height:44px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s;user-select:none;display:inline-flex;align-items:center;}
-.role-pill.sel{background:var(--text-1);color:#fff;border-color:var(--text-1);}
+.role-pill{padding:10px 16px;min-height:44px;border-radius:20px;border:1.5px solid var(--green-mid);font-size:13px;font-weight:600;cursor:pointer;color:var(--green);background:var(--green-lt);transition:all .15s;user-select:none;display:inline-flex;align-items:center;}
+.role-pill.sel{background:var(--pink);color:#fff;border-color:var(--pink);}
 .colour-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 .colour-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .15s;}
 .colour-swatch.sel{border-color:var(--text-1);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text-1);}
@@ -1118,6 +1122,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [view, setView]         = useState<'month' | 'week' | 'day'>('month')
   const [viewDate, setViewDate] = useState(today)   // anchor for week/day views
   const [activeMember, setActiveMember] = useState<string>('all')
+  const [kidsView, setKidsView] = useState(false)
   const [events, setEvents]     = useState<CalEvent[]>([])
   const [eventsLoading, setEventsLoading] = useState(true)
   const [fabOpen, setFabOpen]   = useState(false)
@@ -1251,12 +1256,25 @@ export default function CalendarClient({ displayName, familyName, initials, user
     }
   }
 
-  const filteredEvents = activeMember === 'all'
-    ? events
-    : events.filter(e => {
-        const m = MEMBERS.find(mb => mb.id === activeMember)
-        return e.assignees.includes(m?.name ?? '') || e.assignees.includes('Everyone')
-      })
+  const childNames = new Set(
+    (familyMembers ?? []).filter(m => m.colour === 'child' || MEMBERS.find(mb => mb.id === m.id)?.colour === 'child').map(m => m.name)
+  )
+  // Derive child members from the actual role in familyMembers prop — fall back to any non-admin member beyond the first two
+  const kidsMembers = (familyMembers ?? []).filter((_, i) => i >= 2)
+
+  const filteredEvents = (() => {
+    let base = activeMember === 'all'
+      ? events
+      : events.filter(e => {
+          const m = MEMBERS.find(mb => mb.id === activeMember)
+          return e.assignees.includes(m?.name ?? '') || e.assignees.includes('Everyone')
+        })
+    if (kidsView && kidsMembers.length > 0) {
+      const kidsSet = new Set(kidsMembers.map(m => m.name))
+      base = base.filter(e => e.assignees.some(a => kidsSet.has(a)) && !e.assignees.includes('Everyone') || e.assignees.some(a => kidsSet.has(a)))
+    }
+    return base
+  })()
 
   /* ── Today's tasks for sidebar ── */
   const todayStr = today.toISOString().slice(0, 10)
@@ -1365,6 +1383,14 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <Image src="/Kync_logo.png" alt="KYNC" width={64} height={24} style={{ objectFit: 'contain', flexShrink: 0 }} />
         <div className="cal-topbar-sep" />
         <span className="cal-page-title">Family Calendar</span>
+        <button
+          className={`cal-topbar-btn pink${kidsView ? ' active' : ''}`}
+          onClick={() => setKidsView(v => !v)}
+          title="Toggle kids-only view — shows only children's events"
+          style={kidsView ? { background: 'var(--pink)', color: '#fff', borderColor: 'var(--pink)' } : {}}
+        >
+          <i className="ti ti-mood-kid" style={{ fontSize: 13 }}></i>Kids View
+        </button>
         <button className="cal-topbar-btn" onClick={handleExportPDF} title="Export PDF">
           <i className="ti ti-file-type-pdf" style={{ fontSize: 13 }}></i>PDF
         </button>
