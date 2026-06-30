@@ -146,11 +146,15 @@ html,body{height:100%;overflow:hidden;}
 .cal-event-chip.red{background:#FEE2E2;color:#DC2626;}
 
 /* ── Week/Day view ── */
-.cal-week-grid{display:flex;min-height:100%;}
+.cal-week-outer{display:flex;flex-direction:column;height:100%;}
+.cal-week-header-row{display:flex;flex-shrink:0;border-bottom:1.5px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10;}
+.cal-week-header-gutter{width:52px;flex-shrink:0;border-right:1px solid var(--border-lt);}
+.cal-week-header-days{flex:1;display:grid;}
+.cal-week-grid{display:flex;flex:1;overflow:auto;}
 .cal-time-col{width:52px;flex-shrink:0;border-right:1px solid var(--border-lt);}
 .cal-time-slot{height:60px;display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 6px 0 0;font-size:10px;color:var(--text-3);font-weight:600;}
 .cal-week-days{flex:1;display:grid;}
-.cal-week-day-header{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border-lt);border-right:1px solid var(--border-lt);background:var(--surface);position:sticky;top:0;z-index:5;}
+.cal-week-day-header{padding:8px 6px;text-align:center;border-right:1px solid var(--border-lt);background:var(--surface);}
 .cal-week-day-name{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;}
 .cal-week-day-num{font-size:18px;font-weight:800;}
 .cal-week-day-num.today{color:var(--green);}
@@ -334,10 +338,10 @@ export const TYPE_ICONS: Record<string, string> = {
 export const SPECIAL_TYPES = ['birthday', 'school-holiday', 'family-holiday', 'public-holiday']
 
 export const SPECIAL_META: Record<string, { emoji: string; shade: string; label: string }> = {
-  'birthday':       { emoji: '🎂', shade: 'rgba(236,72,153,0.08)', label: 'Birthday' },
-  'school-holiday': { emoji: '🏫', shade: 'rgba(59,130,246,0.08)', label: 'School holiday' },
-  'family-holiday': { emoji: '🌴', shade: 'rgba(16,185,129,0.08)', label: 'Family holiday' },
-  'public-holiday': { emoji: '🎉', shade: 'rgba(245,158,11,0.08)', label: 'Public holiday' },
+  'birthday':       { emoji: '🎂', shade: 'rgba(236,72,153,0.18)', label: 'Birthday' },
+  'school-holiday': { emoji: '🏫', shade: 'rgba(59,130,246,0.14)', label: 'School holiday' },
+  'family-holiday': { emoji: '🌴', shade: 'rgba(16,185,129,0.14)', label: 'Family holiday' },
+  'public-holiday': { emoji: '🎉', shade: 'rgba(245,158,11,0.14)', label: 'Public holiday' },
 }
 
 /** Resolve the display colour for an event based on its assignees */
@@ -737,30 +741,38 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
     : allDays
 
   return (
-    <div className="cal-week-grid">
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: 52, flexShrink: 0, borderBottom: '1px solid var(--border-lt)' }} />
-        {HOURS.map(h => (
-          <div key={h} className="cal-time-slot">{fmtHour(h)}</div>
-        ))}
+    <div className="cal-week-outer">
+      {/* Sticky header row */}
+      <div className="cal-week-header-row" style={{ gridTemplateColumns: `52px repeat(${weekDays.length},1fr)` }}>
+        <div className="cal-week-header-gutter" />
+        <div className="cal-week-header-days" style={{ gridTemplateColumns: `repeat(${weekDays.length},1fr)` }}>
+          {weekDays.map((d, i) => {
+            const isToday  = d.toDateString() === today.toDateString()
+            const dateStr  = d.toISOString().slice(0, 10)
+            const specials = events.filter(e => SPECIAL_TYPES.includes(e.type) && eventOccursOn(e, dateStr))
+            return (
+              <div key={`h${i}`} className="cal-week-day-header">
+                <div className="cal-week-day-name">{DAYS_SHORT[d.getDay()]}</div>
+                <div className={`cal-week-day-num${isToday ? ' today' : ''}`}>{d.getDate()}</div>
+                {specials.length > 0 && (
+                  <div style={{ fontSize: 11, lineHeight: 1 }} title={specials.map(s => s.title).join(', ')}>
+                    {specials.slice(0, 2).map((s, si) => <span key={si}>{SPECIAL_META[s.type]?.emoji}</span>)}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${weekDays.length},1fr)`, overflow: 'hidden' }}>
-        {weekDays.map((d, i) => {
-          const isToday   = d.toDateString() === today.toDateString()
-          const dateStr   = d.toISOString().slice(0, 10)
-          const specials  = events.filter(e => SPECIAL_TYPES.includes(e.type) && eventOccursOn(e, dateStr))
-          return (
-            <div key={`h${i}`} className="cal-week-day-header">
-              <div className="cal-week-day-name">{DAYS_SHORT[d.getDay()]}</div>
-              <div className={`cal-week-day-num${isToday ? ' today' : ''}`}>{d.getDate()}</div>
-              {specials.length > 0 && (
-                <div style={{ fontSize: 11, lineHeight: 1 }} title={specials.map(s => s.title).join(', ')}>
-                  {specials.slice(0, 2).map((s, si) => <span key={si}>{SPECIAL_META[s.type]?.emoji}</span>)}
-                </div>
-              )}
-            </div>
-          )
-        })}
+
+      {/* Scrollable time grid */}
+      <div className="cal-week-grid">
+        <div className="cal-time-col">
+          {HOURS.map(h => (
+            <div key={h} className="cal-time-slot">{fmtHour(h)}</div>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${weekDays.length},1fr)` }}>
         {weekDays.map((d, dayIdx) => {
           const dateStr  = d.toISOString().slice(0, 10)
           const specials = events.filter(e => SPECIAL_TYPES.includes(e.type) && eventOccursOn(e, dateStr))
@@ -801,6 +813,7 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
             </div>
           )
         })}
+        </div>
       </div>
     </div>
   )
@@ -820,15 +833,21 @@ function DayView({ refDate, events, members, onSlotClick, onEventClick }: {
   const dayLabel = refDate.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="cal-week-grid">
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: 52, flexShrink: 0, borderBottom: '1px solid var(--border-lt)' }} />
-        {HOURS.map(h => <div key={h} className="cal-time-slot">{fmtHour(h)}</div>)}
-      </div>
-      <div style={{ flex: 1 }}>
-        <div className="cal-week-day-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="cal-week-outer">
+      {/* Sticky day header */}
+      <div className="cal-week-header-row">
+        <div className="cal-week-header-gutter" />
+        <div className="cal-week-day-header" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
           <div className={`cal-week-day-num${isToday ? ' today' : ''}`} style={{ fontSize: 14 }}>{dayLabel}</div>
         </div>
+      </div>
+
+      {/* Scrollable time grid */}
+      <div className="cal-week-grid">
+        <div className="cal-time-col">
+          {HOURS.map(h => <div key={h} className="cal-time-slot">{fmtHour(h)}</div>)}
+        </div>
+        <div style={{ flex: 1 }}>
         <div className="cal-day-col" style={{ borderRight: 'none' }}>
           {HOURS.map(h => {
             const slotEvs = eventsForDateHour(events, dateStr, h)
@@ -862,6 +881,7 @@ function DayView({ refDate, events, members, onSlotClick, onEventClick }: {
               </div>
             )
           })}
+        </div>
         </div>
       </div>
     </div>
