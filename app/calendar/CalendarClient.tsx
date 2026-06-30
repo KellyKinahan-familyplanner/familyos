@@ -348,7 +348,7 @@ export const SPECIAL_META: Record<string, { emoji: string; shade: string; label:
 export function getMemberColor(assignees: string[], members: Member[]): { hex: string; bg: string } {
   if (!assignees.length || assignees.includes('Everyone')) return { hex: '#1A1714', bg: '#EBEBEB' }
   for (const name of assignees) {
-    const m = members.find(mb => mb.name === name && mb.id !== 'all')
+    const m = members.find(mb => mb.id !== 'all' && (mb.name === name || mb.name.split(' ')[0] === name))
     if (m) return { hex: m.fg, bg: m.bg }
   }
   return { hex: '#A09893', bg: '#F0EDE9' }
@@ -367,7 +367,7 @@ export function getEventChipStyle(
   if (!assignees.length || assignees.includes('Everyone')) return FALLBACK
 
   const matched = assignees
-    .map(name => members.find(m => m.name === name && m.id !== 'all'))
+    .map(name => members.find(m => m.id !== 'all' && (m.name === name || m.name.split(' ')[0] === name)))
     .filter(Boolean) as Member[]
 
   if (!matched.length) return FALLBACK
