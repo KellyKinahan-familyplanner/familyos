@@ -25,7 +25,8 @@ type Props = {
 const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --green:#1D9E75;--green-lt:#E8F7F2;
+  --green:#1D9E75;--green-lt:#E8F7F2;--green-mid:#9FE1CB;
+  --pink:#E8497A;--pink-lt:#FDE8EE;--pink-mid:#F4A4BE;
   --text-1:#1A1714;--text-2:#4A4540;--text-3:#A09893;
   --bg:#F5F2EF;--surface:#FFFFFF;--border:#E8E4DF;--border-lt:#F0EDE9;
   --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:18px;
@@ -111,15 +112,19 @@ input,select,textarea{font-family:inherit;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .empty-state{text-align:center;padding:32px;color:var(--text-3);}
 .empty-state i{font-size:28px;display:block;margin-bottom:8px;}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-lt);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(232,73,122,.12);}
 .settings-row:last-of-type{border-bottom:none;}
 .settings-row-left{flex:1;padding-right:12px;}
 .settings-row-label{font-size:13px;font-weight:600;color:var(--text-1);}
 .settings-row-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
 .settings-toggle{width:42px;height:24px;border-radius:12px;background:var(--border);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
 .settings-toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;}
-.settings-toggle.on{background:var(--green);}
+.settings-toggle.on{background:var(--pink);}
 .settings-toggle.on::after{transform:translateX(18px);}
+.settings-box{background:var(--green-lt);border:1.5px solid var(--pink-mid);border-radius:var(--r-xl);padding:20px 20px 16px;margin-top:28px;}
+.settings-box-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.settings-box-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--pink);background:var(--pink-lt);border:1.5px solid var(--pink-mid);border-radius:20px;padding:4px 12px;}
+.settings-sub-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--pink);margin:18px 0 8px;}
 @media(max-width:580px){
   .member-grid{grid-template-columns:1fr;}
   .topbar{padding:0 14px;}
@@ -483,8 +488,8 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
         </div>
 
         {/* ── Special Events & Holidays ── */}
-        <div className="section" style={{ marginTop: 28 }}>
-          <div className="section-label">✨ Special Events &amp; Holidays</div>
+        <div className="settings-box">
+          <div className="settings-box-header"><span className="settings-box-title">✨ Special Events &amp; Holidays</span></div>
           <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 14, lineHeight: 1.5 }}>
             Birthdays, school holidays, and family holidays appear as emoji icons on the calendar with a soft background shade.
           </p>
@@ -541,8 +546,8 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
         </div>
 
         {/* ── Connected Calendars ── */}
-        <div className="section" style={{ marginTop: 28, marginBottom: 40 }}>
-          <div className="section-label">🔗 Connected Calendars</div>
+        <div className="settings-box" style={{ marginBottom: 0 }}>
+          <div className="settings-box-header"><span className="settings-box-title">🔗 Connected Calendars</span></div>
           <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 14, lineHeight: 1.5 }}>
             Sync external calendars into KYNC. Paste an iCal link — events appear automatically on your family calendar.
           </p>
@@ -613,8 +618,8 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
         </div>
 
         {/* ── Family Settings ── */}
-        <div className="section" style={{ marginTop: 28, marginBottom: 40 }}>
-          <div className="section-label">⚙️ Family Settings</div>
+        <div className="settings-box" style={{ marginBottom: 40 }}>
+          <div className="settings-box-header"><span className="settings-box-title">⚙️ Family Settings</span></div>
           <div className="modal-field"><label>Family name</label><input type="text" id="fam-name" defaultValue={familyName} /></div>
           <div className="modal-field"><label>Location</label><input type="text" id="fam-location" placeholder="e.g. Perth, WA" /></div>
           <div className="modal-field">
@@ -629,7 +634,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
             </select>
           </div>
 
-          <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '.06em', margin: '18px 0 10px' }}>NOTIFICATIONS</div>
+          <div className="settings-sub-label">NOTIFICATIONS</div>
           {([['Event reminders', 'Push notification before events', true], ['Bill due alerts', '3 days before due date', true], ['Chore reminders', 'Morning and afternoon nudges for kids', true], ['Weekly summary', 'Sunday evening family digest', false]] as [string, string, boolean][]).map(([label, sub, on]) => (
             <div key={label} className="settings-row">
               <div className="settings-row-left"><div className="settings-row-label">{label}</div><div className="settings-row-sub">{sub}</div></div>
@@ -637,7 +642,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
             </div>
           ))}
 
-          <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '.06em', margin: '18px 0 10px' }}>KIDS DASHBOARD</div>
+          <div className="settings-sub-label">KIDS DASHBOARD</div>
           {([['Points system', 'Award points for completed chores', true], ['Show exam countdown', "Days remaining on kids' view", true], ['Show revision sessions', "Study blocks on kids' calendar", true]] as [string, string, boolean][]).map(([label, sub, on]) => (
             <div key={label} className="settings-row">
               <div className="settings-row-left"><div className="settings-row-label">{label}</div><div className="settings-row-sub">{sub}</div></div>
