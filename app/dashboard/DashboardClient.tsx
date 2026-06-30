@@ -442,7 +442,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js'
+    script.src = '/dashboard.js?v=20260630c'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
