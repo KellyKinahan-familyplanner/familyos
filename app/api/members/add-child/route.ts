@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
   if (member.role !== 'admin') return NextResponse.json({ error: 'Admin only' }, { status: 403 })
 
   const body = await request.json()
-  const { name, pin } = body
+  const { name, pin, role: requestedRole } = body
+  const memberRole = requestedRole === 'guest' ? 'guest' : 'child'
 
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 })
   if (!pin || !/^\d{4}$/.test(pin)) return NextResponse.json({ error: 'PIN must be 4 digits' }, { status: 400 })
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
     .insert({
       family_id:       member.family_id,
       display_name:    name.trim(),
-      role:            'child',
+      role:            memberRole,
       child_username:  finalUsername,
       pin_hash:        pin,           // plain 4-digit PIN (matches existing schema)
       avatar_initials: initials,

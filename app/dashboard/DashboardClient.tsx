@@ -444,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260701c'
+    script.src = '/dashboard.js?v=20260701d'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -589,7 +589,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
 
     if (!name) { alert('Please enter a name.'); return }
 
-    if (role === 'child') {
+    if (role === 'child' || role === 'guest') {
       const pin = ['pin-1','pin-2','pin-3','pin-4']
         .map(id => (document.getElementById(id) as HTMLInputElement)?.value ?? '')
         .join('')
@@ -600,15 +600,15 @@ export default function DashboardClient({ displayName, familyName, initials, use
         const res = await fetch('/api/members/add-child', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, pin }),
+          body: JSON.stringify({ name, pin, role }),
         })
         const data = await res.json()
         if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
         ;(window as any).closeModal('modal-invite')
-        setTimeout(() => (window as any).showToast('Child account created! 🎉'), 120)
+        setTimeout(() => (window as any).showToast(role === 'guest' ? 'Guest account created! 🎉' : 'Child account created! 🎉'), 120)
         setTimeout(() => location.reload(), 800)
       } catch { alert('Network error - please try again.') }
-      finally { btn.disabled = false; btn.textContent = 'Create child account' }
+      finally { btn.disabled = false; btn.textContent = role === 'guest' ? 'Create guest account' : 'Create child account' }
     } else {
       const email = (document.querySelector('#invite-email-section input[type=email]') as HTMLInputElement)?.value?.trim() ?? ''
       if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return }

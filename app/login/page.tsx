@@ -44,8 +44,9 @@ export default function LoginPage() {
       return
     }
 
-    setSuccess(`Hi ${data.display_name}! Taking you to your dashboard… 🏠`)
-    setTimeout(() => { window.location.href = '/dashboard' }, 1000)
+    const dest = data.role === 'guest' ? '/guest' : '/dashboard'
+    setSuccess(`Hi ${data.display_name}! Taking you to your ${data.role === 'guest' ? 'view' : 'dashboard'}… 🏠`)
+    setTimeout(() => { window.location.href = dest }, 1000)
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -181,7 +182,7 @@ export default function LoginPage() {
               fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: 700,
               background: view === 'kid' ? '#378ADD' : 'transparent',
               color: view === 'kid' ? '#fff' : '#6B6561', transition: 'all .15s',
-            }}>🧒 I&apos;m a kid</button>
+            }}>🔑 PIN login</button>
           </div>
 
           <div style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px', color: '#1A1714' }}>

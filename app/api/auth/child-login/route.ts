@@ -31,14 +31,14 @@ export async function POST(request: Request) {
       .eq('family_id', family.id)
       .eq('child_username', child_username.trim().toLowerCase())
       .eq('pin_hash', pin.trim())
-      .eq('role', 'child')
+      .in('role', ['child', 'guest'])
       .maybeSingle()
 
     if (memberError || !member) {
       return NextResponse.json({ error: 'Incorrect PIN. Please try again.' }, { status: 401 })
     }
 
-    // Set a secure child session cookie
+    // Set a secure session cookie
     const session = JSON.stringify({
       family_id: family.id,
       family_name: family.name,
@@ -46,10 +46,10 @@ export async function POST(request: Request) {
       display_name: member.display_name,
       child_username: member.child_username,
       avatar_initials: member.avatar_initials,
-      role: 'child',
+      role: member.role,
     })
 
-    const response = NextResponse.json({ success: true, display_name: member.display_name })
+    const response = NextResponse.json({ success: true, display_name: member.display_name, role: member.role })
     response.cookies.set('kync-child-session', session, {
       httpOnly: true,
       sameSite: 'lax',
