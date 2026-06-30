@@ -897,16 +897,16 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d} className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>{d}</div>)}
                 </div>
               </div>
-              <div id="recur-monthly-task" style={{ display:'none', marginTop:10 }}>
+              <div id=”recur-monthly-task” style={{ display:'none', marginTop:10 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
-                <div className="role-pills">
-                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ“… Date (e.g. 15th)</div>
-                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ“† Day (e.g. last Saturday)</div>
+                <div className=”role-pills”>
+                  <div className=”role-pill sel” data-monthtype=”date” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ”… Date (e.g. 15th)</div>
+                  <div className=”role-pill” data-monthtype=”day” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ”† Day (e.g. last Saturday)</div>
                 </div>
-                <div id="monthly-date-task" style={{ marginTop:8 }}>
-                  <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
+                <div id=”monthly-date-task” style={{ marginTop:8 }}>
+                  <input type=”number” min={1} max={31} placeholder=”Day of month (e.g. 15)” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
                 </div>
-                <div id="monthly-day-task" style={{ display:'none', marginTop:8 }}>
+                <div id=”monthly-day-task” style={{ display:'none', marginTop:8 }}>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                     <select style={{ padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }}>
                       <option>First</option><option>Second</option><option>Third</option><option>Fourth</option><option>Last</option>
@@ -917,8 +917,23 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   </div>
                 </div>
               </div>
+              <div id=”recur-end-task” style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:8 }}>ENDS</div>
+                <div className=”role-pills” style={{ marginBottom:10 }}>
+                  <div className=”role-pill sel” data-endtype=”never” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>Never</div>
+                  <div className=”role-pill” data-endtype=”on” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>On date</div>
+                  <div className=”role-pill” data-endtype=”after” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>After</div>
+                </div>
+                <div id=”recur-end-on-task” style={{ display:'none' }}>
+                  <input type=”date” id=”recur-end-date-task” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                </div>
+                <div id=”recur-end-after-task” style={{ display:'none', alignItems:'center', gap:8 }}>
+                  <input type=”number” id=”recur-end-count-task” min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                  <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences</span>
+                </div>
+              </div>
             </div>
-            <div className="modal-field"><label>Notes</label><input type="text" placeholder="Any extra detailsâ€¦" /></div>
+            <div className=”modal-field”><label>Notes</label><input type=”text” placeholder=”Any extra detailsâ€¦” /></div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
               <div className="attach-drop" onClick={() => document.getElementById('attach-task')?.click()}>
@@ -976,16 +991,16 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d} className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>{d}</div>)}
                 </div>
               </div>
-              <div id="recur-monthly-chore" style={{ display:'none', marginTop:10 }}>
+              <div id=”recur-monthly-chore” style={{ display:'none', marginTop:10 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
-                <div className="role-pills">
-                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ“… Date (e.g. 15th)</div>
-                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ“† Day (e.g. last Saturday)</div>
+                <div className=”role-pills”>
+                  <div className=”role-pill sel” data-monthtype=”date” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ”… Date (e.g. 15th)</div>
+                  <div className=”role-pill” data-monthtype=”day” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ”† Day (e.g. last Saturday)</div>
                 </div>
-                <div id="monthly-date-chore" style={{ marginTop:8 }}>
-                  <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
+                <div id=”monthly-date-chore” style={{ marginTop:8 }}>
+                  <input type=”number” min={1} max={31} placeholder=”Day of month (e.g. 15)” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
                 </div>
-                <div id="monthly-day-chore" style={{ display:'none', marginTop:8 }}>
+                <div id=”monthly-day-chore” style={{ display:'none', marginTop:8 }}>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                     <select style={{ padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }}>
                       <option>First</option><option>Second</option><option>Third</option><option>Fourth</option><option>Last</option>
@@ -996,8 +1011,23 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   </div>
                 </div>
               </div>
+              <div id=”recur-end-chore” style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:8 }}>ENDS</div>
+                <div className=”role-pills” style={{ marginBottom:10 }}>
+                  <div className=”role-pill sel” data-endtype=”never” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>Never</div>
+                  <div className=”role-pill” data-endtype=”on” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>On date</div>
+                  <div className=”role-pill” data-endtype=”after” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>After</div>
+                </div>
+                <div id=”recur-end-on-chore” style={{ display:'none' }}>
+                  <input type=”date” id=”recur-end-date-chore” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                </div>
+                <div id=”recur-end-after-chore” style={{ display:'none', alignItems:'center', gap:8 }}>
+                  <input type=”number” id=”recur-end-count-chore” min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                  <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences</span>
+                </div>
+              </div>
             </div>
-            <div className="modal-field"><label>Points value</label><input type="number" defaultValue={5} min={0} max={100} /></div>
+            <div className=”modal-field”><label>Points value</label><input type="number" defaultValue={5} min={0} max={100} /></div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
               <div className="attach-drop" onClick={() => document.getElementById('attach-chore')?.click()}>
@@ -1067,6 +1097,21 @@ export default function DashboardClient({ displayName, familyName, initials, use
                       <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
                     </select>
                   </div>
+                </div>
+              </div>
+              <div id="recur-end-hw" style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:8 }}>ENDS</div>
+                <div className="role-pills" style={{ marginBottom:10 }}>
+                  <div className="role-pill sel" data-endtype="never" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'hw')}>Never</div>
+                  <div className="role-pill" data-endtype="on" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'hw')}>On date</div>
+                  <div className="role-pill" data-endtype="after" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'hw')}>After</div>
+                </div>
+                <div id="recur-end-on-hw" style={{ display:'none' }}>
+                  <input type="date" id="recur-end-date-hw" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                </div>
+                <div id="recur-end-after-hw" style={{ display:'none', alignItems:'center', gap:8 }}>
+                  <input type="number" id="recur-end-count-hw" min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                  <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences</span>
                 </div>
               </div>
             </div>

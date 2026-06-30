@@ -89,8 +89,28 @@ function selectRecurring(el,modalId){
   var type=el.getAttribute('data-recur');
   var weekly=document.getElementById('recur-weekly-'+modalId);
   var monthly=document.getElementById('recur-monthly-'+modalId);
+  var endBlock=document.getElementById('recur-end-'+modalId);
   if(weekly)weekly.style.display=type==='weekly'?'block':'none';
   if(monthly)monthly.style.display=type==='monthly'?'block':'none';
+  if(endBlock)endBlock.style.display=type==='none'?'none':'block';
+}
+
+function selectRecurEnd(el,modalId){
+  el.parentElement.querySelectorAll('[data-endtype]').forEach(function(p){p.classList.remove('sel');});
+  el.classList.add('sel');
+  var type=el.getAttribute('data-endtype');
+  var onEl=document.getElementById('recur-end-on-'+modalId);
+  var afterEl=document.getElementById('recur-end-after-'+modalId);
+  if(onEl)onEl.style.display=type==='on'?'flex':'none';
+  if(afterEl)afterEl.style.display=type==='after'?'flex':'none';
+}
+
+function getRecurEnd(modalId){
+  var pill=document.querySelector('#recur-end-'+modalId+' [data-endtype].sel');
+  var type=pill?pill.getAttribute('data-endtype'):'never';
+  if(type==='on'){var d=document.getElementById('recur-end-date-'+modalId);return{recur_end_type:'on',recur_end_value:d?d.value:null};}
+  if(type==='after'){var c=document.getElementById('recur-end-count-'+modalId);return{recur_end_type:'after',recur_end_value:c?parseInt(c.value)||10:10};}
+  return{recur_end_type:'never',recur_end_value:null};
 }
 
 function selectMonthlyType(el,modalId){
@@ -279,8 +299,9 @@ function saveChore(){
   // Today as default date
   var today=new Date().toISOString().slice(0,10);
 
+  var recurEnd=recur==='none'?{}:getRecurEnd('chore');
   fetch('/api/entries',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:title,date:today,type:'chore',colour:'green',assignees:assignees,recur:recur,notes:notes||null,points:points})
+    body:JSON.stringify(Object.assign({title:title,date:today,type:'chore',colour:'green',assignees:assignees,recur:recur,notes:notes||null,points:points},recurEnd))
   }).then(function(r){
     if(r.ok){
       closeModal('modal-kids-chore');
@@ -305,8 +326,9 @@ function saveTask(){
   var recur=recurPill?recurPill.getAttribute('data-recur'):'none';
   var notesEl=document.querySelector('#modal-add-task input[placeholder*="detail"]');
   var notes=notesEl&&notesEl.value.trim()||null;
+  var recurEnd=recur==='none'?{}:getRecurEnd('task');
   fetch('/api/entries',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:title,date:date,type:'task',colour:'blue',assignees:assignees,recur:recur,notes:notes})
+    body:JSON.stringify(Object.assign({title:title,date:date,type:'task',colour:'blue',assignees:assignees,recur:recur,notes:notes},recurEnd))
   }).then(function(r){
     if(r.ok){closeModal('modal-add-task');showToast('Task added – '+title);if(titleEl)titleEl.value='';}
     else{showToast('Could not save task');}
