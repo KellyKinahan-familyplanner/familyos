@@ -12,7 +12,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
 
   const { data: self } = await supabase
     .from('family_members')
-    .select('role, family_id, display_name')
+    .select('role, family_id, display_name, id')
     .eq('user_id', user.id)
     .maybeSingle()
   if (!self) redirect('/onboarding')
@@ -26,13 +26,23 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
 
   if (!target || target.family_id !== self.family_id) notFound()
 
+  // Fetch this member's personal calendar feeds
+  const { data: feeds } = await supabase
+    .from('calendar_feeds')
+    .select('id, name, url, colour, last_synced')
+    .eq('family_id', self.family_id)
+    .eq('member_id', memberId)
+    .order('created_at')
+
   const isAdmin = self.role === 'admin'
+  const isSelf = self.id === target.id
 
   return (
     <MemberProfileClient
       member={target}
       isAdmin={isAdmin}
-      isSelf={target.role !== 'child' && self.display_name === target.display_name}
+      isSelf={isSelf}
+      initialFeeds={feeds ?? []}
     />
   )
 }

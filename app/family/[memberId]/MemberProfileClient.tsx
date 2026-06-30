@@ -2,6 +2,8 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 
+type Feed = { id: string; name: string; url: string; colour: string; last_synced: string | null }
+
 const AVATAR_PRESETS = [
   { bg: '#E8F7F2', fg: '#1D9E75' },
   { bg: '#FFF3E0', fg: '#F57C00' },
@@ -30,10 +32,11 @@ type Member = {
   child_username: string | null
 }
 
-export default function MemberProfileClient({ member: initial, isAdmin }: {
+export default function MemberProfileClient({ member: initial, isAdmin, isSelf, initialFeeds }: {
   member: Member
   isAdmin: boolean
   isSelf: boolean
+  initialFeeds: Feed[]
 }) {
   const [member, setMember] = useState(initial)
   const [saving, setSaving] = useState(false)
@@ -43,6 +46,47 @@ export default function MemberProfileClient({ member: initial, isAdmin }: {
   const [confirmPin, setConfirmPin] = useState('')
   const [pinSaving, setPinSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Calendar feeds
+  const [feeds, setFeeds] = useState<Feed[]>(initialFeeds)
+  const [feedName, setFeedName] = useState('')
+  const [feedUrl, setFeedUrl] = useState('')
+  const [feedColour, setFeedColour] = useState('#378ADD')
+  const [feedSaving, setFeedSaving] = useState(false)
+  const [feedSyncing, setFeedSyncing] = useState(false)
+
+  const addFeed = async () => {
+    if (!feedName.trim() || !feedUrl.trim()) { showToast('Enter a name and URL'); return }
+    setFeedSaving(true)
+    const res = await fetch('/api/calendar-feeds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: feedName.trim(), url: feedUrl.trim(), colour: feedColour, member_id: member.id }),
+    })
+    setFeedSaving(false)
+    if (!res.ok) { showToast('Could not add feed'); return }
+    const data = await res.json()
+    setFeeds(prev => [...prev, data])
+    setFeedName(''); setFeedUrl(''); setFeedColour('#378ADD')
+    showToast('Calendar connected')
+  }
+
+  const removeFeed = async (id: string) => {
+    if (!confirm('Remove this calendar and its imported events?')) return
+    await fetch('/api/calendar-feeds', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    setFeeds(prev => prev.filter(f => f.id !== id))
+    showToast('Calendar removed')
+  }
+
+  const syncFeed = async (id?: string) => {
+    setFeedSyncing(true)
+    await fetch('/api/calendar-feeds/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(id ? { feed_id: id } : { member_id: member.id }) })
+    setFeedSyncing(false)
+    // Refresh feed list to update last_synced
+    const res = await fetch(`/api/calendar-feeds?member_id=${member.id}`)
+    if (res.ok) setFeeds(await res.json())
+    showToast('Synced')
+  }
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -346,6 +390,76 @@ export default function MemberProfileClient({ member: initial, isAdmin }: {
               <button className="save-btn" disabled={pinSaving || newPin.length < 4} onClick={resetPin}>
                 {pinSaving ? 'Resetting...' : 'Reset PIN'}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Personal Calendar Sync — visible to admin or the member themselves */}
+        {(isAdmin || isSelf) && (
+          <div className="section">
+            <div className="section-title">PERSONAL CALENDARS</div>
+            <div style={{ padding: '10px 18px 4px', fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
+              Connect {member.display_name}&apos;s personal Google Calendar, Outlook, Apple or other iCal feed. Events will appear on the family calendar filtered to this member.
+            </div>
+
+            {/* Provider hint cards */}
+            <div style={{ display: 'flex', gap: 8, padding: '10px 18px', overflowX: 'auto' }}>
+              {[
+                { icon: '📅', label: 'Google', hint: 'Settings → calendar → Secret iCal address', color: '#4285F4' },
+                { icon: '📆', label: 'Outlook', hint: 'Calendar settings → Shared calendars → ICS link', color: '#0078D4' },
+                { icon: '🍎', label: 'Apple', hint: 'iCloud.com → Calendar → share → Public Calendar', color: '#555' },
+                { icon: '🟦', label: 'Square', hint: 'Appointments → Calendar → Share → iCal link', color: '#006AFF' },
+              ].map(p => (
+                <div key={p.label} title={p.hint}
+                  style={{ flexShrink: 0, background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', padding: '10px 12px', cursor: 'pointer', textAlign: 'center', minWidth: 70 }}
+                  onClick={() => !feedName && setFeedName(`${member.display_name.split(' ')[0]}'s ${p.label}`)}>
+                  <div style={{ fontSize: 20 }}>{p.icon}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: p.color, marginTop: 3 }}>{p.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Existing feeds */}
+            {feeds.length > 0 && (
+              <div style={{ padding: '4px 18px 0' }}>
+                {feeds.map(f => (
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border-lt)' }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: f.colour, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                        {f.last_synced ? `Synced ${new Date(f.last_synced).toLocaleString('en-AU', { dateStyle: 'short', timeStyle: 'short' })}` : 'Never synced'}
+                      </div>
+                    </div>
+                    <button disabled={feedSyncing} onClick={() => syncFeed(f.id)}
+                      style={{ background: 'var(--green-lt)', border: 'none', color: 'var(--green)', borderRadius: 'var(--r-md)', padding: '6px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                      {feedSyncing ? '…' : '↻'}
+                    </button>
+                    <button onClick={() => removeFeed(f.id)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 16, padding: 4 }}>
+                      <i className="ti ti-trash" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add feed form */}
+            <div className="field-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+              <input style={{ width: '100%', padding: '10px 14px', border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 13, outline: 'none', background: 'var(--bg)' }}
+                type="text" placeholder={`e.g. ${member.display_name.split(' ')[0]}'s Google Calendar`}
+                value={feedName} onChange={e => setFeedName(e.target.value)} />
+              <input style={{ width: '100%', padding: '10px 14px', border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, outline: 'none', background: 'var(--bg)', fontFamily: 'monospace' }}
+                type="url" placeholder="https://calendar.google.com/calendar/ical/..."
+                value={feedUrl} onChange={e => setFeedUrl(e.target.value)} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input type="color" value={feedColour} onChange={e => setFeedColour(e.target.value)}
+                  style={{ width: 44, height: 36, padding: 2, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', cursor: 'pointer' }} />
+                <span style={{ fontSize: 12, color: 'var(--text-3)', flex: 1 }}>Calendar colour</span>
+                <button className="save-btn" disabled={feedSaving || !feedName.trim() || !feedUrl.trim()} onClick={addFeed}>
+                  {feedSaving ? 'Adding...' : '+ Connect'}
+                </button>
+              </div>
             </div>
           </div>
         )}
