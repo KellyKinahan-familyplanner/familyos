@@ -605,7 +605,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         const data = await res.json()
         if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
         ;(window as any).closeModal('modal-invite')
-        setTimeout(() => (window as any).showToast('Child account created! [party]'), 120)
+        setTimeout(() => (window as any).showToast('Child account created! 🎉'), 120)
         setTimeout(() => location.reload(), 800)
       } catch { alert('Network error - please try again.') }
       finally { btn.disabled = false; btn.textContent = 'Create child account' }
@@ -1437,7 +1437,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   <div className="toggle-row-switch on" id="sleep-toggle-olivia" onClick={() => (window as any).toggleSleep('olivia')} style={{ cursor: 'pointer' }}></div>
                 </div>
                 <div className="sleep-times" id="sleep-times-olivia">
-                  <div className="sleep-time-field"><label>[moon] Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
+                  <div className="sleep-time-field"><label>🌙 Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
                   <div className="sleep-time-field"><label> Wake time</label><input id="bedtime-end-input" type="time" defaultValue="07:00" /></div>
                   <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-lt)' }}>
                     <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)' }}>Grant extension</div><div style={{ fontSize: 11, color: 'var(--text-3)' }}>15 minutes right now</div></div>
@@ -1733,7 +1733,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div className="modal-actions" style={{ marginTop: 18 }}><button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
             </div>
             <div className="wizard-step" id="wstep-3">
-              <div className="wizard-hero"><div className="wizard-hero-icon">[party]</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
+              <div className="wizard-hero"><div className="wizard-hero-icon">🎉</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
               <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 14, marginBottom: 4 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Setup complete</div>
                 {['Family profile created','You\'re set as Admin','Notifications enabled'].map(item => (
@@ -1753,7 +1753,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
       <div id="bedtime-overlay">
         <div className="bedtime-stars" id="bedtime-stars"></div>
         <span className="bedtime-demo-close" onClick={() => (window as any).hideBedtime()}> Close preview</span>
-        <div className="bedtime-moon">[moon]</div>
+        <div className="bedtime-moon">🌙</div>
         <div className="bedtime-title">Time for bed!</div>
         <div className="bedtime-sub">This app is sleeping. Get some rest - it&apos;ll be ready in the morning.</div>
         <div className="bedtime-wake-card"><div className="bedtime-wake-label">Back at</div><div className="bedtime-wake-time">7:00 AM</div></div>
@@ -1766,7 +1766,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <img src="/Kync_logo.png" alt="KYNC" style={{ height: 38 }} />
           <button className="kv-exit" onClick={() => (window as any).closeKidsView()}><i className="ti ti-x" style={{ fontSize: 11, marginRight: 4 }}></i>Exit kids view</button>
         </div>
-        <div className="kv-greeting" id="kv-greeting">Hi there! [wave]</div>
+        <div className="kv-greeting" id="kv-greeting">Hi there! 👋</div>
         <div className="kv-date">{todayStr ? `Today is ${todayStr}` : ''}</div>
         <div className="kv-member-tabs">
           {members.filter(m => m.role === 'child').map((m, i) => {
