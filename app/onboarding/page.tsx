@@ -180,10 +180,9 @@ export default function OnboardingPage() {
     // Add child members
     for (const m of members) {
       if (m.role === 'child') {
-        const childUserId = crypto.randomUUID()
         const { error: childErr } = await supabase.from('family_members').insert({
           family_id: familyId,
-          user_id: childUserId,
+          user_id: null,
           display_name: m.display_name,
           child_username: m.child_username,
           avatar_initials: m.display_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase(),
