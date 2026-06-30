@@ -344,6 +344,13 @@ export const SPECIAL_META: Record<string, { emoji: string; shade: string; label:
   'public-holiday': { emoji: '🎉', shade: 'rgba(245,158,11,0.14)', label: 'Public holiday' },
 }
 
+export function getSpecialBorderColor(type: string): string {
+  return type === 'birthday' ? '#BE185D'
+    : type === 'school-holiday' ? '#1D4ED8'
+    : type === 'family-holiday' ? '#065F46'
+    : '#92400E'
+}
+
 /** Resolve the display colour for an event based on its assignees */
 export function getMemberColor(assignees: string[], members: Member[]): { hex: string; bg: string } {
   if (!assignees.length || assignees.includes('Everyone')) return { hex: '#1A1714', bg: '#EBEBEB' }
@@ -675,14 +682,15 @@ function MonthView({ year, month, events, members, onCellClick, onEventClick }: 
               {shade && <div className="cal-day-shade" style={{ background: shade }} />}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
                 <div className="cal-date">{cell.date.getDate()}</div>
-                {specials.length > 0 && (
-                  <div style={{ display: 'flex', gap: 1, fontSize: 10 }} title={specials.map(s => s.title).join(', ')}>
-                    {specials.slice(0, 3).map((s, si) => (
-                      <span key={si}>{SPECIAL_META[s.type]?.emoji}</span>
-                    ))}
-                  </div>
-                )}
               </div>
+              {specials.slice(0, 2).map((s, si) => {
+                const meta = SPECIAL_META[s.type]
+                return (
+                  <div key={si} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 3, background: meta?.shade, borderLeft: `3px solid ${getSpecialBorderColor(s.type)}`, borderRadius: 3, padding: '1px 4px', marginBottom: 2, fontSize: 10, fontWeight: 700, color: getSpecialBorderColor(s.type), overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    <span>{meta?.emoji}</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</span>
+                  </div>
+                )
+              })}
               {regular.slice(0, 3).map(ev => {
                 const cs = getEventChipStyle(ev.assignees, members)
                 return (
@@ -754,11 +762,14 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
               <div key={`h${i}`} className="cal-week-day-header">
                 <div className="cal-week-day-name">{DAYS_SHORT[d.getDay()]}</div>
                 <div className={`cal-week-day-num${isToday ? ' today' : ''}`}>{d.getDate()}</div>
-                {specials.length > 0 && (
-                  <div style={{ fontSize: 11, lineHeight: 1 }} title={specials.map(s => s.title).join(', ')}>
-                    {specials.slice(0, 2).map((s, si) => <span key={si}>{SPECIAL_META[s.type]?.emoji}</span>)}
-                  </div>
-                )}
+                {specials.slice(0, 2).map((s, si) => {
+                  const meta = SPECIAL_META[s.type]
+                  return (
+                    <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 3, background: meta?.shade, borderLeft: `3px solid ${getSpecialBorderColor(s.type)}`, borderRadius: 3, padding: '2px 5px', marginTop: 3, fontSize: 10, fontWeight: 700, color: getSpecialBorderColor(s.type), overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                      <span>{meta?.emoji}</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</span>
+                    </div>
+                  )
+                })}
               </div>
             )
           })}
