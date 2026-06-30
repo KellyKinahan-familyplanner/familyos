@@ -1,4 +1,4 @@
-﻿﻿'use client'
+'use client'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
@@ -445,7 +445,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     }
   }, [])
 
-  /* â”€â”€ Bedtime scheduler + browser notifications â”€â”€ */
+  /* "" Bedtime scheduler + browser notifications "" */
   useEffect(() => {
     let bedtimeEnabled  = false
     let bedtimeStart    = '20:30'
@@ -512,7 +512,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         if (alerts.length > 0) {
           notifSentToday = true
           const body = alerts.slice(0, 3).join('\n') + (alerts.length > 3 ? `\n+${alerts.length - 3} more` : '')
-          new Notification('KYNC â€“ Family alerts', { body, icon: '/Kync_logo.png' })
+          new Notification('KYNC - Family alerts', { body, icon: '/Kync_logo.png' })
         }
       } catch { /* ignore */ }
     }
@@ -523,7 +523,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
       const now  = new Date()
       const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
       const isNight = bedtimeStart > bedtimeEnd
-        ? hhmm >= bedtimeStart || hhmm < bedtimeEnd   // e.g. 20:30â€“07:00
+        ? hhmm >= bedtimeStart || hhmm < bedtimeEnd   // e.g. 20:30-07:00
         : hhmm >= bedtimeStart && hhmm < bedtimeEnd   // rare: same-day window
 
       if (isNight && !bedtimeShown) {
@@ -586,7 +586,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         .join('')
       if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { alert('Please enter a 4-digit PIN.'); return }
 
-      btn.disabled = true; btn.textContent = 'Saving…'
+      btn.disabled = true; btn.textContent = 'Saving...'
       try {
         const res = await fetch('/api/members/add-child', {
           method: 'POST',
@@ -596,15 +596,15 @@ export default function DashboardClient({ displayName, familyName, initials, use
         const data = await res.json()
         if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
         ;(window as any).closeModal('modal-invite')
-        setTimeout(() => (window as any).showToast('Child account created! 🎉'), 120)
+        setTimeout(() => (window as any).showToast('Child account created! [party]'), 120)
         setTimeout(() => location.reload(), 800)
-      } catch { alert('Network error — please try again.') }
+      } catch { alert('Network error - please try again.') }
       finally { btn.disabled = false; btn.textContent = 'Create child account' }
     } else {
       const email = (document.querySelector('#invite-email-section input[type=email]') as HTMLInputElement)?.value?.trim() ?? ''
       if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return }
 
-      btn.disabled = true; btn.textContent = 'Sending…'
+      btn.disabled = true; btn.textContent = 'Sending...'
       try {
         const res = await fetch('/api/members/invite', {
           method: 'POST',
@@ -615,7 +615,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         if (!res.ok) { alert('Error: ' + (data.error ?? res.statusText)); return }
         ;(window as any).closeModal('modal-invite')
         setTimeout(() => (window as any).showToast('Invite sent!'), 120)
-      } catch { alert('Network error — please try again.') }
+      } catch { alert('Network error - please try again.') }
       finally { btn.disabled = false; btn.textContent = 'Send invite' }
     }
   }
@@ -625,7 +625,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
 
-      {/* â”€â”€ TOPBAR â”€â”€ */}
+      {/* "" TOPBAR "" */}
       <div className="topbar">
         <div className="topbar-inner">
           <a className="tb-logo" href="/dashboard">
@@ -649,7 +649,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* â”€â”€ DASH BODY â”€â”€ */}
+      {/* "" DASH BODY "" */}
       <div className="dash-body">
 
         {/* Welcome banner */}
@@ -657,7 +657,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <div>
             <div className="welcome-eyebrow">Welcome back</div>
             <div className="welcome-heading">{firstName}&apos;s<br />Family Hub</div>
-            <div className="welcome-sub">{fName}{todayStr ? ` · ${todayStr}` : ''}</div>
+            <div className="welcome-sub">{fName}{todayStr ? ` . ${todayStr}` : ''}</div>
             <div className="welcome-members">
               {members.slice(0, 5).map((m, i) => {
                 const avatarColors = ['var(--sj-bg)', 'var(--mj-bg)', 'var(--oj-bg)', 'var(--lj-bg)', '#E8F4FE']
@@ -684,7 +684,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           <div className="stat-card"><div className="stat-num">235</div><div className="stat-lbl">Kids points total</div><div className="stat-delta delta-up"><i className="ti ti-star" style={{ fontSize: 11 }}></i> Leading this week</div></div>
         </div>
 
-        {/* â”€â”€ Quick Actions â”€â”€ */}
+        {/* "" Quick Actions "" */}
         <div className="section-hd"><div className="section-title">Quick actions</div></div>
         <div className="actions-grid">
           <div className="action-card ac-green" onClick={() => (window as any).openModal('modal-invite')}>
@@ -729,7 +729,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           </div>
         </div>
 
-        {/* â”€â”€ Family Members â”€â”€ */}
+        {/* "" Family Members "" */}
         <div className="section-hd">
           <div className="section-title">Family members</div>
           <div className="section-link" onClick={() => (window as any).openModal('modal-invite')}>+ Invite</div>
@@ -765,14 +765,14 @@ export default function DashboardClient({ displayName, familyName, initials, use
           })}
         </div>
 
-        {/* â”€â”€ Recent Activity â”€â”€ */}
+        {/* "" Recent Activity "" */}
         <div className="section-hd" style={{ marginTop: 28 }}>
           <div className="section-title">Recent activity</div>
         </div>
         <div className="activity-list">
           <div className="activity-row">
             <div className="activity-icon" style={{ background: 'var(--green-lt)', color: 'var(--green)' }}><i className="ti ti-circle-check"></i></div>
-            <div className="activity-text"><strong>Chore completed</strong> Â· +5 pts awarded</div>
+            <div className="activity-text"><strong>Chore completed</strong> . +5 pts awarded</div>
             <div className="activity-time">2 min ago</div>
           </div>
           <div className="activity-row">
@@ -787,24 +787,24 @@ export default function DashboardClient({ displayName, familyName, initials, use
           </div>
           <div className="activity-row">
             <div className="activity-icon" style={{ background: '#F2F1FD', color: 'var(--fa-ac)' }}><i className="ti ti-scan"></i></div>
-            <div className="activity-text"><strong>AI</strong> read a school newsletter â€” extracted 3 events for review</div>
+            <div className="activity-text"><strong>AI</strong> read a school newsletter - extracted 3 events for review</div>
             <div className="activity-time">4 hrs ago</div>
           </div>
           <div className="activity-row">
             <div className="activity-icon" style={{ background: 'var(--amber-lt)', color: 'var(--amber)' }}><i className="ti ti-receipt"></i></div>
-            <div className="activity-text"><strong>Bill due</strong> in 1 day â€” check your bills tracker</div>
+            <div className="activity-text"><strong>Bill due</strong> in 1 day - check your bills tracker</div>
             <div className="activity-time">Today</div>
           </div>
           <div className="activity-row">
             <div className="activity-icon" style={{ background: '#D1FAE5', color: '#059669' }}><i className="ti ti-chart-bar"></i></div>
-            <div className="activity-text"><strong>Monthly report</strong> ready â€” view in Financial Reports</div>
+            <div className="activity-text"><strong>Monthly report</strong> ready - view in Financial Reports</div>
             <div className="activity-time">Yesterday</div>
           </div>
         </div>
 
       </div>{/* end dash-body */}
 
-      {/* â•â•â•â• MODALS â•â•â•â• */}
+      {/*  MODALS  */}
 
       {/* Invite member */}
       <div className="modal-backdrop" id="modal-invite" onClick={(e) => (window as any).backdropClose(e,'modal-invite')}>
@@ -837,7 +837,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div id="invite-pin-section">
               <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 14, fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
                 <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4, color: 'var(--amber)' }}></i>
-                Child accounts use a <strong>4-digit PIN</strong> â€” no email needed. Perfect for shared tablets.
+                Child accounts use a <strong>4-digit PIN</strong> - no email needed. Perfect for shared tablets.
               </div>
               <div className="modal-field"><label>4-digit PIN</label>
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
@@ -897,16 +897,16 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d} className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>{d}</div>)}
                 </div>
               </div>
-              <div id=”recur-monthly-task” style={{ display:'none', marginTop:10 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
-                <div className=”role-pills”>
-                  <div className=”role-pill sel” data-monthtype=”date” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ”… Date (e.g. 15th)</div>
-                  <div className=”role-pill” data-monthtype=”day” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>ðŸ”† Day (e.g. last Saturday)</div>
+              <div id="recur-monthly-task" style={{ display:'none', marginTop:10 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the same...</div>
+                <div className="role-pills">
+                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>"... Date (e.g. 15th)</div>
+                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'task')}>"+ Day (e.g. last Saturday)</div>
                 </div>
-                <div id=”monthly-date-task” style={{ marginTop:8 }}>
-                  <input type=”number” min={1} max={31} placeholder=”Day of month (e.g. 15)” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
+                <div id="monthly-date-task" style={{ marginTop:8 }}>
+                  <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
                 </div>
-                <div id=”monthly-day-task” style={{ display:'none', marginTop:8 }}>
+                <div id="monthly-day-task" style={{ display:'none', marginTop:8 }}>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                     <select style={{ padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }}>
                       <option>First</option><option>Second</option><option>Third</option><option>Fourth</option><option>Last</option>
@@ -917,23 +917,23 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   </div>
                 </div>
               </div>
-              <div id=”recur-end-task” style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+              <div id="recur-end-task" style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
                 <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:8 }}>ENDS</div>
-                <div className=”role-pills” style={{ marginBottom:10 }}>
-                  <div className=”role-pill sel” data-endtype=”never” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>Never</div>
-                  <div className=”role-pill” data-endtype=”on” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>On date</div>
-                  <div className=”role-pill” data-endtype=”after” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>After</div>
+                <div className="role-pills" style={{ marginBottom:10 }}>
+                  <div className="role-pill sel" data-endtype="never" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>Never</div>
+                  <div className="role-pill" data-endtype="on" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>On date</div>
+                  <div className="role-pill" data-endtype="after" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'task')}>After</div>
                 </div>
-                <div id=”recur-end-on-task” style={{ display:'none' }}>
-                  <input type=”date” id=”recur-end-date-task” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                <div id="recur-end-on-task" style={{ display:'none' }}>
+                  <input type="date" id="recur-end-date-task" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
                 </div>
-                <div id=”recur-end-after-task” style={{ display:'none', alignItems:'center', gap:8 }}>
-                  <input type=”number” id=”recur-end-count-task” min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                <div id="recur-end-after-task" style={{ display:'none', alignItems:'center', gap:8 }}>
+                  <input type="number" id="recur-end-count-task" min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
                   <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences</span>
                 </div>
               </div>
             </div>
-            <div className=”modal-field”><label>Notes</label><input type=”text” placeholder=”Any extra detailsâ€¦” /></div>
+            <div className="modal-field"><label>Notes</label><input type="text" placeholder="Any extra details..." /></div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
               <div className="attach-drop" onClick={() => document.getElementById('attach-task')?.click()}>
@@ -991,16 +991,16 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d} className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>{d}</div>)}
                 </div>
               </div>
-              <div id=”recur-monthly-chore” style={{ display:'none', marginTop:10 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
-                <div className=”role-pills”>
-                  <div className=”role-pill sel” data-monthtype=”date” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ”… Date (e.g. 15th)</div>
-                  <div className=”role-pill” data-monthtype=”day” onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>ðŸ”† Day (e.g. last Saturday)</div>
+              <div id="recur-monthly-chore" style={{ display:'none', marginTop:10 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the same...</div>
+                <div className="role-pills">
+                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>"... Date (e.g. 15th)</div>
+                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'chore')}>"+ Day (e.g. last Saturday)</div>
                 </div>
-                <div id=”monthly-date-chore” style={{ marginTop:8 }}>
-                  <input type=”number” min={1} max={31} placeholder=”Day of month (e.g. 15)” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
+                <div id="monthly-date-chore" style={{ marginTop:8 }}>
+                  <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
                 </div>
-                <div id=”monthly-day-chore” style={{ display:'none', marginTop:8 }}>
+                <div id="monthly-day-chore" style={{ display:'none', marginTop:8 }}>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                     <select style={{ padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }}>
                       <option>First</option><option>Second</option><option>Third</option><option>Fourth</option><option>Last</option>
@@ -1011,23 +1011,23 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   </div>
                 </div>
               </div>
-              <div id=”recur-end-chore” style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+              <div id="recur-end-chore" style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
                 <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:8 }}>ENDS</div>
-                <div className=”role-pills” style={{ marginBottom:10 }}>
-                  <div className=”role-pill sel” data-endtype=”never” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>Never</div>
-                  <div className=”role-pill” data-endtype=”on” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>On date</div>
-                  <div className=”role-pill” data-endtype=”after” onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>After</div>
+                <div className="role-pills" style={{ marginBottom:10 }}>
+                  <div className="role-pill sel" data-endtype="never" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>Never</div>
+                  <div className="role-pill" data-endtype="on" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>On date</div>
+                  <div className="role-pill" data-endtype="after" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'chore')}>After</div>
                 </div>
-                <div id=”recur-end-on-chore” style={{ display:'none' }}>
-                  <input type=”date” id=”recur-end-date-chore” style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                <div id="recur-end-on-chore" style={{ display:'none' }}>
+                  <input type="date" id="recur-end-date-chore" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
                 </div>
-                <div id=”recur-end-after-chore” style={{ display:'none', alignItems:'center', gap:8 }}>
-                  <input type=”number” id=”recur-end-count-chore” min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                <div id="recur-end-after-chore" style={{ display:'none', alignItems:'center', gap:8 }}>
+                  <input type="number" id="recur-end-count-chore" min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
                   <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences</span>
                 </div>
               </div>
             </div>
-            <div className=”modal-field”><label>Points value</label><input type="number" defaultValue={5} min={0} max={100} /></div>
+            <div className="modal-field"><label>Points value</label><input type="number" defaultValue={5} min={0} max={100} /></div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
               <div className="attach-drop" onClick={() => document.getElementById('attach-chore')?.click()}>
@@ -1080,10 +1080,10 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 </div>
               </div>
               <div id="recur-monthly-hw" style={{ display:'none', marginTop:10 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the sameâ€¦</div>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>Repeat on the same...</div>
                 <div className="role-pills">
-                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>ðŸ“… Date (e.g. 15th)</div>
-                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>ðŸ“† Day (e.g. last Saturday)</div>
+                  <div className="role-pill sel" data-monthtype="date" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>"... Date (e.g. 15th)</div>
+                  <div className="role-pill" data-monthtype="day" onClick={(e) => (window as any).selectMonthlyType(e.currentTarget,'hw')}>"+ Day (e.g. last Saturday)</div>
                 </div>
                 <div id="monthly-date-hw" style={{ marginTop:8 }}>
                   <input type="number" min={1} max={31} placeholder="Day of month (e.g. 15)" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--bg)', outline:'none' }} />
@@ -1155,19 +1155,19 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="modal-field">
               <label>Urgency</label>
               <div className="urgency-pills">
-                <div className="urgency-pill sel-soon" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'soon')}><div className="up-icon">ðŸ”´</div><div className="up-label">Soon</div><div className="up-sub">Under 5 days</div></div>
-                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'mid')}><div className="up-icon">ðŸŸ¡</div><div className="up-label">Coming up</div><div className="up-sub">5â€“14 days</div></div>
-                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'ok')}><div className="up-icon">ðŸŸ¢</div><div className="up-label">Plenty of time</div><div className="up-sub">15+ days</div></div>
+                <div className="urgency-pill sel-soon" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'soon')}><div className="up-icon">"'</div><div className="up-label">Soon</div><div className="up-sub">Under 5 days</div></div>
+                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'mid')}><div className="up-icon">[yellow]</div><div className="up-label">Coming up</div><div className="up-sub">5-14 days</div></div>
+                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'ok')}><div className="up-icon">[green]</div><div className="up-label">Plenty of time</div><div className="up-sub">15+ days</div></div>
               </div>
             </div>
-            <div className="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1â€“5, open book" /></div>
+            <div className="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1-5, open book" /></div>
             <div style={{ background: 'var(--lilac-lt)', border: '1.5px solid #C4BFFE', borderRadius: 'var(--r-md)', padding: '12px 14px', display: 'flex', gap: 10, marginBottom: 4 }}>
               <div style={{ width: 32, height: 32, borderRadius: 'var(--r-sm)', background: 'var(--lilac)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-books" style={{ fontSize: 16, color: '#fff' }}></i></div>
-              <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lilac)' }}>Revision sessions added after saving</div><div style={{ fontSize: 11, color: '#7b74cc', marginTop: 1 }}>Open the exam entry to schedule study blocks â€” they appear in lilac on the calendar.</div></div>
+              <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lilac)' }}>Revision sessions added after saving</div><div style={{ fontSize: 11, color: '#7b74cc', marginTop: 1 }}>Open the exam entry to schedule study blocks - they appear in lilac on the calendar.</div></div>
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-exam')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-exam','Exam added â€” tap to add revision sessions')}>Save exam</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-exam','Exam added - tap to add revision sessions')}>Save exam</button>
             </div>
           </div>
         </div>
@@ -1189,7 +1189,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="modal-field"><label>Category</label>
               <select id="bill-category-select" onChange={(e) => (window as any).onBillCategoryChange(e.currentTarget)}>
                 <option>Utilities</option><option>Insurance</option><option>Mortgage / Rent</option><option>Subscription</option><option>School</option><option>Medical</option><option>Other</option>
-                <option value="__add__">+ Add new categoryâ€¦</option>
+                <option value="__add__">+ Add new category...</option>
               </select>
             </div>
             <div className="modal-field">
@@ -1209,13 +1209,13 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* Member modal â€” current user (Sarah/admin) */}
+      {/* Member modal - current user (Sarah/admin) */}
       <div className="modal-backdrop" id="modal-member-sarah" onClick={(e) => (window as any).backdropClose(e,'modal-member-sarah')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--sj-bg)', color: 'var(--sj-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }} id="av-header-sarah">{initials}</div>
-              <div><div style={{ fontSize: 17, fontWeight: 800 }}>{displayName}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Admin Â· {userEmail}</div></div>
+              <div><div style={{ fontSize: 17, fontWeight: 800 }}>{displayName}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Admin . {userEmail}</div></div>
             </div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-member-sarah')}><i className="ti ti-x"></i></button>
           </div>
@@ -1224,7 +1224,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div className="avatar-preview" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }} id="av-preview-sarah">{initials}</div>
               <div className="avatar-upload-info">
                 <label className="avatar-upload-btn"><i className="ti ti-upload" style={{ fontSize: 13 }}></i> Upload photo<input type="file" accept="image/*" onChange={(e) => (window as any).previewAvatar(e.currentTarget,'av-preview-sarah','av-header-sarah')} /></label>
-                <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>JPG, PNG or GIF Â· max 2 MB</p>
+                <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>JPG, PNG or GIF . max 2 MB</p>
               </div>
             </div>
             <div className="modal-field"><label>Display name</label><input type="text" defaultValue={displayName} /></div>
@@ -1249,7 +1249,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* Member modal â€” partner/adult 2 */}
+      {/* Member modal - partner/adult 2 */}
       <div className="modal-backdrop" id="modal-member-mark" onClick={(e) => (window as any).backdropClose(e,'modal-member-mark')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
@@ -1277,13 +1277,13 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* Member modal â€” child 1 */}
+      {/* Member modal - child 1 */}
       <div className="modal-backdrop" id="modal-member-olivia" onClick={(e) => (window as any).backdropClose(e,'modal-member-olivia')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--oj-bg)', color: 'var(--oj-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }} id="av-header-olivia">K1</div>
-              <div><div style={{ fontSize: 17, fontWeight: 800 }}>Child 1</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Child Â· PIN login</div></div>
+              <div><div style={{ fontSize: 17, fontWeight: 800 }}>Child 1</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>Child . PIN login</div></div>
             </div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-member-olivia')}><i className="ti ti-x"></i></button>
           </div>
@@ -1306,11 +1306,11 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   <div className="toggle-row-switch on" id="sleep-toggle-olivia" onClick={() => (window as any).toggleSleep('olivia')} style={{ cursor: 'pointer' }}></div>
                 </div>
                 <div className="sleep-times" id="sleep-times-olivia">
-                  <div className="sleep-time-field"><label>ðŸŒ™ Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
-                  <div className="sleep-time-field"><label>â˜€ï¸ Wake time</label><input id="bedtime-end-input" type="time" defaultValue="07:00" /></div>
+                  <div className="sleep-time-field"><label>[moon] Bedtime</label><input id="bedtime-start-input" type="time" defaultValue="20:30" /></div>
+                  <div className="sleep-time-field"><label> Wake time</label><input id="bedtime-end-input" type="time" defaultValue="07:00" /></div>
                   <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-lt)' }}>
                     <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)' }}>Grant extension</div><div style={{ fontSize: 11, color: 'var(--text-3)' }}>15 minutes right now</div></div>
-                    <button className="sleep-ext-btn" onClick={() => (window as any).showToast('Extension granted âœ¨')}>+15 min</button>
+                    <button className="sleep-ext-btn" onClick={() => (window as any).showToast('Extension granted ')}>+15 min</button>
                   </div>
                   <div style={{ gridColumn: '1/-1' }}>
                     <button className="modal-btn modal-btn-secondary" style={{ width: '100%', marginTop: 4 }} onClick={() => (window as any).showBedtime()}><i className="ti ti-eye" style={{ marginRight: 6 }}></i>Preview sleep screen</button>
@@ -1344,7 +1344,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div className="modal-field" style={{ marginBottom: 10 }}><label>Family name</label><input type="text" defaultValue={fName} /></div>
               <div className="modal-field" style={{ marginBottom: 10 }}><label>Location</label><input type="text" placeholder="e.g. Perth, WA" /></div>
               <div className="modal-field" style={{ marginBottom: 0 }}><label>Currency</label>
-                <select><option>AUD â€” Australian Dollar</option><option>NZD â€” New Zealand Dollar</option><option>GBP â€” British Pound</option><option>USD â€” US Dollar</option><option>EUR â€” Euro</option><option>CAD â€” Canadian Dollar</option></select>
+                <select><option>AUD - Australian Dollar</option><option>NZD - New Zealand Dollar</option><option>GBP - British Pound</option><option>USD - US Dollar</option><option>EUR - Euro</option><option>CAD - Canadian Dollar</option></select>
               </div>
             </div>
             <div className="settings-section">
@@ -1369,13 +1369,13 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div className="settings-section-title"><i className="ti ti-devices" style={{ fontSize: 12 }}></i> Device modes</div>
               <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 10, lineHeight: 1.5 }}>Set the view mode for <strong>this device</strong>.</div>
               <div className="device-mode-grid">
-                <div className="device-mode-card sel" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'personal')}><div className="device-mode-icon">ðŸ“±</div><div className="device-mode-name">Personal</div><div className="device-mode-sub">Full access for adults</div></div>
-                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kiosk')}><div className="device-mode-icon">ðŸ–¥ï¸</div><div className="device-mode-name">Kiosk</div><div className="device-mode-sub">Shared family tablet</div></div>
-                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kids')}><div className="device-mode-icon">ðŸ§’</div><div className="device-mode-name">Kids</div><div className="device-mode-sub">Child-safe view only</div></div>
+                <div className="device-mode-card sel" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'personal')}><div className="device-mode-icon">"+/-</div><div className="device-mode-name">Personal</div><div className="device-mode-sub">Full access for adults</div></div>
+                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kiosk')}><div className="device-mode-icon">[screen]</div><div className="device-mode-name">Kiosk</div><div className="device-mode-sub">Shared family tablet</div></div>
+                <div className="device-mode-card" onClick={(e) => (window as any).selectDeviceMode(e.currentTarget,'kids')}><div className="device-mode-icon">[kid]</div><div className="device-mode-name">Kids</div><div className="device-mode-sub">Child-safe view only</div></div>
               </div>
               <div id="device-mode-desc" style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 10, padding: '8px 12px', background: 'var(--bg)', borderRadius: 'var(--r-md)', border: '1px solid var(--border-lt)' }}>
                 <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>
-                <span id="device-mode-desc-text">Personal mode â€” full dashboard access with all admin controls visible.</span>
+                <span id="device-mode-desc-text">Personal mode - full dashboard access with all admin controls visible.</span>
               </div>
             </div>
             <div className="settings-section">
@@ -1394,13 +1394,13 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* â•â•â•â• FINANCIAL REPORTS MODAL â•â•â•â• */}
+      {/*  FINANCIAL REPORTS MODAL  */}
       <div className="modal-backdrop" id="modal-reports" onClick={(e) => (window as any).backdropClose(e,'modal-reports')}>
         <div className="modal report-modal"><div className="modal-handle"></div>
           <div className="modal-head">
             <div>
               <div className="modal-title">Financial reports</div>
-              <div className="modal-sub" id="rep-period-label">Family expenditure by category Â· AUD</div>
+              <div className="modal-sub" id="rep-period-label">Family expenditure by category . AUD</div>
             </div>
             <button className="modal-close" onClick={() => (window as any).closeModal('modal-reports')}><i className="ti ti-x"></i></button>
           </div>
@@ -1411,19 +1411,19 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div className="report-tab" onClick={(e) => (window as any).switchPeriod(e.currentTarget,'year')}>This year</div>
             </div>
             <div className="report-summary-grid">
-              <div className="report-summary-card"><div className="report-summary-num" id="rep-total">â€”</div><div className="report-summary-lbl">Total spent</div></div>
-              <div className="report-summary-card paid"><div className="report-summary-num" id="rep-paid">â€”</div><div className="report-summary-lbl">Paid</div></div>
-              <div className="report-summary-card upcoming"><div className="report-summary-num" id="rep-upcoming">â€”</div><div className="report-summary-lbl">Upcoming</div></div>
-              <div className="report-summary-card overdue"><div className="report-summary-num" id="rep-overdue">â€”</div><div className="report-summary-lbl">Overdue</div></div>
+              <div className="report-summary-card"><div className="report-summary-num" id="rep-total">-</div><div className="report-summary-lbl">Total spent</div></div>
+              <div className="report-summary-card paid"><div className="report-summary-num" id="rep-paid">-</div><div className="report-summary-lbl">Paid</div></div>
+              <div className="report-summary-card upcoming"><div className="report-summary-num" id="rep-upcoming">-</div><div className="report-summary-lbl">Upcoming</div></div>
+              <div className="report-summary-card overdue"><div className="report-summary-num" id="rep-overdue">-</div><div className="report-summary-lbl">Overdue</div></div>
             </div>
             <div className="report-section-label">Spend by category</div>
             <div className="report-category-list" id="rep-cats">
-              <div style={{ color:'var(--text-3)', fontSize:13, padding:'12px 0' }}>Loadingâ€¦</div>
+              <div style={{ color:'var(--text-3)', fontSize:13, padding:'12px 0' }}>Loading...</div>
             </div>
             <div className="report-section-label">Bill breakdown</div>
             <div className="report-bills-table">
               <div className="report-table-head"><span>Bill</span><span>Category</span><span>Amount</span><span>Status</span></div>
-              <div id="rep-bills-body"><div style={{ color:'var(--text-3)', fontSize:13, padding:'12px' }}>Loadingâ€¦</div></div>
+              <div id="rep-bills-body"><div style={{ color:'var(--text-3)', fontSize:13, padding:'12px' }}>Loading...</div></div>
             </div>
             <div className="report-export-bar">
               <button className="report-export-btn excel" onClick={() => (window as any).exportReportCSV()}><i className="ti ti-file-spreadsheet"></i>Export CSV</button>
@@ -1434,11 +1434,11 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* â•â•â•â• AI SCANNER MODAL â•â•â•â• */}
+      {/*  AI SCANNER MODAL  */}
       <div className="modal-backdrop" id="modal-scan" onClick={(e) => (window as any).backdropClose(e,'modal-scan')}>
         <div className="modal scan-modal"><div className="modal-handle"></div>
           <div className="modal-head">
-            <div><div className="modal-title">AI document scanner</div><div className="modal-sub">Upload a photo or PDF â€” Claude reads it and creates a draft entry for your review.</div></div>
+            <div><div className="modal-title">AI document scanner</div><div className="modal-sub">Upload a photo or PDF - Claude reads it and creates a draft entry for your review.</div></div>
             <button className="modal-close" onClick={() => (window as any).closeScan()}><i className="ti ti-x"></i></button>
           </div>
           <div className="modal-body">
@@ -1447,7 +1447,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 <input type="file" id="scan-file-input" accept="image/*,.pdf" onChange={(e) => (window as any).startScan(e.currentTarget)} />
                 <div className="scan-drop-icon"><i className="ti ti-cloud-upload"></i></div>
                 <div className="scan-drop-title">Drop a file or tap to upload</div>
-                <div className="scan-drop-sub">Photos, PDFs, screenshots â€” invitations, bills, school newsletters</div>
+                <div className="scan-drop-sub">Photos, PDFs, screenshots - invitations, bills, school newsletters</div>
               </div>
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Claude can read</div>
@@ -1468,14 +1468,14 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Or try a demo</div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('bill')}>ðŸ“„ Demo bill scan</button>
-                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('event')}>ðŸ“… Demo event scan</button>
+                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('bill')}>"" Demo bill scan</button>
+                  <button style={{ flex: 1, padding: 9, border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: 12, fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg)', cursor: 'pointer' }} onClick={() => (window as any).runDemoScan('event')}>"... Demo event scan</button>
                 </div>
               </div>
             </div>
             <div className="scan-processing" id="scan-step-processing">
               <div className="scan-spinner"></div>
-              <div className="scan-processing-title" id="scan-processing-msg">Reading your documentâ€¦</div>
+              <div className="scan-processing-title" id="scan-processing-msg">Reading your document...</div>
               <div className="scan-processing-sub">Claude is extracting dates, amounts, and details</div>
               <div style={{ marginTop: 20, background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', padding: '12px 16px' }}>
                 <div id="scan-log" style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 2, fontFamily: 'monospace' }}></div>
@@ -1486,12 +1486,12 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 <div className="scan-result-icon"><i className="ti ti-check" id="scan-result-icon"></i></div>
                 <div>
                   <div className="scan-result-type" id="scan-result-type">Bill detected</div>
-                  <div className="scan-result-title" id="scan-result-title">Synergy Energy â€” June 2024</div>
-                  <div className="scan-confidence">AI confidence: <span id="scan-confidence-val">97%</span> Â· Review and confirm below</div>
+                  <div className="scan-result-title" id="scan-result-title">Synergy Energy - June 2024</div>
+                  <div className="scan-confidence">AI confidence: <span id="scan-confidence-val">97%</span> . Review and confirm below</div>
                 </div>
               </div>
               <div className="modal-field" style={{ marginBottom: 6 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Extracted fields â€” tap any to edit</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Extracted fields - tap any to edit</div>
               </div>
               <div className="scan-fields" id="scan-fields-container"></div>
               <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '10px 14px', fontSize: 12, color: 'var(--amber)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1507,7 +1507,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* â•â•â•â• HELP DRAWER â•â•â•â• */}
+      {/*  HELP DRAWER  */}
       <div className="help-backdrop" id="help-backdrop" onClick={() => (window as any).closeHelp()}>
         <div className="help-drawer" onClick={(e) => e.stopPropagation()}>
           <div className="help-drawer-head">
@@ -1516,7 +1516,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           </div>
           <div className="help-drawer-body">
             <div className="help-qs-card" onClick={() => { (window as any).closeHelp(); (window as any).openModal('modal-wizard'); }}>
-              <div className="help-qs-eyebrow">âœ¨ New to KYNC?</div>
+              <div className="help-qs-eyebrow"> New to KYNC?</div>
               <div className="help-qs-title">AI Quick-Start Guide</div>
               <div className="help-qs-sub">Let our AI walk you through setup in under 3 minutes.</div>
               <div className="help-qs-btn"><i className="ti ti-rocket" style={{ fontSize: 13 }}></i> Start setup wizard</div>
@@ -1528,7 +1528,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 { bg:'var(--lilac-lt)', ic:'ti-notes', ic_c:'var(--lilac)', title:'Exams & Revision', sub:'Countdown timers with linked revision sessions.' },
                 { bg:'var(--green-lt)', ic:'ti-list-check', ic_c:'var(--green)', title:'Chores & Tasks', sub:'AM/PM chore routines with points & rewards.' },
                 { bg:'#D1FAE5', ic:'ti-chart-bar', ic_c:'#059669', title:'Financial Reports', sub:'Bills by category. Export to Excel, PDF, or print.' },
-                { bg:'#F2F1FD', ic:'ti-scan', ic_c:'var(--lilac)', title:'AI Document Scanner', sub:'Photo or PDF â€” Claude reads it and creates a draft.' },
+                { bg:'#F2F1FD', ic:'ti-scan', ic_c:'var(--lilac)', title:'AI Document Scanner', sub:'Photo or PDF - Claude reads it and creates a draft.' },
                 { bg:'#EBEBEB', ic:'ti-device-tablet', ic_c:'var(--text-1)', title:'Kiosk & Kids Mode', sub:'Tablet view with bedtime lock & parent override.' },
               ].map(f => (
                 <div key={f.title} className="help-feat-card">
@@ -1541,10 +1541,10 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="help-section-label">Frequently asked questions</div>
             {[
               { q:'How does the AI scanner work?', a:'Tap <strong>AI scan</strong> and upload a photo or PDF of any bill, event invitation, or school newsletter. Claude reads it, extracts the key details, and shows you a draft entry to review and edit before saving. Nothing is saved automatically.' },
-              { q:'How do exam countdowns work?', a:'Add an exam via <strong>Add exam</strong>. It appears on the priority countdown bar on the calendar. Open the exam to add revision sessions â€” they show as lilac blocks on the calendar.' },
-              { q:'Can I print or export the calendar?', a:'Yes â€” open the Calendar and tap the print icon in the toolbar. Choose Print for a browser print view, or Export PDF to download.' },
+              { q:'How do exam countdowns work?', a:'Add an exam via <strong>Add exam</strong>. It appears on the priority countdown bar on the calendar. Open the exam to add revision sessions - they show as lilac blocks on the calendar.' },
+              { q:'Can I print or export the calendar?', a:'Yes - open the Calendar and tap the print icon in the toolbar. Choose Print for a browser print view, or Export PDF to download.' },
               { q:'How do I export financial reports?', a:'Open <strong>Financial reports</strong> from the dashboard. Choose your period then tap Export to Excel, Export PDF, or Print.' },
-              { q:'How do I add a child account?', a:'Tap <strong>Invite member</strong>, enter their name, and set the role to <strong>Child</strong>. Child accounts use PIN-only login â€” no email needed.' },
+              { q:'How do I add a child account?', a:'Tap <strong>Invite member</strong>, enter their name, and set the role to <strong>Child</strong>. Child accounts use PIN-only login - no email needed.' },
             ].map(faq => (
               <div key={faq.q} className="faq-item" onClick={(e) => (window as any).toggleFaq(e.currentTarget)}>
                 <div className="faq-q">{faq.q}<i className="ti ti-chevron-down"></i></div>
@@ -1559,7 +1559,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* â•â•â•â• SETUP WIZARD â•â•â•â• */}
+      {/*  SETUP WIZARD  */}
       <div className="modal-backdrop" id="modal-wizard" onClick={(e) => (window as any).backdropClose(e,'modal-wizard')}>
         <div className="modal" style={{ maxWidth: 520 }}><div className="modal-handle"></div>
           <div className="wizard-steps">
@@ -1570,7 +1570,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           </div>
           <div className="modal-body" style={{ paddingTop: 8 }}>
             <div className="wizard-step active" id="wstep-0">
-              <div className="wizard-hero"><div className="wizard-hero-icon">ðŸ </div><div className="wizard-hero-title">Welcome to KYNC!</div><div className="wizard-hero-sub">I&apos;m your AI setup assistant. Let&apos;s get your family running in about 2 minutes.</div></div>
+              <div className="wizard-hero"><div className="wizard-hero-icon"></div><div className="wizard-hero-title">Welcome to KYNC!</div><div className="wizard-hero-sub">I&apos;m your AI setup assistant. Let&apos;s get your family running in about 2 minutes.</div></div>
               <div className="modal-actions"><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Let&apos;s go <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
             </div>
             <div className="wizard-step" id="wstep-1">
@@ -1593,16 +1593,16 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 </div>
                 <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => (window as any).showToast('Use Invite member to add more family members')}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--border-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-plus" style={{ color: 'var(--text-3)' }}></i></div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)' }}>Add a partner, child or guestâ€¦</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)' }}>Add a partner, child or guest...</div>
                 </div>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-3)', background: 'var(--amber-lt)', padding: '10px 12px', borderRadius: 'var(--r-md)', border: '1px solid #FDE68A', lineHeight: 1.5 }}>
-                <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>Children use PIN-only login â€” no email needed.
+                <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>Children use PIN-only login - no email needed.
               </div>
               <div className="modal-actions" style={{ marginTop: 18 }}><button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
             </div>
             <div className="wizard-step" id="wstep-3">
-              <div className="wizard-hero"><div className="wizard-hero-icon">ðŸŽ‰</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
+              <div className="wizard-hero"><div className="wizard-hero-icon">[party]</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
               <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 14, marginBottom: 4 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Setup complete</div>
                 {['Family profile created','You\'re set as Admin','Notifications enabled'].map(item => (
@@ -1618,24 +1618,24 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* â•â•â•â• BEDTIME OVERLAY â•â•â•â• */}
+      {/*  BEDTIME OVERLAY  */}
       <div id="bedtime-overlay">
         <div className="bedtime-stars" id="bedtime-stars"></div>
-        <span className="bedtime-demo-close" onClick={() => (window as any).hideBedtime()}>âœ• Close preview</span>
-        <div className="bedtime-moon">ðŸŒ™</div>
+        <span className="bedtime-demo-close" onClick={() => (window as any).hideBedtime()}> Close preview</span>
+        <div className="bedtime-moon">[moon]</div>
         <div className="bedtime-title">Time for bed!</div>
-        <div className="bedtime-sub">This app is sleeping. Get some rest â€” it&apos;ll be ready in the morning.</div>
+        <div className="bedtime-sub">This app is sleeping. Get some rest - it&apos;ll be ready in the morning.</div>
         <div className="bedtime-wake-card"><div className="bedtime-wake-label">Back at</div><div className="bedtime-wake-time">7:00 AM</div></div>
-        <button className="bedtime-ask-btn" onClick={() => { (window as any).showToast('Extension request sent to Mum & Dad ðŸ“±'); (window as any).hideBedtime(); }}>Ask for extra time</button>
+        <button className="bedtime-ask-btn" onClick={() => { (window as any).showToast('Extension request sent to Mum & Dad "+/-'); (window as any).hideBedtime(); }}>Ask for extra time</button>
       </div>
 
-      {/* â•â•â•â• KIDS VIEW OVERLAY â•â•â•â• */}
+      {/*  KIDS VIEW OVERLAY  */}
       <div id="kids-view-overlay">
         <div className="kv-topbar">
           <img src="/Kync_logo.png" alt="KYNC" style={{ height: 28 }} />
           <button className="kv-exit" onClick={() => (window as any).closeKidsView()}><i className="ti ti-x" style={{ fontSize: 11, marginRight: 4 }}></i>Exit kids view</button>
         </div>
-        <div className="kv-greeting" id="kv-greeting">Hi there! ðŸ‘‹</div>
+        <div className="kv-greeting" id="kv-greeting">Hi there! [wave]</div>
         <div className="kv-date">{todayStr ? `Today is ${todayStr}` : ''}</div>
         <div className="kv-member-tabs">
           {members.filter(m => m.role === 'child').map((m, i) => {
@@ -1661,7 +1661,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               </div>
             </div>
             <div id="kv-chores-olivia">
-              <div style={{ padding: '16px 0', color: 'var(--text-3)', fontSize: 13, textAlign: 'center' }}>Loading chores…</div>
+              <div style={{ padding: '16px 0', color: 'var(--text-3)', fontSize: 13, textAlign: 'center' }}>Loading chores...</div>
             </div>
             <div className="kv-points-bar">
               <div className="kv-pts-top"><span id="kv-pts-olivia">0 pts today</span><span style={{ color: 'var(--text-3)' }} id="kv-pts-goal-olivia">Goal: 50 pts</span></div>
@@ -1679,7 +1679,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
               </div>
             </div>
             <div id="kv-chores-liam">
-              <div style={{ padding: '16px 0', color: 'var(--text-3)', fontSize: 13, textAlign: 'center' }}>Loading chores…</div>
+              <div style={{ padding: '16px 0', color: 'var(--text-3)', fontSize: 13, textAlign: 'center' }}>Loading chores...</div>
             </div>
             <div className="kv-points-bar">
               <div className="kv-pts-top"><span id="kv-pts-liam">0 pts today</span><span style={{ color: 'var(--text-3)' }} id="kv-pts-goal-liam">Goal: 50 pts</span></div>
