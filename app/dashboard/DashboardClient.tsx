@@ -442,7 +442,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260630c'
+    script.src = '/dashboard.js?v=20260630d'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -1179,13 +1179,53 @@ export default function DashboardClient({ displayName, familyName, initials, use
               </div>
             </div>
             <div className="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1-5, open book" /></div>
-            <div style={{ background: 'var(--lilac-lt)', border: '1.5px solid #C4BFFE', borderRadius: 'var(--r-md)', padding: '12px 14px', display: 'flex', gap: 10, marginBottom: 4 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 'var(--r-sm)', background: 'var(--lilac)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-books" style={{ fontSize: 16, color: '#fff' }}></i></div>
-              <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lilac)' }}>Revision sessions added after saving</div><div style={{ fontSize: 11, color: '#7b74cc', marginTop: 1 }}>Open the exam entry to schedule study blocks - they appear in lilac on the calendar.</div></div>
+            <div className="modal-actions" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-exam')}>Cancel</button>
+              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).saveExamOnly()}>Save only</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveExamThenRevise()}>Save + add revision →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add revision */}
+      <div className="modal-backdrop" id="modal-add-revision" onClick={(e) => (window as any).backdropClose(e,'modal-add-revision')}>
+        <div className="modal"><div className="modal-handle"></div>
+          <div className="modal-head">
+            <div><div className="modal-title">Add revision sessions</div><div className="modal-sub">Schedule study blocks leading up to the exam.</div></div>
+            <button className="modal-close" onClick={() => (window as any).closeModal('modal-add-revision')}><i className="ti ti-x"></i></button>
+          </div>
+          <div className="modal-body">
+            <div className="modal-field"><label>Subject / topic</label><input type="text" id="rev-title" placeholder="e.g. Maths — number patterns" /></div>
+            <div className="modal-2col">
+              <div className="modal-field"><label>First session date</label><input type="date" id="rev-date" /></div>
+              <div className="modal-field"><label>Time <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label><input type="time" id="rev-time" /></div>
+            </div>
+            <div className="modal-field">
+              <label>Assign to</label>
+              <div className="role-pills" data-multi="true" id="rev-assignees">
+                <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
+                {members.map(m => (
+                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-field">
+              <label>Repeat on days</label>
+              <div className="role-pills" data-multi="true" id="rev-days">
+                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
+                  <div key={d} className={`role-pill${['Mon','Wed'].includes(d) ? ' sel' : ''}`} onClick={(e) => (window as any).selectRole(e.currentTarget)}>{d}</div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-field"><label>Repeat until (exam date)</label><input type="date" id="rev-end-date" /></div>
+            <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '9px 12px', fontSize: 11, color: 'var(--amber)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+              <i className="ti ti-info-circle" style={{ flexShrink: 0 }}></i>
+              Sessions will repeat on selected days and stop automatically on the exam date.
             </div>
             <div className="modal-actions">
-              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-exam')}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveAndToast('modal-add-exam','Exam added - tap to add revision sessions')}>Save exam</button>
+              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-revision')}>Skip</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveRevision()}>Add revision sessions</button>
             </div>
           </div>
         </div>

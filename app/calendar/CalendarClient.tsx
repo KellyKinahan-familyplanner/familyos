@@ -1377,6 +1377,31 @@ export default function CalendarClient({ displayName, familyName, initials, user
     showToast(successMsg)
   }
 
+  const saveExamThenRevise = () => {
+    if (!fTitle.trim()) { showToast('Please enter a title'); return }
+    if (!fDate)         { showToast('Please pick a date'); return }
+    // Save the exam
+    const examTitle   = fTitle
+    const examDate    = fDate
+    const examAssignees = [...fAssignees]
+    addEvent({
+      id: Date.now(), title: examTitle, date: examDate, time: fTime, endTime: fEndTime,
+      colour: 'red', assignees: examAssignees, recur: 'none',
+      recurDays: [], recurEnd: 'never', notes: fNotes, type: 'exam',
+    })
+    showToast(`Exam saved — now add revision sessions`)
+    // Pre-fill revision modal with exam context
+    resetForm()
+    setFTitle(`${examTitle} revision`)
+    setFAssignees(examAssignees)
+    setFRecur('weekly')
+    setFRecurDays(['Mon', 'Wed'])
+    setFRecurEnd('on')
+    setFRecurEndDate(examDate)
+    setFColour('purple')
+    setActiveModal('revision')
+  }
+
   const openModal = (id: string, date = '') => {
     resetForm(); setFDate(date || prefillDate)
     setPrefillDate(date); setActiveModal(id); setFabOpen(false)
@@ -1905,16 +1930,10 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>e.g. chapters covered, open book</span></label>
               <input type="text" placeholder="e.g. Chapters 1–5, no calculator" value={fNotes} onChange={e => setFNotes(e.target.value)} />
             </div>
-            <div style={{ background:'var(--lilac-lt)', border:'1.5px solid #C4BFFE', borderRadius:'var(--r-md)', padding:'10px 14px', display:'flex', gap:10, marginBottom:4, alignItems:'flex-start' }}>
-              <i className="ti ti-pencil" style={{ color:'var(--lilac)', fontSize:16, marginTop:1, flexShrink:0 }}></i>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:'var(--lilac)' }}>Add revision sessions after saving</div>
-                <div style={{ fontSize:11, color:'#7b74cc', marginTop:2 }}>Use "Add revision session" from the + menu to schedule study blocks — they appear in purple on the calendar and stop automatically on exam day.</div>
-              </div>
-            </div>
-            <div className="modal-actions">
+            <div className="modal-actions" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('exam', `Exam added — ${fTitle}`)}>Save exam</button>
+              <button className="modal-btn modal-btn-secondary" onClick={() => saveEntry('exam', `Exam added — ${fTitle}`)}>Save only</button>
+              <button className="modal-btn modal-btn-primary" onClick={saveExamThenRevise}>Save + add revision →</button>
             </div>
           </div>
         </div>
