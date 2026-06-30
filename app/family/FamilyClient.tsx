@@ -358,7 +358,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
     const col = MEMBER_COLOURS[i % MEMBER_COLOURS.length]
     const isPending = m.invite_status === 'pending'
     return (
-      <div key={m.id} className="member-card">
+      <div key={m.id} className="member-card" onClick={() => window.location.href = `/family/${m.id}`} style={{ cursor: 'pointer' }}>
         <div className="member-avatar" style={{ background: col.bg, color: col.fg }}>
           {m.avatar_initials}
         </div>
@@ -377,12 +377,12 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
         </div>
         <div className="member-actions">
           {isAdmin && (
-            <button className="member-action-btn" onClick={() => openEdit(m)} title="Edit">
+            <button className="member-action-btn" onClick={(e) => { e.stopPropagation(); window.location.href = `/family/${m.id}` }} title="Edit">
               <i className="ti ti-pencil" />
             </button>
           )}
           {isAdmin && m.role !== 'admin' && (
-            <button className="member-action-btn danger" onClick={() => removeMember(m.id, m.display_name)} title="Remove">
+            <button className="member-action-btn danger" onClick={(e) => { e.stopPropagation(); removeMember(m.id, m.display_name) }} title="Remove">
               <i className="ti ti-trash" />
             </button>
           )}
