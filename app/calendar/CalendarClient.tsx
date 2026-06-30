@@ -778,7 +778,7 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
           const specials = events.filter(e => SPECIAL_TYPES.includes(e.type) && eventOccursOn(e, dateStr))
           const shade    = specials.length ? SPECIAL_META[specials[0].type]?.shade : null
           return (
-            <div key={`d${dayIdx}`} className="cal-day-col" style={{ gridRow: '2 / -1', position: 'relative' }}>
+            <div key={`d${dayIdx}`} className="cal-day-col" style={{ position: 'relative' }}>
               {shade && <div style={{ position: 'absolute', inset: 0, background: shade, pointerEvents: 'none', zIndex: 0 }} />}
               {HOURS.map(h => {
                 const slotEvs = eventsForDateHour(events, dateStr, h).filter(e => !SPECIAL_TYPES.includes(e.type))
