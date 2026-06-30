@@ -2202,7 +2202,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
               <div key={kid.id} style={{ width: '100%', maxWidth: 480 }}>
                 <div className="kv-greeting">{greetWord}, {firstName}! 👋</div>
                 <div className="kv-date">{today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-                {customMsg ? <div className="kv-message">&ldquo;{customMsg}&rdquo;</div> : null}
+                {customMsg ? <div className="kv-message" onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }} style={{ cursor:'pointer' }} title="Tap to edit">&ldquo;{customMsg}&rdquo;</div> : null}
                 {/* Message edit */}
                 {kvEditingMsg === kid.id ? (
                   <div style={{ background:'#fff', borderRadius:'var(--r-xl)', padding:16, marginBottom:16, width:'100%', boxShadow:'0 2px 16px rgba(232,73,122,.08)' }}>
@@ -2225,10 +2225,12 @@ export default function CalendarClient({ displayName, familyName, initials, user
                     </div>
                   </div>
                 ) : (
-                  <div className="kv-msg-edit" onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }}>
-                    <i className="ti ti-pencil" style={{ fontSize:12 }}></i>
-                    {customMsg ? 'Edit message' : 'Add a personal message for ' + firstName}
-                  </div>
+                  <button
+                    onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }}
+                    style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', marginBottom:12, background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', color:'var(--pink)', fontSize:13, fontWeight:700, cursor:'pointer', textAlign:'left' }}>
+                    <i className="ti ti-message-heart" style={{ fontSize:16, flexShrink:0 }}></i>
+                    {customMsg ? `Edit message for ${firstName}` : `✏️ Add a personal message for ${firstName}`}
+                  </button>
                 )}
                 <div className="kv-card">
                   <div className="kv-card-head">
