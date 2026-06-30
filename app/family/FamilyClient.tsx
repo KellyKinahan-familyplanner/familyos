@@ -111,6 +111,15 @@ input,select,textarea{font-family:inherit;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .empty-state{text-align:center;padding:32px;color:var(--text-3);}
 .empty-state i{font-size:28px;display:block;margin-bottom:8px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-lt);}
+.settings-row:last-of-type{border-bottom:none;}
+.settings-row-left{flex:1;padding-right:12px;}
+.settings-row-label{font-size:13px;font-weight:600;color:var(--text-1);}
+.settings-row-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+.settings-toggle{width:42px;height:24px;border-radius:12px;background:var(--border);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.settings-toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;}
+.settings-toggle.on{background:var(--green);}
+.settings-toggle.on::after{transform:translateX(18px);}
 @media(max-width:580px){
   .member-grid{grid-template-columns:1fr;}
   .topbar{padding:0 14px;}
@@ -535,14 +544,35 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
         <div className="section" style={{ marginTop: 28, marginBottom: 40 }}>
           <div className="section-label">🔗 Connected Calendars</div>
           <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 14, lineHeight: 1.5 }}>
-            Paste an iCal URL from Google Calendar, Outlook, or Square Appointments. Events sync automatically each time you open the calendar.
+            Sync external calendars into KYNC. Paste an iCal link — events appear automatically on your family calendar.
           </p>
-          <div style={{ background: 'var(--amber-lt)', borderRadius: 'var(--r-md)', padding: '10px 12px', fontSize: 12, color: '#92400E', marginBottom: 14, lineHeight: 1.5 }}>
-            <strong>How to get your iCal URL:</strong><br />
-            <b>Google Calendar:</b> Settings → your calendar → "Secret address in iCal format"<br />
-            <b>Outlook:</b> Calendar settings → Shared calendars → Publish → ICS link<br />
-            <b>Square Appointments:</b> Dashboard → Appointments → Calendar → Share → Copy iCal link
+
+          {/* Provider quick-start cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: 10, marginBottom: 18 }}>
+            {[
+              { name: 'Google Calendar', icon: '📅', hint: 'Settings → your calendar → "Secret address in iCal format"', color: '#4285F4' },
+              { name: 'Outlook', icon: '📆', hint: 'Calendar settings → Shared calendars → Publish → ICS link', color: '#0078D4' },
+              { name: 'Apple iCloud', icon: '🍎', hint: 'iCloud.com → Calendar → share icon → Copy link', color: '#555' },
+              { name: 'Square Appts', icon: '🟦', hint: 'Appointments → Calendar → Share → Copy iCal link', color: '#006AFF' },
+            ].map(p => (
+              <div key={p.name} style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-md)', padding: '12px 10px', cursor: 'pointer' }}
+                onClick={() => setFeedName(prev => prev || p.name)}
+                title={`How to get your ${p.name} iCal URL:\n${p.hint}`}>
+                <div style={{ fontSize: 22, marginBottom: 4 }}>{p.icon}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: p.color }}>{p.name}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2, lineHeight: 1.4 }}>{p.hint}</div>
+              </div>
+            ))}
           </div>
+
+          <div style={{ background: 'var(--amber-lt)', borderRadius: 'var(--r-md)', padding: '10px 12px', fontSize: 11, color: '#92400E', marginBottom: 14, lineHeight: 1.6 }}>
+            <strong>Getting your iCal URL:</strong><br />
+            <b>Google:</b> calendar.google.com → ⚙ Settings → your calendar → scroll to "Secret address in iCal format" → copy link<br />
+            <b>Outlook:</b> outlook.com → Calendar → Settings → Shared calendars → Publish → copy ICS link<br />
+            <b>Apple:</b> iCloud.com → Calendar → click share icon next to calendar → tick "Public Calendar" → copy link<br />
+            <b>Square:</b> squareup.com → Appointments → Calendar → Share → Copy iCal link
+          </div>
+
           <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr', marginBottom: 8 }}>
             <div className="modal-field" style={{ margin: 0, gridColumn: '1 / -1' }}>
               <label>Calendar name</label>
@@ -580,6 +610,42 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
               </button>
             </div>
           )}
+        </div>
+
+        {/* ── Family Settings ── */}
+        <div className="section" style={{ marginTop: 28, marginBottom: 40 }}>
+          <div className="section-label">⚙️ Family Settings</div>
+          <div className="modal-field"><label>Family name</label><input type="text" id="fam-name" defaultValue={familyName} /></div>
+          <div className="modal-field"><label>Location</label><input type="text" id="fam-location" placeholder="e.g. Perth, WA" /></div>
+          <div className="modal-field">
+            <label>Currency</label>
+            <select id="fam-currency">
+              <option>AUD - Australian Dollar</option>
+              <option>NZD - New Zealand Dollar</option>
+              <option>GBP - British Pound</option>
+              <option>USD - US Dollar</option>
+              <option>EUR - Euro</option>
+              <option>CAD - Canadian Dollar</option>
+            </select>
+          </div>
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '.06em', margin: '18px 0 10px' }}>NOTIFICATIONS</div>
+          {([['Event reminders', 'Push notification before events', true], ['Bill due alerts', '3 days before due date', true], ['Chore reminders', 'Morning and afternoon nudges for kids', true], ['Weekly summary', 'Sunday evening family digest', false]] as [string, string, boolean][]).map(([label, sub, on]) => (
+            <div key={label} className="settings-row">
+              <div className="settings-row-left"><div className="settings-row-label">{label}</div><div className="settings-row-sub">{sub}</div></div>
+              <button className={`settings-toggle${on ? ' on' : ''}`} onClick={e => e.currentTarget.classList.toggle('on')} />
+            </div>
+          ))}
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '.06em', margin: '18px 0 10px' }}>KIDS DASHBOARD</div>
+          {([['Points system', 'Award points for completed chores', true], ['Show exam countdown', "Days remaining on kids' view", true], ['Show revision sessions', "Study blocks on kids' calendar", true]] as [string, string, boolean][]).map(([label, sub, on]) => (
+            <div key={label} className="settings-row">
+              <div className="settings-row-left"><div className="settings-row-label">{label}</div><div className="settings-row-sub">{sub}</div></div>
+              <button className={`settings-toggle${on ? ' on' : ''}`} onClick={e => e.currentTarget.classList.toggle('on')} />
+            </div>
+          ))}
+
+          <button className="modal-btn modal-btn-primary" style={{ marginTop: 18 }} onClick={() => showToast('Settings saved')}>Save settings</button>
         </div>
       </main>
 

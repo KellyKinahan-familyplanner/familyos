@@ -730,7 +730,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="action-icon ai-emerald"><i className="ti ti-chart-bar"></i></div>
             <div><div className="action-label">Financial report</div><div className="action-sub">Bills by category</div></div>
           </div>
-          <div className="action-card ac-dark" onClick={() => (window as any).openModal('modal-settings')}>
+          <div className="action-card ac-dark" onClick={() => window.location.href = '/family'}>
             <div className="action-icon ai-dark"><i className="ti ti-settings"></i></div>
             <div><div className="action-label">Family settings</div><div className="action-sub">Manage &amp; configure</div></div>
           </div>

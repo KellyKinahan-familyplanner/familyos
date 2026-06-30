@@ -34,6 +34,7 @@ export type Member = {
   colour: string    // CSS var name e.g. 'sj'
   bg: string
   fg: string
+  avatar_url?: string | null
 }
 
 type Props = {
@@ -1386,9 +1387,10 @@ export default function CalendarClient({ displayName, familyName, initials, user
               onClick={() => setActiveMember(m.id)}
               title={m.id === 'all' ? 'Show all members' : m.name}
             >
-              <div className="member-avatar" style={{ background: m.bg, color: m.fg }}>
-                {m.initials}
-              </div>
+              {m.avatar_url
+                ? <img src={m.avatar_url} alt={m.name} className="member-avatar" style={{ objectFit: 'cover' }} />
+                : <div className="member-avatar" style={{ background: m.bg, color: m.fg }}>{m.initials}</div>
+              }
               <span className="member-avatar-name">{m.id === 'all' ? 'All' : m.name}</span>
             </button>
           </>
