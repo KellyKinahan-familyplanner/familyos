@@ -238,36 +238,76 @@ function printReport(){window.print();showToast('Print dialog opened');}
 
 /* Bill categories */
 var _billCategories=[];
+var DEFAULT_BILL_CATS=[
+  {name:'Utilities',colour:'#1D9E75'},{name:'Insurance',colour:'#1976D2'},
+  {name:'Mortgage / Rent',colour:'#7F77DD'},{name:'Subscription',colour:'#D85A30'},
+  {name:'School',colour:'#D97706'},{name:'Medical',colour:'#DC2626'},{name:'Other',colour:'#A09893'}
+];
+function populateBillCategorySelect(cats){
+  var sel=document.getElementById('bill-category-select');
+  if(!sel)return;
+  var prev=sel.value&&sel.value!=='__add__'?sel.value:'';
+  sel.innerHTML='';
+  cats.forEach(function(c){
+    var o=document.createElement('option');
+    o.value=c.name;o.textContent=c.name;sel.appendChild(o);
+  });
+  var addOpt=document.createElement('option');
+  addOpt.value='__add__';addOpt.textContent='+ Add new category...';sel.appendChild(addOpt);
+  if(prev)sel.value=prev;
+}
 function loadBillCategories(){
-  fetch('/api/bill-categories').then(function(r){return r.json();}).then(function(cats){
-    _billCategories=cats||[];
-    var sel=document.getElementById('bill-category-select');
-    if(!sel)return;
-    sel.innerHTML='';
-    cats.forEach(function(c){
-      var o=document.createElement('option');
-      o.value=c.name;o.textContent=c.name;sel.appendChild(o);
-    });
-    var addOpt=document.createElement('option');
-    addOpt.value='__add__';addOpt.textContent='+ Add new category...';sel.appendChild(addOpt);
-  }).catch(function(){});
+  fetch('/api/bill-categories').then(function(r){
+    if(!r.ok)throw new Error('api error');
+    return r.json();
+  }).then(function(cats){
+    _billCategories=cats&&cats.length?cats:DEFAULT_BILL_CATS;
+    populateBillCategorySelect(_billCategories);
+  }).catch(function(){
+    _billCategories=DEFAULT_BILL_CATS;
+    populateBillCategorySelect(_billCategories);
+  });
 }
 function onBillCategoryChange(sel){
-  if(sel.value==='__add__'){
-    var name=prompt('New category name:');
-    if(!name||!name.trim()){sel.value=(_billCategories[0]&&_billCategories[0].name)||'Other';return;}
-    var colour=prompt('Colour (hex, e.g. #1D9E75):')||'#1D9E75';
-    fetch('/api/bill-categories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name.trim(),colour:colour})})
+  if(sel.value!=='__add__')return;
+  // Reset select to first real option while the inline form is shown
+  sel.value=(_billCategories[0]&&_billCategories[0].name)||'Other';
+  // Show inline add-category row
+  var existing=document.getElementById('bill-cat-add-row');
+  if(existing){existing.querySelector('input').focus();return;}
+  var row=document.createElement('div');
+  row.id='bill-cat-add-row';
+  row.style.cssText='display:flex;gap:8px;margin-top:8px;align-items:center;';
+  row.innerHTML='<input id="bill-cat-name" type="text" placeholder="Category name" style="flex:1;padding:10px 12px;border:1.5px solid #E8E4DF;border-radius:8px;font-size:14px;outline:none;"/>'
+    +'<input id="bill-cat-colour" type="color" value="#1D9E75" style="width:40px;height:40px;padding:2px;border:1.5px solid #E8E4DF;border-radius:8px;cursor:pointer;"/>'
+    +'<button id="bill-cat-save" style="padding:10px 14px;background:#E8497A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Add</button>'
+    +'<button id="bill-cat-cancel" style="padding:10px 14px;background:#F5F2EF;color:#4A4540;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✕</button>';
+  sel.parentNode.appendChild(row);
+  var inp=row.querySelector('#bill-cat-name');
+  inp.focus();
+  row.querySelector('#bill-cat-cancel').onclick=function(){row.remove();};
+  row.querySelector('#bill-cat-save').onclick=function(){
+    var name=inp.value.trim();
+    var colour=row.querySelector('#bill-cat-colour').value||'#1D9E75';
+    if(!name){inp.focus();return;}
+    fetch('/api/bill-categories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,colour:colour})})
     .then(function(r){return r.json();}).then(function(c){
-      _billCategories.push(c);
-      var o=document.createElement('option');
-      o.value=c.name;o.textContent=c.name;
-      var addOpt=sel.querySelector('[value="__add__"]');
-      sel.insertBefore(o,addOpt);
-      sel.value=c.name;
-      showToast('Category "'+c.name+'" added');
-    }).catch(function(){showToast('Could not save category');sel.value=(_billCategories[0]&&_billCategories[0].name)||'Other';});
-  }
+      var cat=c&&c.name?c:{name:name,colour:colour};
+      _billCategories.push(cat);
+      populateBillCategorySelect(_billCategories);
+      sel.value=cat.name;
+      row.remove();
+      showToast('Category "'+cat.name+'" added');
+    }).catch(function(){
+      // Still add it locally even if API fails
+      _billCategories.push({name:name,colour:colour});
+      populateBillCategorySelect(_billCategories);
+      sel.value=name;
+      row.remove();
+      showToast('Category added (local)');
+    });
+  };
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')row.querySelector('#bill-cat-save').click();});
 }
 
 /* Save chore */
