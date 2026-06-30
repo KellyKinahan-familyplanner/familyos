@@ -421,7 +421,7 @@ input,select,textarea{font-family:inherit;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text-1);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:600;opacity:0;transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast i{font-size:15px;color:var(--green);}
-.modal-kync-logo{height:18px;display:block;margin-bottom:10px;opacity:.9;}
+.modal-kync-logo{height:28px;display:block;margin-bottom:10px;opacity:.9;}
 @media print{.topbar,.modal-backdrop,.help-backdrop,.toast,#bedtime-overlay{display:none!important;}.dash-body{padding:0;}}
 `
 
@@ -444,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260630e'
+    script.src = '/dashboard.js?v=20260630f'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -638,7 +638,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
       <div className="topbar">
         <div className="topbar-inner">
           <a className="tb-logo" href="/dashboard">
-            <Image src="/Kync_logo.png" alt="KYNC" width={90} height={34} style={{ objectFit: 'contain', height: 34, width: 'auto' }} priority />
+            <Image src="/Kync_logo.png" alt="KYNC" width={110} height={42} style={{ objectFit: 'contain', height: 42, width: 'auto' }} priority />
           </a>
           <nav className="tb-nav">
             <a className="tb-nav-btn active" href="/dashboard"><i className="ti ti-home"></i>Home</a>
@@ -1763,7 +1763,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
       {/*  KIDS VIEW OVERLAY  */}
       <div id="kids-view-overlay">
         <div className="kv-topbar">
-          <img src="/Kync_logo.png" alt="KYNC" style={{ height: 28 }} />
+          <img src="/Kync_logo.png" alt="KYNC" style={{ height: 38 }} />
           <button className="kv-exit" onClick={() => (window as any).closeKidsView()}><i className="ti ti-x" style={{ fontSize: 11, marginRight: 4 }}></i>Exit kids view</button>
         </div>
         <div className="kv-greeting" id="kv-greeting">Hi there! [wave]</div>

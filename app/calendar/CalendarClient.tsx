@@ -222,7 +222,7 @@ html,body{height:100%;overflow:hidden;}
 .modal-btn-secondary:hover{background:var(--green);color:#fff;border-color:var(--green);}
 .modal-btn-primary{background:var(--pink);color:#fff;border-color:var(--pink);}
 .modal-btn-primary:hover{background:#d43870;border-color:#d43870;}
-.modal-kync-logo{height:18px;display:block;margin-bottom:10px;opacity:.9;}
+.modal-kync-logo{height:28px;display:block;margin-bottom:10px;opacity:.9;}
 .role-pills{display:flex;flex-wrap:wrap;gap:6px;}
 .role-pill{padding:10px 16px;min-height:44px;border-radius:20px;border:1.5px solid var(--pink-mid);font-size:13px;font-weight:600;cursor:pointer;color:var(--pink);background:var(--green-lt);transition:all .15s;user-select:none;display:inline-flex;align-items:center;}
 .role-pill.sel{background:var(--pink);color:#fff;border-color:var(--pink);}
@@ -1477,7 +1477,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
 
       {/* ── Topbar ── */}
       <header className="cal-topbar">
-        <Image src="/Kync_logo.png" alt="KYNC" width={64} height={24} style={{ objectFit: 'contain', flexShrink: 0 }} />
+        <Image src="/Kync_logo.png" alt="KYNC" width={90} height={32} style={{ objectFit: 'contain', flexShrink: 0 }} />
         <div className="cal-topbar-sep" />
         <span className="cal-page-title">Family Calendar</span>
         <button
@@ -1720,7 +1720,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">Add event</div><div className="modal-sub">Add to the family calendar.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
@@ -1771,7 +1771,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">Add task</div><div className="modal-sub">Assign a task to a family member.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
@@ -1814,7 +1814,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">Add chore</div><div className="modal-sub">Set a repeating chore for the family.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
@@ -1867,7 +1867,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">Add homework</div><div className="modal-sub">Track a school assignment.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
@@ -1919,7 +1919,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">AI document scanner</div><div className="modal-sub">Upload a photo or PDF — Claude reads it and creates a draft.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
@@ -1937,7 +1937,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">Add exam</div><div className="modal-sub">Track an upcoming test with revision planner.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
@@ -1981,7 +1981,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="modal">
           <div className="modal-handle" />
           <div className="modal-head">
-            <Image src="/Kync_logo.png" alt="KYNC" width={54} height={18} className="modal-kync-logo" style={{ objectFit:'contain' }} />
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} className="modal-kync-logo" style={{ objectFit:'contain' }} />
             <div className="modal-head-row">
               <div><div className="modal-title">Add revision session</div><div className="modal-sub">Schedule study blocks — they repeat until exam day.</div></div>
               <button className="modal-close" onClick={() => setActiveModal(null)}><i className="ti ti-x" /></button>
