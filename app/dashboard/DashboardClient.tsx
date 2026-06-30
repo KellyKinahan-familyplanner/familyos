@@ -659,9 +659,18 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="welcome-heading">{firstName}&apos;s<br />Family Hub</div>
             <div className="welcome-sub">{fName}{todayStr ? ` · ${todayStr}` : ''}</div>
             <div className="welcome-members">
-              <div className="welcome-av" style={{ background: 'var(--sj-bg)', color: 'var(--sj-fg)' }}>{initials}</div>
-              <div className="welcome-av" style={{ background: 'var(--mj-bg)', color: 'var(--mj-fg)' }}>+</div>
-              <span className="welcome-member-count">family members</span>
+              {members.slice(0, 5).map((m, i) => {
+                const avatarColors = ['var(--sj-bg)', 'var(--mj-bg)', 'var(--oj-bg)', 'var(--lj-bg)', '#E8F4FE']
+                const avatarFgColors = ['var(--sj-fg)', 'var(--mj-fg)', 'var(--oj-fg)', 'var(--lj-fg)', '#0C447C']
+                const av = m.avatar_initials || m.display_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+                return (
+                  <div key={m.id} className="welcome-av" style={{ background: avatarColors[i] ?? 'var(--sj-bg)', color: avatarFgColors[i] ?? 'var(--sj-fg)' }}>{av}</div>
+                )
+              })}
+              {members.length > 5 && (
+                <div className="welcome-av" style={{ background: '#E5E5E5', color: '#555' }}>+{members.length - 5}</div>
+              )}
+              <span className="welcome-member-count">{members.length === 1 ? '1 member' : `${members.length} members`}</span>
             </div>
           </div>
           <a className="welcome-cal-btn" href="/calendar"><i className="ti ti-calendar"></i><span>Open Calendar</span></a>
