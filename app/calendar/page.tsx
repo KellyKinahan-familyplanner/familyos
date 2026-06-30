@@ -45,7 +45,7 @@ export default async function CalendarPage() {
     const col = MEMBER_COLOURS[i % MEMBER_COLOURS.length]
     const name = m.display_name ?? 'Member'
     const ini  = m.avatar_initials || name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
-    return { id: m.id, name, initials: ini, colour: `m${i}`, bg: col.bg, fg: col.fg, avatar_url: m.avatar_url ?? null }
+    return { id: m.id, name, initials: ini, colour: `m${i}`, bg: col.bg, fg: col.fg, avatar_url: m.avatar_url ?? null, role: m.role ?? 'member' }
   })
 
   return (

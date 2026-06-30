@@ -333,7 +333,7 @@ function saveChore(){
   var recur=recurPill?recurPill.getAttribute('data-recur'):'none';
 
   // Points
-  var ptsEl=document.querySelector('#modal-kids-chore input[type=number]');
+  var ptsEl=document.getElementById('chore-points');
   var points=ptsEl?parseInt(ptsEl.value)||5:5;
 
   // Today as default date
@@ -768,7 +768,7 @@ function loadKidsChores(member, displayName){
     }
 
     var html = chores.map(function(c){
-      var pts = c.points || 5;
+      var pts = (c.points != null) ? c.points : 5;
       return '<div class="kv-chore-row">'
         + '<div class="kv-chore-check" onclick="kvToggle(this)"></div>'
         + '<div class="kv-chore-label">' + c.title + '</div>'
@@ -778,7 +778,7 @@ function loadKidsChores(member, displayName){
     slot.innerHTML = html;
 
     // Update points display
-    var totalPts = chores.reduce(function(s, c){ return s + (c.points || 5); }, 0);
+    var totalPts = chores.reduce(function(s, c){ return s + ((c.points != null) ? c.points : 5); }, 0);
     var ptsEl = document.getElementById(ptsId);
     if (ptsEl) ptsEl.textContent = '0 / ' + totalPts + ' pts today';
     var fillEl = document.getElementById(fillId);

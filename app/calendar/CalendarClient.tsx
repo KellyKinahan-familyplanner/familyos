@@ -24,6 +24,7 @@ export type CalEvent = {
   recurEndDate?: string
   recurEndCount?: number
   notes?: string
+  points?: number
   type: 'event' | 'task' | 'chore' | 'homework' | 'exam' | 'revision' | 'birthday' | 'school-holiday' | 'family-holiday' | 'public-holiday'
 }
 
@@ -35,6 +36,7 @@ export type Member = {
   bg: string
   fg: string
   avatar_url?: string | null
+  role?: string
 }
 
 type Props = {
@@ -239,6 +241,35 @@ html,body{height:100%;overflow:hidden;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text-1);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:600;opacity:0;transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast i{font-size:15px;color:var(--green);}
+
+/* ── Kids view overlay ── */
+.kv-overlay{position:fixed;inset:0;z-index:998;background:#FFF5F9;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:24px 16px 80px;}
+.kv-topbar{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.kv-exit{padding:8px 16px;border-radius:20px;border:1.5px solid var(--pink-mid);background:var(--green-lt);color:var(--green);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.kv-exit:hover{background:var(--green);color:#fff;}
+.kv-greeting{font-size:28px;font-weight:800;color:var(--text-1);margin-bottom:4px;text-align:center;}
+.kv-date{font-size:14px;color:var(--text-3);margin-bottom:16px;text-align:center;}
+.kv-message{font-size:15px;color:var(--text-2);margin-bottom:20px;text-align:center;font-style:italic;max-width:340px;}
+.kv-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.kv-tab{padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--text-2);transition:all .15s;}
+.kv-card{background:#fff;border-radius:var(--r-xl);padding:20px;width:100%;max-width:480px;margin-bottom:16px;box-shadow:0 2px 16px rgba(232,73,122,.08);}
+.kv-card-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.kv-card-icon{width:40px;height:40px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;}
+.kv-card-title{font-size:16px;font-weight:800;}
+.kv-card-sub{font-size:12px;color:var(--text-3);margin-top:2px;}
+.kv-chore-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-lt);}
+.kv-chore-row:last-child{border-bottom:none;}
+.kv-chore-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.kv-chore-check.done{background:var(--green);border-color:var(--green);}
+.kv-chore-label{flex:1;font-size:14px;font-weight:600;}
+.kv-chore-label.done{text-decoration:line-through;color:var(--text-3);}
+.kv-chore-pts{font-size:13px;font-weight:700;color:var(--green);}
+.kv-points-bar{margin-top:14px;padding-top:14px;border-top:1px solid var(--border-lt);}
+.kv-pts-top{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px;}
+.kv-pts-track{height:8px;border-radius:4px;background:var(--border-lt);overflow:hidden;}
+.kv-pts-fill{height:100%;border-radius:4px;transition:width .4s ease;}
+.kv-msg-edit{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);cursor:pointer;margin-top:4px;justify-content:center;}
+.kv-msg-edit:hover{color:var(--pink);}
 
 /* ── Priority bar ── */
 .priority-bar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;overflow:hidden;}
@@ -1195,6 +1226,11 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [viewDate, setViewDate] = useState(today)   // anchor for week/day views
   const [activeMember, setActiveMember] = useState<string>('all')
   const [kidsView, setKidsView] = useState(false)
+  const [kidsActiveMember, setKidsActiveMember] = useState<string | null>(null)
+  const [kvsChecked, setKvsChecked] = useState<Record<string, boolean>>({})
+  const [kvMessages, setKvMessages] = useState<Record<string, { morning: string; evening: string }>>({})
+  const [kvEditingMsg, setKvEditingMsg] = useState<string | null>(null)
+  const [kvMsgDraft, setKvMsgDraft] = useState({ morning: '', evening: '' })
   const [events, setEvents]     = useState<CalEvent[]>([])
   const [eventsLoading, setEventsLoading] = useState(true)
   const [fabOpen, setFabOpen]   = useState(false)
@@ -1266,6 +1302,29 @@ export default function CalendarClient({ displayName, familyName, initials, user
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
+  // Open kids view and load messages from localStorage
+  const openKidsView = () => {
+    const firstKid = kidsMembers[0] ?? null
+    setKidsActiveMember(firstKid?.id ?? null)
+    setKvsChecked({})
+    const msgs: Record<string, { morning: string; evening: string }> = {}
+    kidsMembers.forEach(m => {
+      msgs[m.id] = {
+        morning: localStorage.getItem(`kync_msg_morning_${m.id}`) ?? '',
+        evening: localStorage.getItem(`kync_msg_evening_${m.id}`) ?? '',
+      }
+    })
+    setKvMessages(msgs)
+    setKidsView(true)
+  }
+  const closeKidsView = () => { setKidsView(false); setKvEditingMsg(null) }
+  const kvSaveMsg = (memberId: string) => {
+    localStorage.setItem(`kync_msg_morning_${memberId}`, kvMsgDraft.morning)
+    localStorage.setItem(`kync_msg_evening_${memberId}`, kvMsgDraft.evening)
+    setKvMessages(prev => ({ ...prev, [memberId]: { ...kvMsgDraft } }))
+    setKvEditingMsg(null)
+  }
+
   const showToast = (msg: string) => { setToast(msg); setToastVisible(true) }
 
   /* ── Navigation ── */
@@ -1331,8 +1390,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const childNames = new Set(
     (familyMembers ?? []).filter(m => m.colour === 'child' || MEMBERS.find(mb => mb.id === m.id)?.colour === 'child').map(m => m.name)
   )
-  // Derive child members from the actual role in familyMembers prop — fall back to any non-admin member beyond the first two
-  const kidsMembers = (familyMembers ?? []).filter((_, i) => i >= 2)
+  const kidsMembers = (familyMembers ?? []).filter(m => m.role === 'child')
 
   const filteredEvents = (() => {
     let base = activeMember === 'all'
@@ -1481,10 +1539,10 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <div className="cal-topbar-sep" />
         <span className="cal-page-title">Family Calendar</span>
         <button
-          className={`cal-topbar-btn pink${kidsView ? ' active' : ''}`}
-          onClick={() => setKidsView(v => !v)}
-          title="Toggle kids-only view — shows only children's events"
-          style={kidsView ? { background: 'var(--pink)', color: '#fff', borderColor: 'var(--pink)' } : {}}
+          className="cal-topbar-btn pink"
+          onClick={openKidsView}
+          title="Open kids view"
+          style={{}}
         >
           <i className="ti ti-mood-kid" style={{ fontSize: 13 }}></i>Kids View
         </button>
@@ -2024,6 +2082,115 @@ export default function CalendarClient({ displayName, familyName, initials, user
           </div>
         </div>
       </div>
+
+      {/* ── Kids View Overlay ── */}
+      {kidsView && (
+        <div className="kv-overlay">
+          <div className="kv-topbar">
+            <Image src="/Kync_logo.png" alt="KYNC" width={84} height={28} style={{ objectFit: 'contain' }} />
+            <button className="kv-exit" onClick={closeKidsView}>
+              <i className="ti ti-x" style={{ fontSize: 11 }}></i>Exit kids view
+            </button>
+          </div>
+          {/* Member tabs */}
+          {kidsMembers.length > 1 && (
+            <div className="kv-tabs">
+              {kidsMembers.map(m => (
+                <div key={m.id} className="kv-tab"
+                  style={kidsActiveMember === m.id ? { background: m.bg, color: m.fg, borderColor: m.bg } : {}}
+                  onClick={() => { setKidsActiveMember(m.id); setKvsChecked({}); setKvEditingMsg(null) }}>
+                  {m.name.split(' ')[0]}
+                </div>
+              ))}
+            </div>
+          )}
+          {kidsMembers.filter(m => m.id === (kidsActiveMember ?? kidsMembers[0]?.id)).map(kid => {
+            const todayISO = today.toISOString().slice(0, 10)
+            const firstName = kid.name.split(' ')[0]
+            const hour = new Date().getHours()
+            const timeOfDay = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
+            const greetWord = hour < 12 ? 'Good morning' : hour < 18 ? 'Hi' : 'Good evening'
+            const msgs = kvMessages[kid.id] ?? { morning: '', evening: '' }
+            const customMsg = timeOfDay === 'evening' ? msgs.evening : msgs.morning
+            const kidChores = events.filter(e =>
+              (e.type === 'chore' || e.type === 'task' || e.type === 'homework') &&
+              eventOccursOn(e, todayISO) &&
+              (e.assignees.includes(firstName) || e.assignees.includes(kid.name) || e.assignees.includes('Everyone'))
+            )
+            const totalPts = kidChores.reduce((s, c) => s + (c.points ?? 0), 0)
+            const earnedPts = kidChores.filter(c => kvsChecked[c.id]).reduce((s, c) => s + (c.points ?? 0), 0)
+            return (
+              <div key={kid.id} style={{ width: '100%', maxWidth: 480 }}>
+                <div className="kv-greeting">{greetWord}, {firstName}! 👋</div>
+                <div className="kv-date">{today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+                {customMsg ? <div className="kv-message">&ldquo;{customMsg}&rdquo;</div> : null}
+                {/* Message edit */}
+                {kvEditingMsg === kid.id ? (
+                  <div style={{ background:'#fff', borderRadius:'var(--r-xl)', padding:16, marginBottom:16, width:'100%', boxShadow:'0 2px 16px rgba(232,73,122,.08)' }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:'var(--text-2)', marginBottom:8 }}>Personalise messages for {firstName}</div>
+                    <div style={{ marginBottom:8 }}>
+                      <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Morning message</label>
+                      <input type="text" value={kvMsgDraft.morning} onChange={e => setKvMsgDraft(d => ({ ...d, morning: e.target.value }))}
+                        placeholder="e.g. Have a great day at school!"
+                        style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)' }} />
+                    </div>
+                    <div style={{ marginBottom:12 }}>
+                      <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Evening message</label>
+                      <input type="text" value={kvMsgDraft.evening} onChange={e => setKvMsgDraft(d => ({ ...d, evening: e.target.value }))}
+                        placeholder="e.g. Time to wind down — great job today!"
+                        style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)' }} />
+                    </div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <button onClick={() => setKvEditingMsg(null)} style={{ flex:1, padding:'10px', borderRadius:'var(--r-md)', border:'1.5px solid var(--green-mid)', background:'var(--green-lt)', color:'var(--green)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
+                      <button onClick={() => kvSaveMsg(kid.id)} style={{ flex:1, padding:'10px', borderRadius:'var(--r-md)', border:'none', background:'var(--pink)', color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Save message</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="kv-msg-edit" onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }}>
+                    <i className="ti ti-pencil" style={{ fontSize:12 }}></i>
+                    {customMsg ? 'Edit message' : 'Add a personal message for ' + firstName}
+                  </div>
+                )}
+                <div className="kv-card">
+                  <div className="kv-card-head">
+                    <div className="kv-card-icon" style={{ background: kid.bg, color: kid.fg }}>{kid.initials}</div>
+                    <div>
+                      <div className="kv-card-title">Today&apos;s tasks</div>
+                      <div className="kv-card-sub">{today.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'long' })}</div>
+                    </div>
+                  </div>
+                  {kidChores.length === 0 ? (
+                    <div style={{ padding:'16px 0', color:'var(--text-3)', fontSize:13, textAlign:'center' }}>No tasks for today 🎉</div>
+                  ) : kidChores.map(c => (
+                    <div key={c.id} className="kv-chore-row">
+                      <div className={`kv-chore-check${kvsChecked[c.id] ? ' done' : ''}`}
+                        onClick={() => {
+                          setKvsChecked(prev => ({ ...prev, [c.id]: !prev[c.id] }))
+                          if (!kvsChecked[c.id]) showToast(`Great job, ${firstName}! +${c.points ?? 0} pts`)
+                        }}>
+                        {kvsChecked[c.id] && <i className="ti ti-check" style={{ fontSize:11, color:'#fff' }}></i>}
+                      </div>
+                      <div className={`kv-chore-label${kvsChecked[c.id] ? ' done' : ''}`}>{c.title}</div>
+                      <div className="kv-chore-pts">+{c.points ?? 0} pts</div>
+                    </div>
+                  ))}
+                  {kidChores.length > 0 && (
+                    <div className="kv-points-bar">
+                      <div className="kv-pts-top">
+                        <span>{earnedPts} / {totalPts} pts today</span>
+                        <span style={{ color:'var(--text-3)' }}>Goal: 50 pts</span>
+                      </div>
+                      <div className="kv-pts-track">
+                        <div className="kv-pts-fill" style={{ width: totalPts > 0 ? `${Math.min(100, (earnedPts/totalPts)*100)}%` : '0%', background: kid.fg }}></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* ── Toast ── */}
       <div className={`toast${toastVisible ? ' show' : ''}`}>

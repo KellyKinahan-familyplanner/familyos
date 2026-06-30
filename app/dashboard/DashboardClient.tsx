@@ -444,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260630f'
+    script.src = '/dashboard.js?v=20260701a'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -1118,7 +1118,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 </div>
               </div>
             </div>
-            <div className="modal-field"><label>Points value</label><input type="number" defaultValue={5} min={0} max={100} /></div>
+            <div className="modal-field"><label>Points value</label><input id="chore-points" type="number" defaultValue={5} min={0} max={100} /></div>
             <div className="modal-field">
               <label>Attachments <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label>
               <div className="attach-drop" onClick={() => document.getElementById('attach-chore')?.click()}>
