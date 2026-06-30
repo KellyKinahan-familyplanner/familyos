@@ -444,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260701a'
+    script.src = '/dashboard.js?v=20260701b'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -1646,21 +1646,46 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <button className="help-drawer-close" onClick={() => (window as any).closeHelp()}><i className="ti ti-x"></i></button>
           </div>
           <div className="help-drawer-body">
+            {/* Quick-start card */}
             <div className="help-qs-card" onClick={() => { (window as any).closeHelp(); (window as any).openModal('modal-wizard'); }}>
-              <div className="help-qs-eyebrow"> New to KYNC?</div>
-              <div className="help-qs-title">AI Quick-Start Guide</div>
-              <div className="help-qs-sub">Let our AI walk you through setup in under 3 minutes.</div>
+              <div className="help-qs-eyebrow">New to KYNC?</div>
+              <div className="help-qs-title">Setup Wizard</div>
+              <div className="help-qs-sub">Walk through the key features step by step — takes about 2 minutes.</div>
               <div className="help-qs-btn"><i className="ti ti-rocket" style={{ fontSize: 13 }}></i> Start setup wizard</div>
             </div>
-            <div className="help-section-label" style={{ marginBottom: 10 }}>What can KYNC do?</div>
-            <div className="help-features">
+
+            {/* Getting started guide */}
+            <div className="help-section-label">Getting started</div>
+            <div style={{ marginBottom: 20 }}>
               {[
-                { bg:'#EDF4FE', ic:'ti-calendar', ic_c:'var(--oj-ac)', title:'Family Calendar', sub:'Colour-coded events with week, month & day views.' },
-                { bg:'var(--lilac-lt)', ic:'ti-notes', ic_c:'var(--lilac)', title:'Exams & Revision', sub:'Countdown timers with linked revision sessions.' },
-                { bg:'var(--green-lt)', ic:'ti-list-check', ic_c:'var(--green)', title:'Chores & Tasks', sub:'AM/PM chore routines with points & rewards.' },
-                { bg:'#D1FAE5', ic:'ti-chart-bar', ic_c:'#059669', title:'Financial Reports', sub:'Bills by category. Export to Excel, PDF, or print.' },
-                { bg:'#F2F1FD', ic:'ti-scan', ic_c:'var(--lilac)', title:'AI Document Scanner', sub:'Photo or PDF - Claude reads it and creates a draft.' },
-                { bg:'#EBEBEB', ic:'ti-device-tablet', ic_c:'var(--text-1)', title:'Kiosk & Kids Mode', sub:'Tablet view with bedtime lock & parent override.' },
+                { n:1, title:'Invite your family', body:'Tap <strong>Invite member</strong> on the dashboard. Add a partner as Admin or Member so they can manage everything, or add children with PIN-only login so they only see their tasks and chores.' },
+                { n:2, title:'Add events to the calendar', body:'Tap <strong>Add event</strong> or open the Calendar and tap any day. Assign it to one person or the whole family. Set it to repeat daily, weekly, or monthly.' },
+                { n:3, title:'Set up chores & points', body:'Tap <strong>Add chore</strong> and assign it to a child. Set a points value and a repeat schedule (e.g. daily). Children tick off chores in Kids View and earn points toward their goal.' },
+                { n:4, title:'Connect external calendars', body:'Go to <strong>Family Settings → My Profile</strong> and paste in any Google, iCal, or Outlook calendar URL. Your events will sync and show in KYNC\'s colour for that member.' },
+                { n:5, title:'Try Kids View', body:'Tap the <strong>Kids View</strong> button on the calendar or dashboard. This shows a child-safe screen with today\'s tasks, a points progress bar, and a personalised greeting you can customise.' },
+              ].map(s => (
+                <div key={s.n} style={{ display:'flex', gap:12, marginBottom:14, alignItems:'flex-start' }}>
+                  <div style={{ width:26, height:26, borderRadius:'50%', background:'var(--green-lt)', border:'1.5px solid var(--green-mid)', color:'var(--green)', fontWeight:800, fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>{s.n}</div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, marginBottom:3 }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:'var(--text-2)', lineHeight:1.55 }} dangerouslySetInnerHTML={{ __html: s.body }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Feature cards */}
+            <div className="help-section-label">What KYNC can do</div>
+            <div className="help-features" style={{ marginBottom: 20 }}>
+              {[
+                { bg:'#EDF4FE', ic:'ti-calendar', ic_c:'var(--oj-ac)', title:'Family Calendar', sub:'Month, week & day views. Colour-coded per member. Syncs external Google & iCal feeds.' },
+                { bg:'var(--lilac-lt)', ic:'ti-notes', ic_c:'var(--lilac)', title:'Exams & Revision', sub:'Add an exam and instantly schedule weekly revision sessions. Countdown bar on the calendar.' },
+                { bg:'var(--green-lt)', ic:'ti-list-check', ic_c:'var(--green)', title:'Chores & Tasks', sub:'Recurring AM/PM routines for kids with points, goals and a reward tracker.' },
+                { bg:'#D1FAE5', ic:'ti-chart-bar', ic_c:'#059669', title:'Bills & Reports', sub:'Track bills by category. Monthly & annual reports. Export to Excel, PDF, or print.' },
+                { bg:'#F2F1FD', ic:'ti-scan', ic_c:'var(--lilac)', title:'AI Document Scan', sub:'Photo or PDF of any bill or school notice — AI reads it and pre-fills the form for you.' },
+                { bg:'var(--pink-lt)', ic:'ti-mood-kid', ic_c:'var(--pink)', title:'Kids View', sub:'Child-safe fullscreen view with today\'s tasks, points bar, and a personalised good morning message.' },
+                { bg:'#EBEBEB', ic:'ti-device-tablet', ic_c:'var(--text-1)', title:'Kiosk & Bedtime', sub:'Lock the app after bedtime with a night-mode screen. Kids can request extra time.' },
+                { bg:'var(--amber-lt)', ic:'ti-calendar-star', ic_c:'var(--amber)', title:'Special Events', sub:'Add school holidays, birthdays & family events as shaded blocks across the calendar.' },
               ].map(f => (
                 <div key={f.title} className="help-feat-card">
                   <div className="help-feat-icon" style={{ background: f.bg }}><i className={`ti ${f.ic}`} style={{ color: f.ic_c, fontSize: 18 }}></i></div>
@@ -1669,19 +1694,43 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 </div>
               ))}
             </div>
+
+            {/* FAQ */}
             <div className="help-section-label">Frequently asked questions</div>
             {[
-              { q:'How does the AI scanner work?', a:'Tap <strong>AI scan</strong> and upload a photo or PDF of any bill, event invitation, or school newsletter. Claude reads it, extracts the key details, and shows you a draft entry to review and edit before saving. Nothing is saved automatically.' },
-              { q:'How do exam countdowns work?', a:'Add an exam via <strong>Add exam</strong>. It appears on the priority countdown bar on the calendar. Open the exam to add revision sessions - they show as lilac blocks on the calendar.' },
-              { q:'Can I print or export the calendar?', a:'Yes - open the Calendar and tap the print icon in the toolbar. Choose Print for a browser print view, or Export PDF to download.' },
-              { q:'How do I export financial reports?', a:'Open <strong>Financial reports</strong> from the dashboard. Choose your period then tap Export to Excel, Export PDF, or Print.' },
-              { q:'How do I add a child account?', a:'Tap <strong>Invite member</strong>, enter their name, and set the role to <strong>Child</strong>. Child accounts use PIN-only login - no email needed.' },
+              { q:'How do I add a child account?', a:'Tap <strong>Invite member</strong> on the dashboard. Enter the child\'s name, set their role to <strong>Child</strong>, and create a 4-digit PIN. Children log in using their PIN only — no email address is needed. They\'ll see a simplified Kids View showing only their tasks and chores.' },
+              { q:'What\'s the difference between Admin, Member and Child?', a:'<strong>Admin</strong> can see and manage everything — members, settings, bills, and all calendar entries. <strong>Member</strong> can add and edit calendar entries and tasks but can\'t change family settings or view financial reports. <strong>Child</strong> uses PIN-only login and only sees their own chores and homework in Kids View.' },
+              { q:'How does the AI document scanner work?', a:'Tap <strong>AI scan</strong> on the dashboard and upload a photo or PDF — a school newsletter, bill, event invite, or anything else. Claude reads the document, extracts the key details (title, date, amount, assignees), and shows you a draft entry. You can review and edit it before saving. Nothing is saved automatically.' },
+              { q:'How do exam countdowns work?', a:'Tap <strong>Add exam</strong> and fill in the subject, date, and who it\'s for. The exam appears on the priority countdown bar at the top of the calendar. When you save, you\'re offered the option to immediately set up weekly revision sessions — these appear as lilac blocks on the calendar and stop automatically on the exam date.' },
+              { q:'How do I set up chores and a points system?', a:'Tap <strong>Add chore</strong> from the dashboard, assign it to a child, set a points value (e.g. 5 pts), and choose a repeat schedule (daily, weekly, etc.). In Kids View the child taps a chore to tick it off and earns the points. The points bar shows progress toward their daily goal. You can set the goal in Family Settings.' },
+              { q:'Can I connect my Google or iCal calendar?', a:'Yes. Go to <strong>Family → your name → Personal Calendars</strong> and paste in your calendar subscription URL. In Google Calendar: Settings → the calendar → scroll to "Secret address in iCal format". In Apple iCloud: Calendar app → right-click calendar → Copy Link. Your events will appear in KYNC in your member colour.' },
+              { q:'How do I add school holidays or special events?', a:'In Family Settings (dashboard → Family Settings), tap <strong>Add special event</strong>. Choose the type (School holiday, Birthday, Family holiday, or Public holiday), set a start and end date, and it will appear as a shaded block across all days in the calendar.' },
+              { q:'Can I add files or photos to a calendar entry?', a:'Yes — when adding an event, task, or homework from the calendar, scroll down to the <strong>Attachments</strong> field and tap to attach any file or photo. Files are linked to that entry so you can find them later.' },
+              { q:'How do I print or export the calendar?', a:'Open the Calendar on desktop and tap <strong>PDF</strong> or <strong>Print</strong> in the top toolbar. PDF exports the current view as a file. Print opens the browser print dialog with a clean print-friendly layout (controls and navigation are hidden).' },
+              { q:'How do I export financial reports?', a:'Tap <strong>Financial reports</strong> from the dashboard. Choose the time period (this month, last month, or annual). The report shows a breakdown by category with totals. Tap <strong>Export Excel</strong> to download a spreadsheet, <strong>Export PDF</strong> for a PDF summary, or <strong>Print</strong> for a printed version.' },
+              { q:'How does bedtime mode work?', a:'Go to <strong>Family Settings → Bedtime &amp; Screen Time</strong> and turn on bedtime for a child. Set their bedtime and wake time. When bedtime arrives, KYNC automatically shows a dark sleep screen with the wake time. The child can tap <strong>Ask for extra time</strong> — you\'ll get a notification to approve it.' },
+              { q:'Can I personalise Kids View for each child?', a:'Yes. Open Kids View (calendar or dashboard) and tap <strong>Add a personal message</strong> under the greeting. Set a morning message (shown before noon) and an evening message (shown after 6 pm). Each child has their own messages and they\'re saved to the device.' },
             ].map(faq => (
               <div key={faq.q} className="faq-item" onClick={(e) => (window as any).toggleFaq(e.currentTarget)}>
                 <div className="faq-q">{faq.q}<i className="ti ti-chevron-down"></i></div>
                 <div className="faq-a" dangerouslySetInnerHTML={{ __html: faq.a }}></div>
               </div>
             ))}
+
+            {/* Tips */}
+            <div className="help-section-label" style={{ marginTop: 20 }}>Tips &amp; tricks</div>
+            {[
+              { ic:'ti-repeat', tip:'Set chores to repeat daily or weekly so you only need to create them once.' },
+              { ic:'ti-palette', tip:'Each family member gets a unique colour — events assigned to them show in that colour on the calendar.' },
+              { ic:'ti-bell', tip:'Enable browser notifications in Family Settings to get reminders for upcoming events and bedtime alerts.' },
+              { ic:'ti-device-mobile', tip:'On mobile, use the bottom navigation bar to switch between Month, Week and Day views instantly.' },
+            ].map(t => (
+              <div key={t.tip} style={{ display:'flex', gap:10, alignItems:'flex-start', marginBottom:12, padding:'10px 12px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1.5px solid var(--border-lt)' }}>
+                <i className={`ti ${t.ic}`} style={{ color:'var(--green)', fontSize:16, flexShrink:0, marginTop:1 }}></i>
+                <span style={{ fontSize:12, color:'var(--text-2)', lineHeight:1.55 }}>{t.tip}</span>
+              </div>
+            ))}
+
             <div style={{ marginTop: 20, padding: 14, background: 'var(--bg)', borderRadius: 'var(--r-lg)', border: '1.5px solid var(--border)', textAlign: 'center' }}>
               <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Need more help?</div>
               <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Full docs at <span style={{ color: 'var(--green)', fontWeight: 600 }}>kync.app/help</span></div>
@@ -1698,53 +1747,154 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="wizard-dot" id="wdot-1"></div>
             <div className="wizard-dot" id="wdot-2"></div>
             <div className="wizard-dot" id="wdot-3"></div>
+            <div className="wizard-dot" id="wdot-4"></div>
           </div>
           <div className="modal-body" style={{ paddingTop: 8 }}>
+
+            {/* ── Step 0: Welcome ── */}
             <div className="wizard-step active" id="wstep-0">
-              <div className="wizard-hero"><div className="wizard-hero-icon"></div><div className="wizard-hero-title">Welcome to KYNC!</div><div className="wizard-hero-sub">I&apos;m your AI setup assistant. Let&apos;s get your family running in about 2 minutes.</div></div>
-              <div className="modal-actions"><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Let&apos;s go <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
-            </div>
-            <div className="wizard-step" id="wstep-1">
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, marginTop: 8 }}>Your family</div>
-              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 18 }}>Tell us a bit so we can personalise KYNC for you.</div>
-              <div className="modal-field"><label>Family name</label><input type="text" defaultValue={fName} /></div>
-              <div className="modal-2col">
-                <div className="modal-field" style={{ marginBottom: 0 }}><label>Location</label><input type="text" placeholder="e.g. Perth, WA" /></div>
-                <div className="modal-field" style={{ marginBottom: 0 }}><label>Currency</label><select><option>AUD</option><option>NZD</option><option>GBP</option><option>USD</option><option>EUR</option></select></div>
+              <div className="wizard-hero">
+                <div className="wizard-hero-icon">🏠</div>
+                <div className="wizard-hero-title">Welcome to KYNC!</div>
+                <div className="wizard-hero-sub">KYNC is your family&apos;s command centre — one place for your calendar, chores, homework, bills, and kids&apos; routines.</div>
               </div>
-              <div className="modal-actions" style={{ marginTop: 18 }}><button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
-            </div>
-            <div className="wizard-step" id="wstep-2">
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, marginTop: 8 }}>Add your family</div>
-              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 18 }}>You can add more members any time after setup.</div>
-              <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: '1px solid var(--border-lt)' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--sj-bg)', color: 'var(--sj-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{initials}</div>
-                  <div style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{displayName} <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700 }}>Admin (you)</span></div>
-                </div>
-                <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => (window as any).showToast('Use Invite member to add more family members')}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--border-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-plus" style={{ color: 'var(--text-3)' }}></i></div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)' }}>Add a partner, child or guest...</div>
-                </div>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-3)', background: 'var(--amber-lt)', padding: '10px 12px', borderRadius: 'var(--r-md)', border: '1px solid #FDE68A', lineHeight: 1.5 }}>
-                <i className="ti ti-info-circle" style={{ verticalAlign: 'middle', marginRight: 4 }}></i>Children use PIN-only login - no email needed.
-              </div>
-              <div className="modal-actions" style={{ marginTop: 18 }}><button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button><button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button></div>
-            </div>
-            <div className="wizard-step" id="wstep-3">
-              <div className="wizard-hero"><div className="wizard-hero-icon">🎉</div><div className="wizard-hero-title">You&apos;re all set!</div><div className="wizard-hero-sub">KYNC is ready for {fName}. Head to the calendar or explore the dashboard.</div></div>
-              <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 14, marginBottom: 4 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>Setup complete</div>
-                {['Family profile created','You\'re set as Admin','Notifications enabled'].map(item => (
-                  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, fontSize: 13 }}><i className="ti ti-circle-check" style={{ color: 'var(--green)', fontSize: 16 }}></i> {item}</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:18 }}>
+                {[
+                  { ic:'ti-calendar', c:'var(--oj-ac)', bg:'#EDF4FE', t:'Family Calendar', s:'Events, exams & holidays for everyone' },
+                  { ic:'ti-list-check', c:'var(--green)', bg:'var(--green-lt)', t:'Chores & Tasks', s:'Points-based routines for kids' },
+                  { ic:'ti-mood-kid', c:'var(--pink)', bg:'var(--pink-lt)', t:'Kids View', s:'Child-safe screen with daily tasks' },
+                  { ic:'ti-chart-bar', c:'#059669', bg:'#D1FAE5', t:'Bills & Reports', s:'Track spending by category' },
+                ].map(f => (
+                  <div key={f.t} style={{ background:f.bg, borderRadius:'var(--r-lg)', padding:'12px 10px', display:'flex', flexDirection:'column', gap:6 }}>
+                    <i className={`ti ${f.ic}`} style={{ color:f.c, fontSize:20 }}></i>
+                    <div style={{ fontSize:12, fontWeight:700 }}>{f.t}</div>
+                    <div style={{ fontSize:11, color:'var(--text-2)', lineHeight:1.4 }}>{f.s}</div>
+                  </div>
                 ))}
               </div>
-              <div className="modal-actions" style={{ marginTop: 14 }}>
-                <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-wizard')}>Dashboard</button>
-                <button className="modal-btn modal-btn-primary" onClick={() => { (window as any).closeModal('modal-wizard'); window.location.href='/calendar'; }}><i className="ti ti-calendar" style={{ marginRight: 6 }}></i>Open Calendar</button>
+              <div className="modal-actions">
+                <button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Let&apos;s get started <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button>
               </div>
             </div>
+
+            {/* ── Step 1: Family profile ── */}
+            <div className="wizard-step" id="wstep-1">
+              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, marginTop: 8 }}>Your family profile</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 18, lineHeight:1.5 }}>This helps KYNC personalise things like date formats, currency, and how your family name appears across the app.</div>
+              <div className="modal-field"><label>Family name</label><input type="text" defaultValue={fName} placeholder="e.g. The Kinahan Family" /></div>
+              <div className="modal-2col">
+                <div className="modal-field" style={{ marginBottom: 0 }}><label>Location</label><input type="text" placeholder="e.g. Perth, WA" /></div>
+                <div className="modal-field" style={{ marginBottom: 0 }}><label>Currency</label>
+                  <select><option>AUD</option><option>NZD</option><option>GBP</option><option>USD</option><option>EUR</option></select>
+                </div>
+              </div>
+              <div style={{ marginTop:14, padding:'10px 12px', background:'var(--green-lt)', borderRadius:'var(--r-md)', border:'1.5px solid var(--green-mid)', fontSize:12, color:'var(--text-2)', lineHeight:1.5 }}>
+                <i className="ti ti-info-circle" style={{ color:'var(--green)', marginRight:5, verticalAlign:'middle' }}></i>
+                You can update all of these settings later from <strong>Family Settings</strong> on the dashboard.
+              </div>
+              <div className="modal-actions" style={{ marginTop: 18 }}>
+                <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button>
+                <button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button>
+              </div>
+            </div>
+
+            {/* ── Step 2: Add family members ── */}
+            <div className="wizard-step" id="wstep-2">
+              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, marginTop: 8 }}>Add your family</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 14, lineHeight:1.5 }}>Invite a partner, children, or other household members. Everyone gets their own colour and calendar view.</div>
+              {/* Roles explained */}
+              <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
+                {[
+                  { role:'Admin', ic:'ti-shield-check', c:'var(--green)', desc:'Full access — manages members, settings, bills & all calendar entries. Give this to your partner.' },
+                  { role:'Child', ic:'ti-mood-kid', c:'var(--pink)', desc:'PIN-only login. Sees Kids View with their chores & tasks. No access to family settings or bills.' },
+                ].map(r => (
+                  <div key={r.role} style={{ display:'flex', gap:10, padding:'10px 12px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1.5px solid var(--border)', alignItems:'flex-start' }}>
+                    <i className={`ti ${r.ic}`} style={{ color:r.c, fontSize:18, flexShrink:0, marginTop:1 }}></i>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:700, marginBottom:2 }}>{r.role}</div>
+                      <div style={{ fontSize:11, color:'var(--text-2)', lineHeight:1.4 }}>{r.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Current member */}
+              <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: '1px solid var(--border-lt)' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--sj-bg)', color: 'var(--sj-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{initials}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{displayName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700 }}>Admin — that&apos;s you</div>
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', color:'var(--text-3)' }} onClick={() => { (window as any).closeModal('modal-wizard'); (window as any).openModal('modal-invite'); }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--border-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><i className="ti ti-plus" style={{ color: 'var(--pink)', fontSize:16 }}></i></div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>Invite a family member now →</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', padding: '8px 10px', lineHeight: 1.5 }}>
+                You can also add members later from the <strong>Invite member</strong> button on the dashboard.
+              </div>
+              <div className="modal-actions" style={{ marginTop: 14 }}>
+                <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button>
+                <button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button>
+              </div>
+            </div>
+
+            {/* ── Step 3: Calendar & chores ── */}
+            <div className="wizard-step" id="wstep-3">
+              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, marginTop: 8 }}>Calendar, chores &amp; kids</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16, lineHeight:1.5 }}>Here&apos;s how the three main areas of KYNC work together day to day.</div>
+              {[
+                { ic:'ti-calendar', c:'var(--oj-ac)', bg:'#EDF4FE', title:'Family Calendar', body:'Add events, assign them to one person or everyone, and set them to repeat. Connect your Google or iCal URL in Family Settings to pull in external events automatically. Colour-coded by family member.' },
+                { ic:'ti-list-check', c:'var(--green)', bg:'var(--green-lt)', title:'Chores & homework', body:'Create recurring chore routines for children with points. Add homework deadlines with a subject tag. Set up an exam and KYNC will offer to schedule weekly revision sessions automatically.' },
+                { ic:'ti-mood-kid', c:'var(--pink)', bg:'var(--pink-lt)', title:'Kids View', body:'Tap Kids View on the calendar to open a fullscreen child-safe view. Each child sees their own tasks and chores, with a points progress bar and a personalised good morning or good evening message you write yourself.' },
+              ].map(s => (
+                <div key={s.title} style={{ display:'flex', gap:12, marginBottom:14, padding:'12px', background:s.bg, borderRadius:'var(--r-lg)', alignItems:'flex-start' }}>
+                  <div style={{ width:36, height:36, borderRadius:'var(--r-md)', background:'rgba(255,255,255,.6)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <i className={`ti ${s.ic}`} style={{ color:s.c, fontSize:18 }}></i>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, marginBottom:4 }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:'var(--text-1)', lineHeight:1.55, opacity:.8 }}>{s.body}</div>
+                  </div>
+                </div>
+              ))}
+              <div className="modal-actions" style={{ marginTop: 4 }}>
+                <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).wizBack()}>Back</button>
+                <button className="modal-btn modal-btn-primary" onClick={() => (window as any).wizNext()}>Next <i className="ti ti-arrow-right" style={{ marginLeft: 4 }}></i></button>
+              </div>
+            </div>
+
+            {/* ── Step 4: All set ── */}
+            <div className="wizard-step" id="wstep-4">
+              <div className="wizard-hero">
+                <div className="wizard-hero-icon">🎉</div>
+                <div className="wizard-hero-title">You&apos;re ready to go!</div>
+                <div className="wizard-hero-sub">KYNC is set up for {fName}. Here are your first three things to do.</div>
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+                {[
+                  { n:'1', t:'Add your first event', s:'Tap Add event and put something on the family calendar — a school pickup, a dinner, anything.', ic:'ti-calendar-plus', c:'var(--oj-ac)', bg:'#EDF4FE' },
+                  { n:'2', t:'Create a chore for a child', s:'Tap Add chore, assign it to a child, set a point value and a daily repeat. They\'ll see it in Kids View.', ic:'ti-list-check', c:'var(--green)', bg:'var(--green-lt)' },
+                  { n:'3', t:'Connect an external calendar', s:'Go to Family → your name → Personal Calendars and paste in your Google or iCal URL.', ic:'ti-calendar-share', c:'var(--lilac)', bg:'var(--lilac-lt)' },
+                ].map(s => (
+                  <div key={s.n} style={{ display:'flex', gap:12, padding:'12px 14px', background:s.bg, borderRadius:'var(--r-lg)', alignItems:'flex-start' }}>
+                    <div style={{ width:32, height:32, borderRadius:'50%', background:'rgba(255,255,255,.7)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontWeight:800, fontSize:13, color:s.c }}>{s.n}</div>
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:700, marginBottom:2 }}>{s.t}</div>
+                      <div style={{ fontSize:11, color:'var(--text-1)', opacity:.75, lineHeight:1.4 }}>{s.s}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-wizard')}>Go to Dashboard</button>
+                <button className="modal-btn modal-btn-primary" onClick={() => { (window as any).closeModal('modal-wizard'); window.location.href='/calendar'; }}>
+                  <i className="ti ti-calendar" style={{ marginRight: 6 }}></i>Open Calendar
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

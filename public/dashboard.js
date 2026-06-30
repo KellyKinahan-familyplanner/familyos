@@ -50,10 +50,10 @@ function toggleFaq(el){el.classList.toggle('open');}
 
 /* Wizard */
 var wStep=0;
-function wizNext(){if(wStep<3){wStep++;renderWiz();}}
+function wizNext(){if(wStep<4){wStep++;renderWiz();}}
 function wizBack(){if(wStep>0){wStep--;renderWiz();}}
 function renderWiz(){
-  for(var i=0;i<4;i++){
+  for(var i=0;i<5;i++){
     var s=document.getElementById('wstep-'+i),d=document.getElementById('wdot-'+i);
     if(s)s.classList.toggle('active',i===wStep);
     if(d){d.classList.remove('active','done');if(i===wStep)d.classList.add('active');else if(i<wStep)d.classList.add('done');}
