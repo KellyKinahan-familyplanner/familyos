@@ -1025,6 +1025,39 @@ function RecurPicker({
   )
 }
 
+/** Reusable file/photo attach field for calendar modals */
+function AttachField({ id }: { id: string }) {
+  const [files, setFiles] = useState<File[]>([])
+  const inputId = `attach-${id}`
+  const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? [])
+    setFiles(prev => [...prev, ...picked])
+    e.target.value = ''
+  }
+  const remove = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i))
+  return (
+    <div className="modal-field">
+      <label>Attachments <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label>
+      <div className="attach-drop" onClick={() => document.getElementById(inputId)?.click()}>
+        <input type="file" id={inputId} multiple accept="image/*,.pdf,.doc,.docx" onChange={onFiles} style={{ display:'none' }} />
+        <i className="ti ti-paperclip" style={{ fontSize:16, color:'var(--text-3)' }}></i>
+        <span style={{ fontSize:12, color:'var(--text-3)' }}>Tap to attach files or photos</span>
+      </div>
+      {files.length > 0 && (
+        <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:6 }}>
+          {files.map((f, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 10px', background:'var(--bg)', borderRadius:'var(--r-sm)', fontSize:12 }}>
+              <i className="ti ti-file" style={{ color:'var(--text-3)', fontSize:13 }}></i>
+              <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{f.name}</span>
+              <button onClick={() => remove(i)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-3)', fontSize:14, padding:0, lineHeight:1 }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** AI scan panel — upload → processing → result */
 function ScanPanel({ members, onSaved }: { members: Member[]; onSaved: (ev: CalEvent) => void }) {
   const [step, setStep]         = useState<'upload'|'processing'|'result'>('upload')
@@ -1723,6 +1756,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>Optional</span></label>
               <textarea rows={2} placeholder="Any extra details…" value={fNotes} onChange={e => setFNotes(e.target.value)} style={{ resize:'none' }} />
             </div>
+            <AttachField id="event" />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('event','Event added ✓')}>Add event</button>
@@ -1765,6 +1799,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>Optional</span></label>
               <input type="text" placeholder="Any extra details…" value={fNotes} onChange={e => setFNotes(e.target.value)} />
             </div>
+            <AttachField id="task" />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('task','Task added ✓')}>Add task</button>
@@ -1869,6 +1904,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>Optional</span></label>
               <input type="text" placeholder="e.g. Pages 12–24, show working" value={fNotes} onChange={e => setFNotes(e.target.value)} />
             </div>
+            <AttachField id="hw" />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('homework','Homework added ✓')}>Add homework</button>

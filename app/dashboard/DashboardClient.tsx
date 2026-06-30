@@ -24,7 +24,8 @@ const DASHBOARD_CSS = `
 :root {
   --bg:#F7F5F2; --surface:#FFFFFF; --border:#E8E4DF; --border-lt:#F0EDE9;
   --text-1:#1A1714; --text-2:#6B6561; --text-3:#A09893;
-  --green:#1D9E75; --green-lt:#E3F5EF;
+  --green:#1D9E75; --green-lt:#E8F7F2; --green-mid:#9FE1CB;
+  --pink:#E8497A; --pink-lt:#FDE8EE; --pink-mid:#F4A4BE;
   --red:#E24B4A; --red-lt:#FEF0F0;
   --amber:#D97706; --amber-lt:#FEF3C7;
   --lilac:#7F77DD; --lilac-lt:#F2F1FD;
@@ -145,7 +146,7 @@ input,select,textarea{font-family:inherit;}
 .modal-close:hover{background:var(--border);}
 .modal-body{padding:0 24px 24px;}
 .modal-field{margin-bottom:14px;}
-.modal-field label{display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:6px;letter-spacing:.02em;}
+.modal-field label{display:block;font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px;letter-spacing:.07em;text-transform:uppercase;}
 .modal-field input,.modal-field select,.modal-field textarea{width:100%;padding:14px;min-height:52px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:16px;color:var(--text-1);background:var(--bg);outline:none;transition:border-color .15s;}
 .modal-field textarea{min-height:80px;}
 .modal-field textarea{resize:vertical;min-height:80px;line-height:1.5;}
@@ -161,14 +162,15 @@ input,select,textarea{font-family:inherit;}
 .perm-toggle.on .toggle-switch{background:var(--green);}
 .perm-toggle.on .toggle-switch::after{transform:translateX(12px);}
 .role-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
-.role-pill{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;background:var(--bg);}
-.role-pill.sel{background:var(--text-1);border-color:var(--text-1);color:#fff;}
+.role-pill{padding:8px 16px;border-radius:20px;border:1.5px solid var(--pink-mid);font-size:12px;font-weight:600;color:var(--pink);cursor:pointer;background:var(--green-lt);transition:all .15s;display:inline-flex;align-items:center;}
+.role-pill.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
+.role-pill:hover:not(.sel){background:var(--pink-lt);}
 .modal-actions{display:flex;gap:8px;margin-top:20px;}
-.modal-btn{flex:1;padding:12px;border-radius:var(--r-md);font-size:14px;font-weight:700;}
-.modal-btn-primary{background:var(--text-1);color:#fff;}
-.modal-btn-primary:hover{background:#2d2926;}
-.modal-btn-secondary{background:var(--bg);color:var(--text-2);border:1.5px solid var(--border);}
-.modal-btn-secondary:hover{background:var(--border-lt);}
+.modal-btn{flex:1;padding:13px;border-radius:var(--r-lg);font-size:14px;font-weight:700;border:1.5px solid transparent;cursor:pointer;transition:all .15s;}
+.modal-btn-primary{background:var(--pink);color:#fff;border-color:var(--pink);}
+.modal-btn-primary:hover{background:#d43870;border-color:#d43870;}
+.modal-btn-secondary{background:var(--green-lt);color:var(--green);border-color:var(--green-mid);}
+.modal-btn-secondary:hover{background:var(--green);color:#fff;border-color:var(--green);}
 .modal-btn-danger{background:var(--red-lt);color:var(--red);border:1.5px solid #F09595;}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--bg);margin-bottom:8px;}
 .toggle-row.on{border-color:var(--green);background:var(--green-lt);}
@@ -442,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260630d'
+    script.src = '/dashboard.js?v=20260630e'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
