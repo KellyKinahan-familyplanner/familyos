@@ -7,6 +7,9 @@ interface FamilyMember {
   display_name: string
   role: string
   avatar_initials: string
+  avatar_colour_bg?: string | null
+  avatar_colour_fg?: string | null
+  avatar_url?: string | null
 }
 
 interface Props {
@@ -667,9 +670,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
                 const avatarColors = ['var(--sj-bg)', 'var(--mj-bg)', 'var(--oj-bg)', 'var(--lj-bg)', '#E8F4FE']
                 const avatarFgColors = ['var(--sj-fg)', 'var(--mj-fg)', 'var(--oj-fg)', 'var(--lj-fg)', '#0C447C']
                 const av = m.avatar_initials || m.display_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-                return (
-                  <div key={m.id} className="welcome-av" style={{ background: avatarColors[i] ?? 'var(--sj-bg)', color: avatarFgColors[i] ?? 'var(--sj-fg)' }}>{av}</div>
-                )
+                return m.avatar_url
+                  ? <img key={m.id} src={m.avatar_url} alt={m.display_name} className="welcome-av" style={{ objectFit: 'cover', borderRadius: '50%' }} />
+                  : <div key={m.id} className="welcome-av" style={{ background: avatarColors[i] ?? 'var(--sj-bg)', color: avatarFgColors[i] ?? 'var(--sj-fg)' }}>{av}</div>
               })}
               {members.length > 5 && (
                 <div className="welcome-av" style={{ background: '#E5E5E5', color: '#555' }}>+{members.length - 5}</div>
@@ -749,7 +752,10 @@ export default function DashboardClient({ displayName, familyName, initials, use
             const isChild = m.role === 'child'
             return (
               <div key={m.id} className="member-row" onClick={() => window.location.href = `/family/${m.id}`} style={{ cursor: 'pointer' }}>
-                <div className="member-av" style={{ background: bg, color: fg }}>{av}</div>
+                {m.avatar_url
+                  ? <img src={m.avatar_url} alt={m.display_name} className="member-av" style={{ objectFit: 'cover', borderRadius: '50%', flexShrink: 0 }} />
+                  : <div className="member-av" style={{ background: bg, color: fg }}>{av}</div>
+                }
                 <div className="member-info">
                   <div className="member-name">{m.display_name}</div>
                   <div className="member-meta">

@@ -359,9 +359,10 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
     const isPending = m.invite_status === 'pending'
     return (
       <div key={m.id} className="member-card" onClick={() => window.location.href = `/family/${m.id}`} style={{ cursor: 'pointer' }}>
-        <div className="member-avatar" style={{ background: col.bg, color: col.fg }}>
-          {m.avatar_initials}
-        </div>
+        {m.avatar_url
+          ? <img src={m.avatar_url} alt={m.display_name} className="member-avatar" style={{ objectFit: 'cover', borderRadius: '50%' }} />
+          : <div className="member-avatar" style={{ background: m.avatar_colour_bg || col.bg, color: m.avatar_colour_fg || col.fg }}>{m.avatar_initials}</div>
+        }
         <div className="member-info">
           <div className="member-name">{m.display_name}</div>
           {m.role === 'admin' && <span className="member-badge admin"><i className="ti ti-shield-check" style={{ fontSize: 10 }} />Admin</span>}

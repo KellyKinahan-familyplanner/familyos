@@ -30,7 +30,7 @@ export default async function DashboardPage() {
 
   const { data: allMembers } = await createAdminClient()
     .from('family_members')
-    .select('id, display_name, role, avatar_initials')
+    .select('id, display_name, role, avatar_initials, avatar_colour_bg, avatar_colour_fg, avatar_url')
     .eq('family_id', member.family_id)
 
   const displayName = member?.display_name ?? user.email ?? 'there'

@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
 
 const AVATAR_PRESETS = [
   { bg: '#E8F7F2', fg: '#1D9E75' },
@@ -19,6 +20,7 @@ type Member = {
   avatar_initials: string | null
   avatar_colour_bg: string | null
   avatar_colour_fg: string | null
+  avatar_url: string | null
   points_total: number
   points_target: number | null
   reward_description: string | null
@@ -28,17 +30,19 @@ type Member = {
   child_username: string | null
 }
 
-export default function MemberProfileClient({ member: initial, isAdmin, isSelf }: {
+export default function MemberProfileClient({ member: initial, isAdmin }: {
   member: Member
   isAdmin: boolean
   isSelf: boolean
 }) {
   const [member, setMember] = useState(initial)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [toast, setToast] = useState('')
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [pinSaving, setPinSaving] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -55,6 +59,26 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
     setMember(prev => ({ ...prev, ...data }))
     showToast('Saved')
     return true
+  }
+
+  const uploadAvatar = async (file: File) => {
+    setUploading(true)
+    const fd = new FormData()
+    fd.append('avatar', file)
+    const res = await fetch(`/api/members/${member.id}/avatar`, { method: 'POST', body: fd })
+    setUploading(false)
+    if (!res.ok) { showToast('Upload failed'); return }
+    const { avatar_url } = await res.json()
+    setMember(prev => ({ ...prev, avatar_url }))
+    showToast('Photo updated')
+  }
+
+  const removeAvatar = async () => {
+    if (!confirm('Remove photo and go back to initials?')) return
+    const res = await fetch(`/api/members/${member.id}/avatar`, { method: 'DELETE' })
+    if (!res.ok) { showToast('Could not remove photo'); return }
+    setMember(prev => ({ ...prev, avatar_url: null }))
+    showToast('Photo removed')
   }
 
   const resetPin = async () => {
@@ -98,13 +122,17 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
         .topbar-title{font-weight:700;font-size:16px;flex:1;}
         .page{max-width:600px;margin:0 auto;padding:20px 16px 60px;}
         .profile-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:24px 20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
-        .profile-av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;flex-shrink:0;}
+        .av-wrap{position:relative;flex-shrink:0;width:72px;height:72px;}
+        .profile-av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;object-fit:cover;}
+        .av-upload-btn{position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;cursor:pointer;border:2px solid var(--surface);}
+        .av-upload-btn:hover{background:#178a64;}
         .profile-name{font-size:20px;font-weight:800;line-height:1.2;}
         .profile-sub{font-size:13px;color:var(--text-2);margin-top:4px;}
         .role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-top:6px;}
         .role-badge.admin{background:var(--green-lt);color:var(--green);}
         .role-badge.child{background:#FFF3E0;color:#F57C00;}
         .role-badge.member{background:#E3F2FD;color:#1976D2;}
+        .remove-photo-btn{font-size:11px;color:var(--text-3);background:none;border:none;cursor:pointer;margin-top:4px;display:block;text-decoration:underline;}
         .section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:16px;overflow:hidden;}
         .section-title{font-size:11px;font-weight:800;color:var(--text-3);letter-spacing:.06em;padding:16px 18px 0;}
         .field-row{padding:14px 18px;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;gap:12px;}
@@ -132,6 +160,7 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
         .pin-input:focus{border-color:var(--green);}
         .initials-input{width:80px;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:16px;font-weight:800;text-align:center;outline:none;text-transform:uppercase;}
         .initials-input:focus{border-color:var(--green);}
+        .uploading-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;}
       `}</style>
 
       <nav className="topbar">
@@ -141,10 +170,32 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
         </div>
       </nav>
 
+      {/* Hidden file input */}
+      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = '' }} />
+
       <div className="page">
         {/* Profile header */}
         <div className="profile-header">
-          <div className="profile-av" style={{ background: bg, color: fg }}>{av}</div>
+          <div style={{ flexShrink: 0 }}>
+            <div className="av-wrap">
+              {member.avatar_url ? (
+                <Image src={member.avatar_url} alt={member.display_name} width={72} height={72}
+                  className="profile-av" style={{ borderRadius: '50%' }} unoptimized />
+              ) : (
+                <div className="profile-av" style={{ background: bg, color: fg }}>{av}</div>
+              )}
+              {isAdmin && (
+                <div className="av-upload-btn" onClick={() => fileRef.current?.click()} title="Upload photo">
+                  {uploading ? <i className="ti ti-loader-2" style={{ animation: 'spin 1s linear infinite' }} /> : <i className="ti ti-camera" />}
+                </div>
+              )}
+              {uploading && <div className="uploading-overlay">...</div>}
+            </div>
+            {isAdmin && member.avatar_url && (
+              <button className="remove-photo-btn" onClick={removeAvatar}>Remove photo</button>
+            )}
+          </div>
           <div>
             <div className="profile-name">{member.display_name}</div>
             {isChild && member.child_username && <div className="profile-sub">@{member.child_username} · PIN login</div>}
@@ -199,7 +250,7 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
           )}
         </div>
 
-        {/* Display name & avatar */}
+        {/* Display name, initials & avatar colour */}
         {isAdmin && (
           <div className="section">
             <div className="section-title">PROFILE</div>
@@ -207,24 +258,30 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
               <span className="field-label">Display name</span>
               <input className="field-input" type="text" defaultValue={member.display_name} id="disp-name" />
             </div>
-            <div className="field-row">
-              <span className="field-label">Initials</span>
-              <input className="initials-input" type="text" maxLength={2} defaultValue={member.avatar_initials ?? av} id="av-initials" />
-            </div>
-            <div style={{ padding: '12px 18px 4px', fontSize: 13, color: 'var(--text-2)' }}>Avatar colour</div>
-            <div className="colour-grid">
-              {AVATAR_PRESETS.map((p, i) => (
-                <div key={i} className={`colour-swatch${bg === p.bg ? ' sel' : ''}`}
-                  style={{ background: p.bg, color: p.fg }}
-                  onClick={() => patch({ avatar_colour_bg: p.bg, avatar_colour_fg: p.fg })}>
-                  {av}
+            {!member.avatar_url && (
+              <>
+                <div className="field-row">
+                  <span className="field-label">Initials</span>
+                  <input className="initials-input" type="text" maxLength={2} defaultValue={member.avatar_initials ?? av} id="av-initials" />
                 </div>
-              ))}
-            </div>
+                <div style={{ padding: '12px 18px 4px', fontSize: 13, color: 'var(--text-2)' }}>Avatar colour</div>
+                <div className="colour-grid">
+                  {AVATAR_PRESETS.map((p, i) => (
+                    <div key={i} className={`colour-swatch${bg === p.bg ? ' sel' : ''}`}
+                      style={{ background: p.bg, color: p.fg }}
+                      onClick={() => patch({ avatar_colour_bg: p.bg, avatar_colour_fg: p.fg })}>
+                      {av}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
             <div className="field-row" style={{ justifyContent: 'flex-end' }}>
               <button className="save-btn" disabled={saving} onClick={() => patch({
                 display_name: (document.getElementById('disp-name') as HTMLInputElement).value.trim() || member.display_name,
-                avatar_initials: (document.getElementById('av-initials') as HTMLInputElement).value.trim().toUpperCase().slice(0, 2) || av,
+                avatar_initials: !member.avatar_url
+                  ? ((document.getElementById('av-initials') as HTMLInputElement)?.value.trim().toUpperCase().slice(0, 2) || av)
+                  : undefined,
               })}>
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -305,6 +362,7 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf }
       </div>
 
       <div className={`toast${toast ? ' show' : ''}`}>{toast}</div>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </>
   )
 }

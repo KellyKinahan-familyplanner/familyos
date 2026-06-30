@@ -22,7 +22,7 @@ export default async function FamilyPage() {
 
   const { data: allMembers } = await createAdminClient()
     .from('family_members')
-    .select('id, display_name, role, avatar_initials, child_username, invite_email, invite_status')
+    .select('id, display_name, role, avatar_initials, avatar_colour_bg, avatar_colour_fg, avatar_url, child_username, invite_email, invite_status')
     .eq('family_id', member.family_id)
 
   const displayName = member?.display_name ?? user.email ?? 'there'
@@ -46,6 +46,9 @@ export type FamilyMember = {
   display_name: string
   role: 'admin' | 'member' | 'child' | 'guest'
   avatar_initials: string
+  avatar_colour_bg?: string | null
+  avatar_colour_fg?: string | null
+  avatar_url?: string | null
   child_username?: string
   invite_email?: string
   invite_status?: 'pending' | 'accepted'

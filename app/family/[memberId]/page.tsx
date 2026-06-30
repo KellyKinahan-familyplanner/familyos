@@ -20,7 +20,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
   const admin = createAdminClient()
   const { data: target } = await admin
     .from('family_members')
-    .select('id, family_id, display_name, role, avatar_initials, avatar_colour_bg, avatar_colour_fg, points_total, points_target, reward_description, bedtime, wake_time, screen_time_mins, child_username')
+    .select('id, family_id, display_name, role, avatar_initials, avatar_colour_bg, avatar_colour_fg, avatar_url, points_total, points_target, reward_description, bedtime, wake_time, screen_time_mins, child_username')
     .eq('id', memberId)
     .maybeSingle()
 
