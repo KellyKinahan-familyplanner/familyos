@@ -14,7 +14,7 @@ export type CalEvent = {
   endTime?: string
   colour: string
   assignees: string[]
-  recur: 'none' | 'daily' | 'weekly' | 'monthly'
+  recur: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
   recurDays?: string[]          // weekly: ['Mon','Fri']
   recurMonthType?: 'date' | 'day'
   recurMonthDate?: number       // e.g. 15
@@ -468,6 +468,10 @@ export function eventOccursOn(ev: CalEvent, dateStr: string): boolean {
     return true
   }
 
+  if (ev.recur === 'yearly') {
+    return check.getMonth() === start.getMonth() && check.getDate() === start.getDate()
+  }
+
   return false
 }
 
@@ -522,21 +526,22 @@ function SpecialEventsStrip({ events }: { events: CalEvent[] }) {
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const in30  = new Date(today); in30.setDate(today.getDate() + 30)
 
+  // One chip per unique special event that falls (or starts) within 30 days
   const upcoming = events
     .filter(ev => SPECIAL_TYPES.includes(ev.type))
     .flatMap(ev => {
-      const results: { ev: CalEvent; date: Date; daysAway: number }[] = []
+      // Find the first day in the next 30 days this event occurs
       for (let d = new Date(today); d <= in30; d.setDate(d.getDate() + 1)) {
         const ds = d.toISOString().slice(0, 10)
         if (eventOccursOn(ev, ds)) {
           const daysAway = Math.round((d.getTime() - today.getTime()) / 86400000)
-          results.push({ ev, date: new Date(d), daysAway })
+          return [{ ev, date: new Date(d), daysAway }]
         }
       }
-      return results
+      return []
     })
     .sort((a, b) => a.daysAway - b.daysAway)
-    .slice(0, 10)
+    .slice(0, 8)
 
   if (!upcoming.length) return null
 
@@ -555,11 +560,14 @@ function SpecialEventsStrip({ events }: { events: CalEvent[] }) {
           : ev.type === 'school-holiday' ? '#1D4ED8'
           : ev.type === 'family-holiday' ? '#065F46'
           : '#92400E'
+        const endLabel = ev.recurEnd === 'on' && ev.recurEndDate
+          ? `– ${new Date(ev.recurEndDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`
+          : ''
         return (
           <div key={i} className="special-chip" style={{ background: bg, color: fg }}>
             <span>{meta.emoji}</span>
             <span>{ev.title}</span>
-            <span style={{ opacity: 0.65, fontWeight: 500 }}>· {dayLabel}</span>
+            <span style={{ opacity: 0.65, fontWeight: 500 }}>· {dayLabel}{endLabel}</span>
           </div>
         )
       })}

@@ -225,7 +225,14 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
   async function addSpecialEvent() {
     if (!specTitle.trim() || !specDate) { showToast('Enter a title and date'); return }
     setSaving(true)
-    const body: any = { title: specTitle.trim(), date: specDate, type: specType, colour: specType === 'birthday' ? 'pink' : specType === 'school-holiday' ? 'blue' : specType === 'family-holiday' ? 'green' : 'amber', assignees: ['Everyone'], recur: specRecur === 'yearly' ? 'yearly' : 'none', notes: specEndDate ? `Until ${specEndDate}` : undefined }
+    const colour = specType === 'birthday' ? 'pink' : specType === 'school-holiday' ? 'blue' : specType === 'family-holiday' ? 'green' : 'amber'
+    // Multi-day span: use daily recurrence ending on the end date
+    const recur = specEndDate ? 'daily' : (specRecur === 'yearly' ? 'yearly' : 'none')
+    const body: any = {
+      title: specTitle.trim(), date: specDate, type: specType, colour,
+      assignees: ['Everyone'], recur,
+      ...(specEndDate ? { recurEnd: 'on', recurEndDate: specEndDate } : {}),
+    }
     const res = await fetch('/api/entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const data = await res.json()
     if (!res.ok) { showToast(data.error || 'Failed'); setSaving(false); return }
