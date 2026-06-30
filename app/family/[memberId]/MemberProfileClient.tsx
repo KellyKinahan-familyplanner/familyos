@@ -15,6 +15,15 @@ const AVATAR_PRESETS = [
   { bg: '#ECFDF5', fg: '#059669' },
 ]
 
+type GuestPerms = {
+  can_view_calendar: boolean
+  can_view_tasks: boolean
+  can_view_bills: boolean
+  member_ids: string[]
+}
+
+type FamilyMemberSlim = { id: string; display_name: string; role: string }
+
 type Member = {
   id: string
   display_name: string
@@ -30,13 +39,22 @@ type Member = {
   wake_time: string | null
   screen_time_mins: number | null
   child_username: string | null
+  guest_permissions?: GuestPerms | null
 }
 
-export default function MemberProfileClient({ member: initial, isAdmin, isSelf, initialFeeds }: {
+const DEFAULT_GUEST_PERMS: GuestPerms = {
+  can_view_calendar: true,
+  can_view_tasks: true,
+  can_view_bills: false,
+  member_ids: [],
+}
+
+export default function MemberProfileClient({ member: initial, isAdmin, isSelf, initialFeeds, allMembers = [] }: {
   member: Member
   isAdmin: boolean
   isSelf: boolean
   initialFeeds: Feed[]
+  allMembers?: FamilyMemberSlim[]
 }) {
   const [member, setMember] = useState(initial)
   const [saving, setSaving] = useState(false)
@@ -145,6 +163,33 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf, 
     const res = await fetch(`/api/members/${member.id}`, { method: 'DELETE' })
     if (res.ok) window.location.href = '/family'
     else showToast('Could not remove member')
+  }
+
+  // Guest permissions
+  const [guestPerms, setGuestPerms] = useState<GuestPerms>(
+    initial.guest_permissions ?? DEFAULT_GUEST_PERMS
+  )
+  const [permSaving, setPermSaving] = useState(false)
+
+  const saveGuestPerms = async () => {
+    setPermSaving(true)
+    const res = await fetch(`/api/members/${member.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guest_permissions: guestPerms }),
+    })
+    setPermSaving(false)
+    if (!res.ok) { showToast('Save failed'); return }
+    showToast('Guest access saved')
+  }
+
+  const toggleMemberId = (id: string) => {
+    setGuestPerms(p => ({
+      ...p,
+      member_ids: p.member_ids.includes(id)
+        ? p.member_ids.filter(m => m !== id)
+        : [...p.member_ids, id],
+    }))
   }
 
   const isChild = member.role === 'child'
@@ -460,6 +505,77 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf, 
                   {feedSaving ? 'Adding...' : '+ Connect'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Guest Access Restrictions */}
+        {member.role === 'guest' && isAdmin && (
+          <div className="section">
+            <div className="section-title">GUEST ACCESS</div>
+            <div style={{ padding: '10px 18px 4px', fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
+              Control what {member.display_name} can see when they log in. Perfect for co-parenting or extended family access.
+            </div>
+
+            {/* Feature toggles */}
+            <div style={{ padding: '10px 18px' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>What can they see?</div>
+              {([
+                { key: 'can_view_calendar', label: 'Calendar events', icon: 'ti-calendar', desc: 'Family events and appointments' },
+                { key: 'can_view_tasks', label: 'Tasks, chores & homework', icon: 'ti-list-check', desc: "Children's tasks and school work" },
+                { key: 'can_view_bills', label: 'Bills & financial reports', icon: 'ti-receipt', desc: 'Spending, bills and reports' },
+              ] as const).map(f => (
+                <div key={f.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border-lt)' }}>
+                  <i className={`ti ${f.icon}`} style={{ fontSize: 18, color: guestPerms[f.key] ? 'var(--green)' : 'var(--text-3)', flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{f.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{f.desc}</div>
+                  </div>
+                  <div
+                    onClick={() => setGuestPerms(p => ({ ...p, [f.key]: !p[f.key] }))}
+                    style={{ width: 44, height: 24, borderRadius: 12, background: guestPerms[f.key] ? 'var(--green)' : 'var(--border)', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', top: 2, left: guestPerms[f.key] ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.2)', transition: 'left .2s' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Member filter */}
+            {allMembers.filter(m => m.id !== member.id).length > 0 && (
+              <div style={{ padding: '10px 18px' }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Which family members?</div>
+                <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 12, lineHeight: 1.5 }}>
+                  Leave all unchecked to show events for the whole family. Check specific people to limit this guest to only their events.
+                </div>
+                {allMembers.filter(m => m.id !== member.id).map(m => {
+                  const checked = guestPerms.member_ids.includes(m.id)
+                  const roleColor = m.role === 'admin' ? 'var(--green)' : m.role === 'child' ? '#F57C00' : '#1976D2'
+                  return (
+                    <div key={m.id} onClick={() => toggleMemberId(m.id)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', marginBottom: 6, borderRadius: 'var(--r-md)', border: `1.5px solid ${checked ? 'var(--green)' : 'var(--border)'}`, background: checked ? 'var(--green-lt)' : 'var(--bg)', cursor: 'pointer', transition: 'all .15s' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked ? 'var(--green)' : 'var(--border)'}`, background: checked ? 'var(--green)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}>
+                        {checked && <i className="ti ti-check" style={{ fontSize: 12, color: '#fff' }} />}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600 }}>{m.display_name}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: roleColor, marginLeft: 8, textTransform: 'capitalize' }}>{m.role}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+                {guestPerms.member_ids.length > 0 && (
+                  <div style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700, marginTop: 4 }}>
+                    <i className="ti ti-filter" style={{ marginRight: 4 }} />
+                    Filtered to {guestPerms.member_ids.length} member{guestPerms.member_ids.length > 1 ? 's' : ''}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="field-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="save-btn" disabled={permSaving} onClick={saveGuestPerms}>
+                {permSaving ? 'Saving...' : 'Save access settings'}
+              </button>
             </div>
           </div>
         )}

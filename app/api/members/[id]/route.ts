@@ -33,6 +33,7 @@ export async function PATCH(
   if (body.bedtime !== undefined) updates.bedtime = body.bedtime
   if (body.wake_time !== undefined) updates.wake_time = body.wake_time
   if (body.screen_time_mins !== undefined) updates.screen_time_mins = body.screen_time_mins
+  if (body.guest_permissions !== undefined) updates.guest_permissions = body.guest_permissions
 
   if (Object.keys(updates).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 

@@ -20,7 +20,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
   const admin = createAdminClient()
   const { data: target } = await admin
     .from('family_members')
-    .select('id, family_id, display_name, role, avatar_initials, avatar_colour_bg, avatar_colour_fg, avatar_url, points_total, points_target, reward_description, bedtime, wake_time, screen_time_mins, child_username')
+    .select('id, family_id, display_name, role, avatar_initials, avatar_colour_bg, avatar_colour_fg, avatar_url, points_total, points_target, reward_description, bedtime, wake_time, screen_time_mins, child_username, guest_permissions')
     .eq('id', memberId)
     .maybeSingle()
 
@@ -34,6 +34,11 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
     .eq('member_id', memberId)
     .order('created_at')
 
+  // For guests: fetch all family members so the admin can pick which ones the guest can see
+  const { data: allMembers } = target.role === 'guest'
+    ? await admin.from('family_members').select('id, display_name, role').eq('family_id', self.family_id)
+    : { data: null }
+
   const isAdmin = self.role === 'admin'
   const isSelf = self.id === target.id
 
@@ -43,6 +48,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
       isAdmin={isAdmin}
       isSelf={isSelf}
       initialFeeds={feeds ?? []}
+      allMembers={allMembers ?? []}
     />
   )
 }
