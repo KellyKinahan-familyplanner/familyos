@@ -744,7 +744,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             const isAdmin = m.role === 'admin'
             const isChild = m.role === 'child'
             return (
-              <div key={m.id} className="member-row">
+              <div key={m.id} className="member-row" onClick={() => window.location.href = '/family'} style={{ cursor: 'pointer' }}>
                 <div className="member-av" style={{ background: bg, color: fg }}>{av}</div>
                 <div className="member-info">
                   <div className="member-name">{m.display_name}</div>
