@@ -95,6 +95,14 @@ html,body{height:100%;overflow:hidden;}
 .cal-topbar-btn.pink{border-color:var(--pink);background:var(--pink-lt);color:var(--pink);}
 .cal-topbar-btn.pink:hover{background:var(--pink);color:#fff;border-color:var(--pink);}
 
+/* ── Responsive show/hide helpers ── */
+.cal-mobile-only{display:none;}
+.cal-desktop-only{display:inline-flex;}
+@media(max-width:640px){
+  .cal-mobile-only{display:inline-flex;}
+  .cal-desktop-only{display:none!important;}
+}
+
 /* ── Member avatar bar ── */
 .member-bar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-shrink:0;}
 .member-bar::-webkit-scrollbar{display:none;}
@@ -294,24 +302,66 @@ html,body{height:100%;overflow:hidden;}
 .cal-cell{position:relative;}
 
 /* ── Mobile touch improvements ── */
+/* ── Mobile bottom nav bar ── */
+.cal-mobile-nav{display:none;}
 @media(max-width:640px){
-  .cal-topbar{padding:0 12px;}
-  .cal-topbar-right{gap:4px;}
-  .member-bar{padding:8px 12px;gap:6px;}
-  .cal-toolbar{padding:8px 12px;gap:6px;}
-  .view-btn{padding:6px 10px;font-size:12px;}
-  .cal-nav-btn{min-width:44px;min-height:44px;}
-  .cal-today-btn{min-height:44px;padding:0 12px;}
-  .cal-month-label{font-size:13px;min-width:120px;}
-  .cal-month-cell{min-height:64px;padding:4px;}
-  .cal-month-chip{font-size:10px;padding:2px 4px;}
-  .cal-month-day-num{font-size:11px;width:22px;height:22px;}
-  .cal-fab{bottom:calc(72px + env(safe-area-inset-bottom));right:16px;}
-  .cal-fab-btn{width:52px;height:52px;}
-  .member-avatar{width:32px;height:32px;font-size:10px;}
-  .cal-time-slot{font-size:10px;width:38px;padding-right:4px;}
+  /* Bottom nav bar */
+  .cal-mobile-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);border-top:1.5px solid var(--border);
+    z-index:200;padding:0 0 env(safe-area-inset-bottom);
+    height:calc(56px + env(safe-area-inset-bottom));
+  }
+  .cal-mobile-nav-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;font-size:10px;font-weight:700;color:var(--text-3);cursor:pointer;
+    border:none;background:none;padding:6px 0;text-decoration:none;
+  }
+  .cal-mobile-nav-btn i{font-size:20px;}
+  .cal-mobile-nav-btn.active{color:var(--pink);}
+  .cal-mobile-nav-btn.primary{color:var(--green);}
+
+  /* Topbar — compact: back | title | kids */
+  .cal-topbar{padding:0 10px;gap:6px;height:48px;}
+  .cal-topbar-sep{display:none;}
+  .cal-topbar > img,.cal-topbar > a[href="/dashboard"],.cal-topbar > button:not(.cal-topbar-btn.pink){display:none;}
+  .cal-page-title{font-size:13px;font-weight:800;flex:1;}
+  .cal-topbar-btn{padding:6px 10px;font-size:12px;}
+  /* Show only Kids View button text as icon on small screens */
+  .cal-topbar-btn.pink span.btn-text{display:none;}
+
+  /* Stacked toolbar: nav row + view tabs row */
+  .cal-toolbar{flex-wrap:wrap;padding:6px 10px;gap:6px;row-gap:6px;}
+  .cal-month-nav{flex:1;}
+  .cal-month-label{font-size:13px;min-width:110px;}
+  .cal-icon-btn{width:36px;height:36px;}
+  .cal-today-btn{font-size:11px;padding:0 10px;height:36px;}
+  .cal-view-tabs{margin-left:0;width:100%;justify-content:center;}
+  .cal-view-tab{flex:1;text-align:center;padding:6px 0;}
+
+  /* Member bar */
+  .member-bar{padding:6px 10px;gap:5px;}
+  .member-avatar{width:34px;height:34px;font-size:11px;}
+  .member-avatar-name{font-size:9px;}
+
+  /* Month grid cells */
+  .cal-month-cell{min-height:60px;padding:3px 2px;}
+  .cal-month-chip{font-size:9px;padding:1px 3px;}
+  .cal-month-day-num{font-size:11px;width:20px;height:20px;}
+
+  /* Week/day time column */
+  .cal-time-slot{font-size:9px;width:34px;padding-right:3px;}
   .cal-hour-row{min-height:44px;}
+
+  /* FAB sits above bottom nav */
+  .cal-fab{bottom:calc(64px + env(safe-area-inset-bottom));right:14px;}
+  .cal-fab-btn{width:52px;height:52px;}
+
+  /* Modal full-height sheet */
   .modal{border-radius:20px 20px 0 0;max-height:95vh;}
+
+  /* Pad main content so bottom nav doesn't cover it */
+  .cal-shell{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
 }
 
 /* ── Print / export ── */
@@ -1535,24 +1585,24 @@ export default function CalendarClient({ displayName, familyName, initials, user
 
       {/* ── Topbar ── */}
       <header className="cal-topbar">
-        <Image src="/Kync_logo.png" alt="KYNC" width={90} height={32} style={{ objectFit: 'contain', flexShrink: 0 }} />
-        <div className="cal-topbar-sep" />
+        {/* Mobile back button — only shows on small screens */}
+        <Link href="/dashboard" className="cal-topbar-btn cal-mobile-only" title="Back to Dashboard" style={{ padding:'6px 8px' }}>
+          <i className="ti ti-arrow-left" style={{ fontSize: 16 }}></i>
+        </Link>
+        {/* Desktop logo — hidden on mobile */}
+        <Image src="/Kync_logo.png" alt="KYNC" width={90} height={32} className="cal-desktop-only" style={{ objectFit: 'contain', flexShrink: 0 }} />
+        <div className="cal-topbar-sep cal-desktop-only" />
         <span className="cal-page-title">Family Calendar</span>
-        <button
-          className="cal-topbar-btn pink"
-          onClick={openKidsView}
-          title="Open kids view"
-          style={{}}
-        >
-          <i className="ti ti-mood-kid" style={{ fontSize: 13 }}></i>Kids View
+        <button className="cal-topbar-btn pink" onClick={openKidsView} title="Open kids view">
+          <i className="ti ti-mood-kid" style={{ fontSize: 13 }}></i><span className="cal-desktop-only" style={{ marginLeft: 4 }}>Kids View</span>
         </button>
-        <button className="cal-topbar-btn" onClick={handleExportPDF} title="Export PDF">
+        <button className="cal-topbar-btn cal-desktop-only" onClick={handleExportPDF} title="Export PDF">
           <i className="ti ti-file-type-pdf" style={{ fontSize: 13 }}></i>PDF
         </button>
-        <button className="cal-topbar-btn" onClick={handlePrint} title="Print">
+        <button className="cal-topbar-btn cal-desktop-only" onClick={handlePrint} title="Print">
           <i className="ti ti-printer" style={{ fontSize: 13 }}></i>Print
         </button>
-        <Link href="/dashboard" className="cal-topbar-btn">
+        <Link href="/dashboard" className="cal-topbar-btn cal-desktop-only">
           <i className="ti ti-layout-dashboard" style={{ fontSize: 13 }}></i>Dashboard
         </Link>
       </header>
@@ -2082,6 +2132,25 @@ export default function CalendarClient({ displayName, familyName, initials, user
           </div>
         </div>
       </div>
+
+      {/* ── Mobile bottom nav bar ── */}
+      <nav className="cal-mobile-nav">
+        <Link href="/dashboard" className="cal-mobile-nav-btn">
+          <i className="ti ti-layout-dashboard"></i>Dashboard
+        </Link>
+        <button className="cal-mobile-nav-btn" onClick={() => setView('month')}>
+          <i className={`ti ti-calendar-month${view === 'month' ? '' : '-filled'}`} style={{ color: view === 'month' ? 'var(--pink)' : undefined }}></i>Month
+        </button>
+        <button className="cal-mobile-nav-btn" onClick={() => setView('week')}>
+          <i className={`ti ti-calendar-week`} style={{ color: view === 'week' ? 'var(--pink)' : undefined }}></i>Week
+        </button>
+        <button className="cal-mobile-nav-btn" onClick={() => setView('day')}>
+          <i className={`ti ti-calendar-day`} style={{ color: view === 'day' ? 'var(--pink)' : undefined }}></i>Day
+        </button>
+        <button className="cal-mobile-nav-btn primary" onClick={() => { setFabOpen(false); openModal('event', today.toISOString().slice(0,10)) }}>
+          <i className="ti ti-circle-plus"></i>Add
+        </button>
+      </nav>
 
       {/* ── Kids View Overlay ── */}
       {kidsView && (
