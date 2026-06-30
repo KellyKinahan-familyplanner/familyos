@@ -87,10 +87,10 @@ html,body{height:100%;overflow:hidden;}
 .cal-topbar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:50;}
 .cal-topbar-sep{width:1.5px;height:18px;background:var(--border);}
 .cal-page-title{font-size:14px;font-weight:800;flex:1;white-space:nowrap;}
-.cal-topbar-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-md);border:1.5px solid var(--green-mid);background:var(--green-lt);font-size:12px;font-weight:700;color:var(--green);cursor:pointer;text-decoration:none;white-space:nowrap;transition:all .15s;}
-.cal-topbar-btn:hover{background:var(--green);color:#fff;border-color:var(--green);}
-.cal-topbar-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
-.cal-topbar-btn.pink{border-color:var(--pink-mid);background:var(--pink-lt);color:var(--pink);}
+.cal-topbar-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-md);border:1.5px solid var(--pink-mid);background:var(--green-lt);font-size:12px;font-weight:700;color:var(--pink);cursor:pointer;text-decoration:none;white-space:nowrap;transition:all .15s;}
+.cal-topbar-btn:hover{background:var(--pink);color:#fff;border-color:var(--pink);}
+.cal-topbar-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+.cal-topbar-btn.pink{border-color:var(--pink);background:var(--pink-lt);color:var(--pink);}
 .cal-topbar-btn.pink:hover{background:var(--pink);color:#fff;border-color:var(--pink);}
 
 /* ── Member avatar bar ── */
@@ -107,12 +107,12 @@ html,body{height:100%;overflow:hidden;}
 .cal-toolbar{background:var(--surface);border-bottom:1px solid var(--border-lt);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .cal-month-nav{display:flex;align-items:center;gap:4px;}
 .cal-month-label{font-size:15px;font-weight:800;min-width:155px;text-align:center;}
-.cal-icon-btn{width:30px;height:30px;border-radius:var(--r-sm);border:1.5px solid var(--green-mid);background:var(--green-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--green);transition:all .15s;flex-shrink:0;}
-.cal-icon-btn:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.cal-icon-btn{width:30px;height:30px;border-radius:var(--r-sm);border:1.5px solid var(--pink-mid);background:var(--green-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--pink);transition:all .15s;flex-shrink:0;}
+.cal-icon-btn:hover{background:var(--pink);color:#fff;border-color:var(--pink);}
 .cal-today-btn{padding:0 10px;font-size:11px;font-weight:700;width:auto;}
-.cal-view-tabs{display:flex;gap:2px;background:var(--green-lt);border-radius:var(--r-md);padding:3px;margin-left:auto;border:1px solid var(--green-mid);}
-.cal-view-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:700;color:var(--green);cursor:pointer;transition:all .15s;user-select:none;}
-.cal-view-tab.active{background:var(--green);color:#fff;box-shadow:0 1px 4px rgba(29,158,117,.25);}
+.cal-view-tabs{display:flex;gap:2px;background:var(--green-lt);border-radius:var(--r-md);padding:3px;margin-left:auto;border:1px solid var(--pink-mid);}
+.cal-view-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:700;color:var(--pink);cursor:pointer;transition:all .15s;user-select:none;}
+.cal-view-tab.active{background:var(--pink);color:#fff;box-shadow:0 1px 4px rgba(232,73,122,.25);}
 
 /* ── Legend ── */
 .cal-legend{display:flex;align-items:center;gap:10px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--border-lt);flex-wrap:wrap;flex-shrink:0;}
@@ -220,7 +220,7 @@ html,body{height:100%;overflow:hidden;}
 .modal-btn-primary:hover{background:#d43870;border-color:#d43870;}
 .modal-kync-logo{height:18px;display:block;margin-bottom:10px;opacity:.9;}
 .role-pills{display:flex;flex-wrap:wrap;gap:6px;}
-.role-pill{padding:10px 16px;min-height:44px;border-radius:20px;border:1.5px solid var(--green-mid);font-size:13px;font-weight:600;cursor:pointer;color:var(--green);background:var(--green-lt);transition:all .15s;user-select:none;display:inline-flex;align-items:center;}
+.role-pill{padding:10px 16px;min-height:44px;border-radius:20px;border:1.5px solid var(--pink-mid);font-size:13px;font-weight:600;cursor:pointer;color:var(--pink);background:var(--green-lt);transition:all .15s;user-select:none;display:inline-flex;align-items:center;}
 .role-pill.sel{background:var(--pink);color:#fff;border-color:var(--pink);}
 .colour-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 .colour-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .15s;}
