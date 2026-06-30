@@ -114,6 +114,10 @@ input,select,textarea{font-family:inherit;}
 .perm-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;}
 .perm-on{background:var(--green-lt);color:var(--green);} .perm-off{background:#F0EDE9;color:var(--text-3);}
 .member-chevron{color:var(--text-3);font-size:16px;flex-shrink:0;}
+.member-actions-dash{display:flex;gap:4px;flex-shrink:0;}
+.dash-action-btn{width:28px;height:28px;border-radius:var(--r-sm);border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-2);cursor:pointer;transition:all .12s;}
+.dash-action-btn:hover{background:var(--border);color:var(--text-1);}
+.dash-action-btn.danger:hover{background:var(--red-lt,#FEE2E2);color:var(--red,#DC2626);}
 .member-row.pending{opacity:.6;}
 .pending-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--amber-lt);color:var(--amber);border:1px solid #FCD34D;}
 .activity-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;}
@@ -744,7 +748,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             const isAdmin = m.role === 'admin'
             const isChild = m.role === 'child'
             return (
-              <div key={m.id} className="member-row" onClick={() => window.location.href = '/family'} style={{ cursor: 'pointer' }}>
+              <div key={m.id} className="member-row" onClick={() => window.location.href = `/family/${m.id}`} style={{ cursor: 'pointer' }}>
                 <div className="member-av" style={{ background: bg, color: fg }}>{av}</div>
                 <div className="member-info">
                   <div className="member-name">{m.display_name}</div>
@@ -753,11 +757,19 @@ export default function DashboardClient({ displayName, familyName, initials, use
                     <span>{isChild ? 'PIN login' : isAdmin ? userEmail : ''}</span>
                   </div>
                 </div>
-                <div className="member-perms">
-                  <div className={`perm-dot ${isAdmin ? 'perm-on' : 'perm-off'}`}><i className="ti ti-plus" style={{ fontSize: 9 }}></i></div>
-                  <div className={`perm-dot ${isAdmin ? 'perm-on' : 'perm-off'}`}><i className="ti ti-pencil" style={{ fontSize: 9 }}></i></div>
-                  <div className={`perm-dot ${isAdmin ? 'perm-on' : 'perm-off'}`}><i className="ti ti-trash" style={{ fontSize: 9 }}></i></div>
-                  <div className="perm-dot perm-on"><i className="ti ti-check" style={{ fontSize: 9 }}></i></div>
+                <div className="member-actions-dash" onClick={e => e.stopPropagation()}>
+                  <button className="dash-action-btn" title="Edit" onClick={() => window.location.href = `/family/${m.id}`}>
+                    <i className="ti ti-pencil" style={{ fontSize: 13 }}></i>
+                  </button>
+                  {m.role !== 'admin' && (
+                    <button className="dash-action-btn danger" title="Remove" onClick={async () => {
+                      if (!confirm(`Remove ${m.display_name} from the family?`)) return
+                      const res = await fetch(`/api/members/${m.id}`, { method: 'DELETE' })
+                      if (res.ok) window.location.reload()
+                    }}>
+                      <i className="ti ti-trash" style={{ fontSize: 13 }}></i>
+                    </button>
+                  )}
                 </div>
                 <i className="ti ti-chevron-right member-chevron"></i>
               </div>

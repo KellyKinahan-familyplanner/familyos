@@ -1,0 +1,310 @@
+'use client'
+import { useState } from 'react'
+
+const AVATAR_PRESETS = [
+  { bg: '#E8F7F2', fg: '#1D9E75' },
+  { bg: '#FFF3E0', fg: '#F57C00' },
+  { bg: '#E3F2FD', fg: '#1976D2' },
+  { bg: '#F3F0FF', fg: '#7F77DD' },
+  { bg: '#FEE2E2', fg: '#DC2626' },
+  { bg: '#FEF9C3', fg: '#A16207' },
+  { bg: '#FCE7F3', fg: '#BE185D' },
+  { bg: '#ECFDF5', fg: '#059669' },
+]
+
+type Member = {
+  id: string
+  display_name: string
+  role: string
+  avatar_initials: string | null
+  avatar_colour_bg: string | null
+  avatar_colour_fg: string | null
+  points_total: number
+  points_target: number | null
+  reward_description: string | null
+  bedtime: string | null
+  wake_time: string | null
+  screen_time_mins: number | null
+  child_username: string | null
+}
+
+export default function MemberProfileClient({ member: initial, isAdmin, isSelf }: {
+  member: Member
+  isAdmin: boolean
+  isSelf: boolean
+}) {
+  const [member, setMember] = useState(initial)
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState('')
+  const [newPin, setNewPin] = useState('')
+  const [confirmPin, setConfirmPin] = useState('')
+  const [pinSaving, setPinSaving] = useState(false)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  const patch = async (updates: Record<string, unknown>) => {
+    setSaving(true)
+    const res = await fetch(`/api/members/${member.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+    setSaving(false)
+    if (!res.ok) { showToast('Save failed'); return false }
+    const data = await res.json()
+    setMember(prev => ({ ...prev, ...data }))
+    showToast('Saved')
+    return true
+  }
+
+  const resetPin = async () => {
+    if (newPin.length < 4) { showToast('PIN must be at least 4 digits'); return }
+    if (newPin !== confirmPin) { showToast('PINs do not match'); return }
+    setPinSaving(true)
+    const res = await fetch(`/api/members/${member.id}/pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: newPin }),
+    })
+    setPinSaving(false)
+    if (!res.ok) { showToast('PIN reset failed'); return }
+    setNewPin(''); setConfirmPin('')
+    showToast('PIN updated')
+  }
+
+  const deleteMember = async () => {
+    if (!confirm(`Remove ${member.display_name} from the family? This cannot be undone.`)) return
+    const res = await fetch(`/api/members/${member.id}`, { method: 'DELETE' })
+    if (res.ok) window.location.href = '/family'
+    else showToast('Could not remove member')
+  }
+
+  const isChild = member.role === 'child'
+  const av = member.avatar_initials || member.display_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  const bg = member.avatar_colour_bg || '#E8F7F2'
+  const fg = member.avatar_colour_fg || '#1D9E75'
+
+  return (
+    <>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+      <style>{`
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{background:var(--bg,#F5F4F0);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1714;}
+        :root{--surface:#fff;--bg:#F5F4F0;--border:#E8E6E1;--border-lt:#F0EDE8;--text-1:#1a1714;--text-2:#6b6560;--text-3:#9e9994;--green:#1D9E75;--green-lt:#E8F7F2;--red:#DC2626;--red-lt:#FEE2E2;--r-md:10px;--r-lg:14px;--r-xl:18px;}
+        .topbar{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+        .topbar-inner{max-width:600px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;gap:12px;}
+        .back-btn{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:18px;cursor:pointer;transition:background .12s;}
+        .back-btn:hover{background:var(--bg);}
+        .topbar-title{font-weight:700;font-size:16px;flex:1;}
+        .page{max-width:600px;margin:0 auto;padding:20px 16px 60px;}
+        .profile-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:24px 20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+        .profile-av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;flex-shrink:0;}
+        .profile-name{font-size:20px;font-weight:800;line-height:1.2;}
+        .profile-sub{font-size:13px;color:var(--text-2);margin-top:4px;}
+        .role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-top:6px;}
+        .role-badge.admin{background:var(--green-lt);color:var(--green);}
+        .role-badge.child{background:#FFF3E0;color:#F57C00;}
+        .role-badge.member{background:#E3F2FD;color:#1976D2;}
+        .section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:16px;overflow:hidden;}
+        .section-title{font-size:11px;font-weight:800;color:var(--text-3);letter-spacing:.06em;padding:16px 18px 0;}
+        .field-row{padding:14px 18px;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;gap:12px;}
+        .field-row:last-child{border-bottom:none;}
+        .field-label{font-size:13px;color:var(--text-2);width:130px;flex-shrink:0;}
+        .field-input{flex:1;font-size:14px;font-weight:600;border:none;outline:none;background:transparent;color:var(--text-1);}
+        .field-input:focus{color:var(--green);}
+        .field-unit{font-size:13px;color:var(--text-3);}
+        .save-btn{padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--r-md);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;}
+        .save-btn:disabled{opacity:.5;cursor:not-allowed;}
+        .colour-grid{display:flex;flex-wrap:wrap;gap:10px;padding:14px 18px;}
+        .colour-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:3px solid transparent;transition:all .12s;}
+        .colour-swatch.sel{border-color:var(--text-1);}
+        .points-bar-wrap{padding:14px 18px;}
+        .points-bar-bg{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:8px;}
+        .points-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s;}
+        .points-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-top:6px;}
+        .danger-zone{background:var(--surface);border:1px solid #fecaca;border-radius:var(--r-xl);padding:16px 18px;margin-top:24px;}
+        .danger-title{font-size:11px;font-weight:800;color:var(--red);letter-spacing:.06em;margin-bottom:12px;}
+        .danger-btn{padding:10px 18px;background:var(--red-lt);color:var(--red);border:none;border-radius:var(--r-md);font-size:13px;font-weight:700;cursor:pointer;}
+        .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1714;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;pointer-events:none;opacity:0;transition:opacity .2s;}
+        .toast.show{opacity:1;}
+        .pin-inputs{display:flex;gap:10px;padding:14px 18px;}
+        .pin-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:16px;letter-spacing:4px;text-align:center;outline:none;}
+        .pin-input:focus{border-color:var(--green);}
+        .initials-input{width:80px;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:16px;font-weight:800;text-align:center;outline:none;text-transform:uppercase;}
+        .initials-input:focus{border-color:var(--green);}
+      `}</style>
+
+      <nav className="topbar">
+        <div className="topbar-inner">
+          <div className="back-btn" onClick={() => window.history.back()}><i className="ti ti-arrow-left" /></div>
+          <div className="topbar-title">{member.display_name}</div>
+        </div>
+      </nav>
+
+      <div className="page">
+        {/* Profile header */}
+        <div className="profile-header">
+          <div className="profile-av" style={{ background: bg, color: fg }}>{av}</div>
+          <div>
+            <div className="profile-name">{member.display_name}</div>
+            {isChild && member.child_username && <div className="profile-sub">@{member.child_username} · PIN login</div>}
+            <div className={`role-badge ${member.role}`}>{member.role.charAt(0).toUpperCase() + member.role.slice(1)}</div>
+          </div>
+        </div>
+
+        {/* Points & Rewards */}
+        <div className="section">
+          <div className="section-title">POINTS & REWARDS</div>
+          <div className="points-bar-wrap">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 28, fontWeight: 800 }}>{member.points_total ?? 0}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                {member.points_target ? `/ ${member.points_target} pts target` : 'pts earned'}
+              </span>
+            </div>
+            {member.points_target && member.points_target > 0 && (
+              <div className="points-bar-bg">
+                <div className="points-bar-fill" style={{ width: `${Math.min(100, ((member.points_total ?? 0) / member.points_target) * 100)}%` }} />
+              </div>
+            )}
+            {member.points_target && member.points_target > 0 && (
+              <div className="points-label">
+                <span>{Math.round(((member.points_total ?? 0) / member.points_target) * 100)}% to reward</span>
+                <span>{Math.max(0, member.points_target - (member.points_total ?? 0))} pts to go</span>
+              </div>
+            )}
+          </div>
+          {isAdmin && (
+            <>
+              <div className="field-row">
+                <span className="field-label">Points target</span>
+                <input className="field-input" type="number" min={0} placeholder="e.g. 100"
+                  defaultValue={member.points_target ?? ''} id="pts-target" />
+                <span className="field-unit">pts</span>
+              </div>
+              <div className="field-row">
+                <span className="field-label">Reward</span>
+                <input className="field-input" type="text" placeholder="e.g. Movie night"
+                  defaultValue={member.reward_description ?? ''} id="reward-desc" />
+              </div>
+              <div className="field-row" style={{ justifyContent: 'flex-end' }}>
+                <button className="save-btn" disabled={saving} onClick={() => patch({
+                  points_target: parseInt((document.getElementById('pts-target') as HTMLInputElement).value) || null,
+                  reward_description: (document.getElementById('reward-desc') as HTMLInputElement).value.trim() || null,
+                })}>
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Display name & avatar */}
+        {isAdmin && (
+          <div className="section">
+            <div className="section-title">PROFILE</div>
+            <div className="field-row">
+              <span className="field-label">Display name</span>
+              <input className="field-input" type="text" defaultValue={member.display_name} id="disp-name" />
+            </div>
+            <div className="field-row">
+              <span className="field-label">Initials</span>
+              <input className="initials-input" type="text" maxLength={2} defaultValue={member.avatar_initials ?? av} id="av-initials" />
+            </div>
+            <div style={{ padding: '12px 18px 4px', fontSize: 13, color: 'var(--text-2)' }}>Avatar colour</div>
+            <div className="colour-grid">
+              {AVATAR_PRESETS.map((p, i) => (
+                <div key={i} className={`colour-swatch${bg === p.bg ? ' sel' : ''}`}
+                  style={{ background: p.bg, color: p.fg }}
+                  onClick={() => patch({ avatar_colour_bg: p.bg, avatar_colour_fg: p.fg })}>
+                  {av}
+                </div>
+              ))}
+            </div>
+            <div className="field-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="save-btn" disabled={saving} onClick={() => patch({
+                display_name: (document.getElementById('disp-name') as HTMLInputElement).value.trim() || member.display_name,
+                avatar_initials: (document.getElementById('av-initials') as HTMLInputElement).value.trim().toUpperCase().slice(0, 2) || av,
+              })}>
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Schedule */}
+        {isAdmin && (
+          <div className="section">
+            <div className="section-title">SCHEDULE</div>
+            <div className="field-row">
+              <span className="field-label">Bedtime</span>
+              <input className="field-input" type="time" defaultValue={member.bedtime ?? ''} id="bedtime" />
+            </div>
+            <div className="field-row">
+              <span className="field-label">Wake time</span>
+              <input className="field-input" type="time" defaultValue={member.wake_time ?? ''} id="wake-time" />
+            </div>
+            <div className="field-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="save-btn" disabled={saving} onClick={() => patch({
+                bedtime: (document.getElementById('bedtime') as HTMLInputElement).value || null,
+                wake_time: (document.getElementById('wake-time') as HTMLInputElement).value || null,
+              })}>
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Screen time */}
+        {isAdmin && (
+          <div className="section">
+            <div className="section-title">SCREEN TIME</div>
+            <div className="field-row">
+              <span className="field-label">Daily limit</span>
+              <input className="field-input" type="number" min={0} max={1440} placeholder="e.g. 120"
+                defaultValue={member.screen_time_mins ?? ''} id="screen-mins" />
+              <span className="field-unit">mins/day</span>
+            </div>
+            <div className="field-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="save-btn" disabled={saving} onClick={() => patch({
+                screen_time_mins: parseInt((document.getElementById('screen-mins') as HTMLInputElement).value) || null,
+              })}>
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* PIN reset — children only */}
+        {isChild && isAdmin && (
+          <div className="section">
+            <div className="section-title">RESET PIN</div>
+            <div className="pin-inputs">
+              <input className="pin-input" type="password" inputMode="numeric" maxLength={8} placeholder="New PIN"
+                value={newPin} onChange={e => setNewPin(e.target.value.replace(/\D/g, ''))} />
+              <input className="pin-input" type="password" inputMode="numeric" maxLength={8} placeholder="Confirm"
+                value={confirmPin} onChange={e => setConfirmPin(e.target.value.replace(/\D/g, ''))} />
+            </div>
+            <div className="field-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="save-btn" disabled={pinSaving || newPin.length < 4} onClick={resetPin}>
+                {pinSaving ? 'Resetting...' : 'Reset PIN'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Danger zone */}
+        {isAdmin && member.role !== 'admin' && (
+          <div className="danger-zone">
+            <div className="danger-title">DANGER ZONE</div>
+            <button className="danger-btn" onClick={deleteMember}>
+              <i className="ti ti-trash" style={{ marginRight: 6 }} />Remove {member.display_name} from family
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className={`toast${toast ? ' show' : ''}`}>{toast}</div>
+    </>
+  )
+}

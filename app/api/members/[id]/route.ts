@@ -23,9 +23,16 @@ export async function PATCH(
   if (self.role !== 'admin' && self.id !== id) return NextResponse.json({ error: 'Admin only' }, { status: 403 })
 
   const body = await request.json()
-  const updates: Record<string, string> = {}
+  const updates: Record<string, unknown> = {}
   if (body.display_name?.trim()) updates.display_name = body.display_name.trim()
   if (body.avatar_initials?.trim()) updates.avatar_initials = body.avatar_initials.trim().slice(0, 2).toUpperCase()
+  if (body.avatar_colour_bg !== undefined) updates.avatar_colour_bg = body.avatar_colour_bg
+  if (body.avatar_colour_fg !== undefined) updates.avatar_colour_fg = body.avatar_colour_fg
+  if (body.points_target !== undefined) updates.points_target = body.points_target
+  if (body.reward_description !== undefined) updates.reward_description = body.reward_description
+  if (body.bedtime !== undefined) updates.bedtime = body.bedtime
+  if (body.wake_time !== undefined) updates.wake_time = body.wake_time
+  if (body.screen_time_mins !== undefined) updates.screen_time_mins = body.screen_time_mins
 
   if (Object.keys(updates).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 
