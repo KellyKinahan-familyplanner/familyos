@@ -380,16 +380,22 @@ function saveEvent(){
   var titleEl=document.querySelector('#modal-add-event input[type=text]');
   var title=titleEl&&titleEl.value.trim();
   if(!title){showToast('Enter an event title');return;}
-  var dateEl=document.querySelector('#modal-add-event input[type=date]');
-  var date=dateEl&&dateEl.value||new Date().toISOString().slice(0,10);
+  var dateInputs=document.querySelectorAll('#modal-add-event input[type=date]');
+  var timeInputs=document.querySelectorAll('#modal-add-event input[type=time]');
+  var date=(dateInputs[0]&&dateInputs[0].value)||new Date().toISOString().slice(0,10);
+  var timeStart=(timeInputs[0]&&timeInputs[0].value)||null;
+  var timeEnd=(timeInputs[1]&&timeInputs[1].value)||null;
   var assigneePills=document.querySelectorAll('#modal-add-event .role-pill.sel');
   var assignees=[];
   assigneePills.forEach(function(p){assignees.push(p.textContent.trim());});
   if(!assignees.length)assignees=['Everyone'];
   var recurPill=document.querySelector('#modal-add-event [data-recur].sel');
   var recur=recurPill?recurPill.getAttribute('data-recur'):'none';
+  var notesEl=document.querySelector('#modal-add-event textarea');
+  var notes=(notesEl&&notesEl.value.trim())||null;
+  var recurEnd=recur==='none'?{}:getRecurEnd('event');
   fetch('/api/entries',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:title,date:date,type:'event',colour:'purple',assignees:assignees,recur:recur})
+    body:JSON.stringify(Object.assign({title:title,date:date,type:'event',colour:'purple',assignees:assignees,recur:recur,timeStart:timeStart,timeEnd:timeEnd,notes:notes},recurEnd))
   }).then(function(r){
     if(r.ok){closeModal('modal-add-event');showToast('Event added – '+title);if(titleEl)titleEl.value='';}
     else{showToast('Could not save event');}

@@ -700,7 +700,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="action-icon ai-green"><i className="ti ti-user-plus"></i></div>
             <div><div className="action-label">Invite member</div><div className="action-sub">Send a family invite</div></div>
           </div>
-          <div className="action-card ac-blue" onClick={() => window.location.href='/calendar'}>
+          <div className="action-card ac-blue" onClick={() => (window as any).openModal('modal-add-event')}>
             <div className="action-icon ai-blue"><i className="ti ti-calendar-plus"></i></div>
             <div><div className="action-label">Add event</div><div className="action-sub">To the family calendar</div></div>
           </div>
@@ -885,6 +885,77 @@ export default function DashboardClient({ displayName, familyName, initials, use
       </div>
 
       {/* Add task */}
+      {/* ════ ADD EVENT MODAL ════ */}
+      <div className="modal-backdrop" id="modal-add-event" onClick={(e) => (window as any).backdropClose(e,'modal-add-event')}>
+        <div className="modal"><div className="modal-handle"></div>
+          <div className="modal-head">
+            <div><div className="modal-title">Add event</div><div className="modal-sub">Add to the family calendar.</div></div>
+            <button className="modal-close" onClick={() => (window as any).closeModal('modal-add-event')}><i className="ti ti-x"></i></button>
+          </div>
+          <div className="modal-body">
+            <div className="modal-field"><label>Event title</label><input type="text" placeholder="e.g. School sports day" /></div>
+            <div className="modal-2col">
+              <div className="modal-field" style={{ marginBottom:0 }}><label>Date</label><input type="date" /></div>
+              <div className="modal-field" style={{ marginBottom:0 }}><label>Start time <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label><input type="time" /></div>
+            </div>
+            <div className="modal-field" style={{ marginTop:12 }}><label>End time <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label><input type="time" /></div>
+            <div className="modal-field">
+              <label>Assign to <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Select one or more</span></label>
+              <div className="role-pills" data-multi="true">
+                <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
+                {members.map(m => (
+                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-field">
+              <label>Repeats</label>
+              <div className="role-pills">
+                <div className="role-pill sel" data-recur="none" onClick={(e) => (window as any).selectRecurring(e.currentTarget,'event')}>None</div>
+                <div className="role-pill" data-recur="daily" onClick={(e) => (window as any).selectRecurring(e.currentTarget,'event')}>Daily</div>
+                <div className="role-pill" data-recur="weekly" onClick={(e) => (window as any).selectRecurring(e.currentTarget,'event')}>Weekly</div>
+                <div className="role-pill" data-recur="monthly" onClick={(e) => (window as any).selectRecurring(e.currentTarget,'event')}>Monthly</div>
+              </div>
+              <div id="recur-weekly-event" style={{ display:'none', marginTop:10 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:6 }}>On which days?</div>
+                <div className="role-pills" style={{ flexWrap:'wrap' }}>
+                  {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d} className="role-pill" onClick={(e) => e.currentTarget.classList.toggle('sel')}>{d}</div>)}
+                </div>
+              </div>
+              <div id="recur-end-event" style={{ display:'none', marginTop:12, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', marginBottom:8 }}>ENDS</div>
+                <div className="role-pills" style={{ marginBottom:10 }}>
+                  <div className="role-pill sel" data-endtype="never" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'event')}>Never</div>
+                  <div className="role-pill" data-endtype="on" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'event')}>On date</div>
+                  <div className="role-pill" data-endtype="after" onClick={(e) => (window as any).selectRecurEnd(e.currentTarget,'event')}>After</div>
+                </div>
+                <div id="recur-end-on-event" style={{ display:'none' }}>
+                  <input type="date" id="recur-end-date-event" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                </div>
+                <div id="recur-end-after-event" style={{ display:'none', alignItems:'center', gap:8 }}>
+                  <input type="number" id="recur-end-count-event" min={1} max={365} defaultValue={10} style={{ width:80, padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, background:'var(--surface)', outline:'none' }} />
+                  <span style={{ fontSize:13, color:'var(--text-2)' }}>occurrences</span>
+                </div>
+              </div>
+            </div>
+            <div className="modal-field"><label>Notes <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label><textarea rows={2} placeholder="Any extra details…" style={{ resize:'none' }}></textarea></div>
+            <div className="modal-field">
+              <label>Attachments <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label>
+              <div className="attach-drop" onClick={() => document.getElementById('attach-event')?.click()}>
+                <input type="file" id="attach-event" multiple accept="image/*,.pdf,.doc,.docx" onChange={(e) => (window as any).handleAttach(e.currentTarget,'event')} />
+                <i className="ti ti-paperclip" style={{ fontSize:16, color:'var(--text-3)' }}></i>
+                <span style={{ fontSize:12, color:'var(--text-3)' }}>Tap to attach files or photos</span>
+              </div>
+              <div className="attach-list" id="attach-list-event"></div>
+            </div>
+            <div className="modal-actions">
+              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-event')}>Cancel</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveEvent()}>Add event</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="modal-backdrop" id="modal-add-task" onClick={(e) => (window as any).backdropClose(e,'modal-add-task')}>
         <div className="modal"><div className="modal-handle"></div>
           <div className="modal-head">
