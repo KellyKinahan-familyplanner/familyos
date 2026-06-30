@@ -50,7 +50,7 @@ type Props = {
 ───────────────────────────────────────── */
 export const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 export const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-export const HOURS = Array.from({ length: 24 }, (_, i) => i)
+export const HOURS = Array.from({ length: 24 }, (_, i) => (i + 5) % 24)
 
 export const COLOUR_OPTIONS = [
   { key: 'green',  hex: '#1D9E75', bg: '#E8F7F2', label: 'Family' },
