@@ -1909,7 +1909,6 @@ export default function CalendarClient({ displayName, familyName, initials, user
           </div>
         </>
       )}
-      )}
 
       {/* ════════════════════════════════
           SHARED MODAL BUILDING BLOCKS
