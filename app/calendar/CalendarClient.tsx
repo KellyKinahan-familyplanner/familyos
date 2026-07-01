@@ -618,6 +618,15 @@ function eventsForDateHour(events: CalEvent[], dateStr: string, hour: number) {
   })
 }
 
+/** Convert HH:MM to minutes since midnight */
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + (m || 0)
+}
+
+const HOUR_PX = 60      // must match .cal-hour-row height
+const DAY_START = 5     // HOURS starts at 5am (index 0 = 5am)
+
 /* ─────────────────────────────────────────
    PRIORITY BAR
 ───────────────────────────────────────── */
@@ -882,33 +891,51 @@ function WeekView({ refDate, events, members, onSlotClick, onEventClick }: {
           return (
             <div key={`d${dayIdx}`} className="cal-day-col" style={{ position: 'relative' }}>
               {shade && <div style={{ position: 'absolute', inset: 0, background: shade, pointerEvents: 'none', zIndex: 0 }} />}
-              {HOURS.map(h => {
-                const slotEvs = eventsForDateHour(events, dateStr, h).filter(e => !SPECIAL_TYPES.includes(e.type))
+              {/* Hour grid lines */}
+              {HOURS.map(h => (
+                <div key={h} className="cal-hour-row" onClick={() => onSlotClick(dateStr, h)} style={{ position: 'relative', zIndex: 1 }} />
+              ))}
+              {/* Absolutely positioned timed events */}
+              {events.filter(e => eventOccursOn(e, dateStr) && e.time && !SPECIAL_TYPES.includes(e.type)).map((ev, ei) => {
+                const startMin = timeToMinutes(ev.time!)
+                const endMin   = ev.endTime ? timeToMinutes(ev.endTime) : startMin + 60
+                const topPx    = (startMin - DAY_START * 60) / 60 * HOUR_PX
+                const heightPx = Math.max((endMin - startMin) / 60 * HOUR_PX, 20)
+                const cs = getEventChipStyle(ev.assignees, members)
                 return (
                   <div
-                    key={h}
-                    className="cal-hour-row"
-                    onClick={() => onSlotClick(dateStr, h)}
-                    style={{ position: 'relative', zIndex: 1 }}
+                    key={ev.id}
+                    className="cal-week-event"
+                    style={{
+                      position: 'absolute', top: topPx, left: 2, right: 2,
+                      height: heightPx, zIndex: 2 + ei,
+                      background: cs.background, color: cs.color,
+                      borderLeft: `3px solid ${cs.borderLeftColor}`,
+                    }}
+                    onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
                   >
-                    {slotEvs.map((ev, ei) => {
-                      const cs = getEventChipStyle(ev.assignees, members)
-                      return (
-                        <div
-                          key={ev.id}
-                          className="cal-week-event"
-                          style={{
-                            background: cs.background, color: cs.color,
-                            borderLeft: `3px solid ${cs.borderLeftColor}`,
-                            top: 2 + ei * 22, minHeight: 20,
-                          }}
-                          onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
-                        >
-                          <i className={`ti ${TYPE_ICONS[ev.type]}`} style={{ fontSize: 9, marginRight: 2 }}></i>
-                          {ev.title}
-                        </div>
-                      )
-                    })}
+                    <i className={`ti ${TYPE_ICONS[ev.type]}`} style={{ fontSize: 9, marginRight: 2 }}></i>
+                    {ev.title}
+                  </div>
+                )
+              })}
+              {/* All-day / no-time events */}
+              {events.filter(e => eventOccursOn(e, dateStr) && !e.time && !SPECIAL_TYPES.includes(e.type)).map((ev, ei) => {
+                const cs = getEventChipStyle(ev.assignees, members)
+                return (
+                  <div
+                    key={ev.id}
+                    className="cal-week-event"
+                    style={{
+                      position: 'absolute', top: 2 + ei * 22, left: 2, right: 2,
+                      height: 20, zIndex: 2 + ei,
+                      background: cs.background, color: cs.color,
+                      borderLeft: `3px solid ${cs.borderLeftColor}`,
+                    }}
+                    onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
+                  >
+                    <i className={`ti ${TYPE_ICONS[ev.type]}`} style={{ fontSize: 9, marginRight: 2 }}></i>
+                    {ev.title}
                   </div>
                 )
               })}
@@ -949,41 +976,63 @@ function DayView({ refDate, events, members, onSlotClick, onEventClick }: {
         <div className="cal-time-col">
           {HOURS.map(h => <div key={h} className="cal-time-slot">{fmtHour(h)}</div>)}
         </div>
-        <div style={{ flex: 1 }}>
-        <div className="cal-day-col" style={{ borderRight: 'none' }}>
-          {HOURS.map(h => {
-            const slotEvs = eventsForDateHour(events, dateStr, h)
+        <div style={{ flex: 1, position: 'relative' }}>
+          {/* Hour grid lines */}
+          <div className="cal-day-col" style={{ borderRight: 'none' }}>
+            {HOURS.map(h => (
+              <div key={h} className="cal-hour-row" onClick={() => onSlotClick(dateStr, h)} />
+            ))}
+          </div>
+          {/* Absolutely positioned timed events */}
+          {events.filter(e => eventOccursOn(e, dateStr) && e.time && !SPECIAL_TYPES.includes(e.type)).map((ev, ei) => {
+            const startMin = timeToMinutes(ev.time!)
+            const endMin   = ev.endTime ? timeToMinutes(ev.endTime) : startMin + 60
+            const topPx    = (startMin - DAY_START * 60) / 60 * HOUR_PX
+            const heightPx = Math.max((endMin - startMin) / 60 * HOUR_PX, 24)
+            const cs = getEventChipStyle(ev.assignees, members)
             return (
               <div
-                key={h}
-                className="cal-hour-row"
-                onClick={() => onSlotClick(dateStr, h)}
-                style={{ position: 'relative' }}
+                key={ev.id}
+                style={{
+                  position: 'absolute', top: topPx, left: 0, right: 4,
+                  height: heightPx, zIndex: 2 + ei,
+                  background: cs.background, color: cs.color,
+                  borderLeft: `3px solid ${cs.borderLeftColor}`,
+                  borderRadius: 'var(--r-sm)', padding: '3px 6px',
+                  fontSize: 11, fontWeight: 600, overflow: 'hidden',
+                  cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,.08)',
+                }}
+                onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
               >
-                {slotEvs.map((ev, ei) => {
-                  const cs = getEventChipStyle(ev.assignees, members)
-                  return (
-                    <div
-                      key={ev.id}
-                      className="cal-week-event"
-                      style={{
-                        background: cs.background, color: cs.color,
-                        borderLeft: `3px solid ${cs.borderLeftColor}`,
-                        top: 2 + ei * 26, right: 4, minHeight: 24, fontSize: 11,
-                      }}
-                      onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
-                    >
-                      <i className={`ti ${TYPE_ICONS[ev.type]}`} style={{ fontSize: 10, marginRight: 4 }}></i>
-                      {ev.time && <strong style={{ marginRight: 4 }}>{ev.time}</strong>}
-                      {ev.title}
-                      <span style={{ opacity: .65, marginLeft: 4, fontSize: 10 }}>· {ev.assignees.join(', ')}</span>
-                    </div>
-                  )
-                })}
+                <i className={`ti ${TYPE_ICONS[ev.type]}`} style={{ fontSize: 10, marginRight: 4 }}></i>
+                {ev.time && <strong style={{ marginRight: 4 }}>{ev.time}</strong>}
+                {ev.title}
+                <span style={{ opacity: .65, marginLeft: 4, fontSize: 10 }}>· {ev.assignees.join(', ')}</span>
               </div>
             )
           })}
-        </div>
+          {/* All-day / no-time events */}
+          {events.filter(e => eventOccursOn(e, dateStr) && !e.time && !SPECIAL_TYPES.includes(e.type)).map((ev, ei) => {
+            const cs = getEventChipStyle(ev.assignees, members)
+            const topPx = (8 * 60 - DAY_START * 60) / 60 * HOUR_PX + ei * 26
+            return (
+              <div
+                key={ev.id}
+                style={{
+                  position: 'absolute', top: topPx, left: 0, right: 4,
+                  height: 22, zIndex: 2 + ei,
+                  background: cs.background, color: cs.color,
+                  borderLeft: `3px solid ${cs.borderLeftColor}`,
+                  borderRadius: 'var(--r-sm)', padding: '2px 6px',
+                  fontSize: 11, fontWeight: 600, overflow: 'hidden', cursor: 'pointer',
+                }}
+                onClick={e => { e.stopPropagation(); onEventClick(ev, e) }}
+              >
+                <i className={`ti ${TYPE_ICONS[ev.type]}`} style={{ fontSize: 10, marginRight: 4 }}></i>
+                {ev.title}
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
