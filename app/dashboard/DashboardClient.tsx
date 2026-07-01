@@ -444,7 +444,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
     // Inject JavaScript via src (avoids inline-script CSP and template-literal issues)
     const script = document.createElement('script')
     script.id = 'kync-dash-js'
-    script.src = '/dashboard.js?v=20260701d'
+    script.src = '/dashboard.js?v=20260701e'
     document.getElementById('kync-dash-js')?.remove()
     document.head.appendChild(script)
 
@@ -1965,6 +1965,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
           )}
         </div>
         <div id="kv-olivia" style={{ width: '100%', maxWidth: 480 }}>
+          <div id="kv-msg-display-olivia" style={{ display:'none', background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', padding:'10px 14px', marginBottom:12, fontSize:13, fontStyle:'italic', color:'var(--pink)', cursor:'pointer' }} onClick={() => (window as any).openMsgEditor('olivia')}></div>
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: 'var(--oj-bg)', color: 'var(--oj-fg)' }}>K1</div>
@@ -1981,8 +1982,29 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <div className="kv-pts-track"><div className="kv-pts-fill" id="kv-pts-fill-olivia" style={{ width: '0%', background: 'var(--oj-ac)' }}></div></div>
             </div>
           </div>
+          <button id="kv-msg-btn-olivia" onClick={() => (window as any).openMsgEditor('olivia')}
+            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', marginTop:12, background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', color:'var(--pink)', fontSize:13, fontWeight:700, cursor:'pointer', textAlign:'left' }}>
+            <i className="ti ti-message-heart" style={{ fontSize:16, flexShrink:0 }}></i>
+            <span id="kv-msg-btn-label-olivia">✏️ Add a personal message</span>
+          </button>
+          <div id="kv-msg-editor-olivia" style={{ display:'none', background:'#fff', borderRadius:'var(--r-xl)', padding:16, marginTop:8, boxShadow:'0 2px 16px rgba(232,73,122,.08)' }}>
+            <div style={{ fontSize:12, fontWeight:700, color:'var(--text-2)', marginBottom:8 }}>Personalise messages</div>
+            <div style={{ marginBottom:8 }}>
+              <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Morning message</label>
+              <input id="kv-msg-morning-olivia" type="text" placeholder="e.g. Have a great day at school!" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)', fontFamily:'inherit' }} />
+            </div>
+            <div style={{ marginBottom:12 }}>
+              <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Evening message</label>
+              <input id="kv-msg-evening-olivia" type="text" placeholder="e.g. Time to wind down — great job today!" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)', fontFamily:'inherit' }} />
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={() => (window as any).closeMsgEditor('olivia')} style={{ flex:1, padding:10, borderRadius:'var(--r-md)', border:'1.5px solid var(--green-mid)', background:'var(--green-lt)', color:'var(--green)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
+              <button onClick={() => (window as any).saveMsgEditor('olivia')} style={{ flex:1, padding:10, borderRadius:'var(--r-md)', border:'none', background:'var(--pink)', color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Save message</button>
+            </div>
+          </div>
         </div>
         <div id="kv-liam" style={{ width: '100%', maxWidth: 480, display: 'none' }}>
+          <div id="kv-msg-display-liam" style={{ display:'none', background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', padding:'10px 14px', marginBottom:12, fontSize:13, fontStyle:'italic', color:'var(--pink)', cursor:'pointer' }} onClick={() => (window as any).openMsgEditor('liam')}></div>
           <div className="kv-card">
             <div className="kv-card-head">
               <div className="kv-card-icon" style={{ background: 'var(--lj-bg)', color: 'var(--lj-fg)' }}>K2</div>
@@ -1997,6 +2019,26 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="kv-points-bar">
               <div className="kv-pts-top"><span id="kv-pts-liam">0 pts today</span><span style={{ color: 'var(--text-3)' }} id="kv-pts-goal-liam">Goal: 50 pts</span></div>
               <div className="kv-pts-track"><div className="kv-pts-fill" id="kv-pts-fill-liam" style={{ width: '0%', background: 'var(--lj-ac)' }}></div></div>
+            </div>
+          </div>
+          <button id="kv-msg-btn-liam" onClick={() => (window as any).openMsgEditor('liam')}
+            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', marginTop:12, background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', color:'var(--pink)', fontSize:13, fontWeight:700, cursor:'pointer', textAlign:'left' }}>
+            <i className="ti ti-message-heart" style={{ fontSize:16, flexShrink:0 }}></i>
+            <span id="kv-msg-btn-label-liam">✏️ Add a personal message</span>
+          </button>
+          <div id="kv-msg-editor-liam" style={{ display:'none', background:'#fff', borderRadius:'var(--r-xl)', padding:16, marginTop:8, boxShadow:'0 2px 16px rgba(232,73,122,.08)' }}>
+            <div style={{ fontSize:12, fontWeight:700, color:'var(--text-2)', marginBottom:8 }}>Personalise messages</div>
+            <div style={{ marginBottom:8 }}>
+              <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Morning message</label>
+              <input id="kv-msg-morning-liam" type="text" placeholder="e.g. Have a great day at school!" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)', fontFamily:'inherit' }} />
+            </div>
+            <div style={{ marginBottom:12 }}>
+              <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Evening message</label>
+              <input id="kv-msg-evening-liam" type="text" placeholder="e.g. Time to wind down — great job today!" style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)', fontFamily:'inherit' }} />
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={() => (window as any).closeMsgEditor('liam')} style={{ flex:1, padding:10, borderRadius:'var(--r-md)', border:'1.5px solid var(--green-mid)', background:'var(--green-lt)', color:'var(--green)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
+              <button onClick={() => (window as any).saveMsgEditor('liam')} style={{ flex:1, padding:10, borderRadius:'var(--r-md)', border:'none', background:'var(--pink)', color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Save message</button>
             </div>
           </div>
         </div>

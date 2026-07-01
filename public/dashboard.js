@@ -811,6 +811,43 @@ function openKidsView(member, displayName){
   overlay.classList.add('active');
   document.body.style.overflow='hidden';
   loadKidsChores(member, displayName);
+  // Load saved messages and update button label
+  loadKvMsg(member);
+}
+function loadKvMsg(member){
+  var hour=new Date().getHours();
+  var morning=localStorage.getItem('kync_msg_morning_'+member)||'';
+  var evening=localStorage.getItem('kync_msg_evening_'+member)||'';
+  var current=hour<18?morning:evening;
+  var display=document.getElementById('kv-msg-display-'+member);
+  var btnLabel=document.getElementById('kv-msg-btn-label-'+member);
+  if(display){display.textContent=current?'“'+current+'”':'';display.style.display=current?'block':'none';}
+  if(btnLabel){btnLabel.textContent=current?'✏️ Edit personal message':'✏️ Add a personal message';}
+  var morningInput=document.getElementById('kv-msg-morning-'+member);
+  var eveningInput=document.getElementById('kv-msg-evening-'+member);
+  if(morningInput)morningInput.value=morning;
+  if(eveningInput)eveningInput.value=evening;
+}
+function openMsgEditor(member){
+  var editor=document.getElementById('kv-msg-editor-'+member);
+  var btn=document.getElementById('kv-msg-btn-'+member);
+  if(editor){editor.style.display='block';}
+  if(btn){btn.style.display='none';}
+}
+function closeMsgEditor(member){
+  var editor=document.getElementById('kv-msg-editor-'+member);
+  var btn=document.getElementById('kv-msg-btn-'+member);
+  if(editor){editor.style.display='none';}
+  if(btn){btn.style.display='flex';}
+}
+function saveMsgEditor(member){
+  var morning=document.getElementById('kv-msg-morning-'+member);
+  var evening=document.getElementById('kv-msg-evening-'+member);
+  if(morning)localStorage.setItem('kync_msg_morning_'+member,morning.value);
+  if(evening)localStorage.setItem('kync_msg_evening_'+member,evening.value);
+  closeMsgEditor(member);
+  loadKvMsg(member);
+  showToast('Message saved ✓');
 }
 function closeKidsView(){
   var overlay=document.getElementById('kids-view-overlay');
