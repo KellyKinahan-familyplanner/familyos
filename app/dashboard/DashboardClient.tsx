@@ -1822,6 +1822,22 @@ export default function DashboardClient({ displayName, familyName, initials, use
                   </div>
                 ))}
               </div>
+              {/* Guest callout */}
+              <div style={{ display:'flex', gap:12, padding:'12px 14px', marginBottom:14, background:'#FDF4FF', border:'1.5px solid #E9D5FF', borderRadius:'var(--r-lg)', alignItems:'flex-start' }}>
+                <div style={{ fontSize:22, flexShrink:0, lineHeight:1 }}>💡</div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:800, color:'#7C3AED', marginBottom:4 }}>Co-parenting or grandparents helping out?</div>
+                  <div style={{ fontSize:11, color:'#6b6560', lineHeight:1.55 }}>
+                    You can set up a <strong>Guest</strong> account with a PIN — no email needed. Guests only see what you allow: choose specific children&apos;s calendars and homework, and hide everything else like bills and family settings.
+                  </div>
+                  <button
+                    onClick={() => { (window as any).closeModal('modal-wizard'); setTimeout(() => { (window as any).openModal('modal-invite'); document.querySelector<HTMLElement>('#modal-invite .role-pill:last-child')?.click(); }, 100); }}
+                    style={{ marginTop:10, padding:'7px 14px', background:'#7C3AED', color:'#fff', border:'none', borderRadius:'var(--r-md)', fontSize:12, fontWeight:700, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6 }}>
+                    <i className="ti ti-user-plus" style={{ fontSize:13 }}></i>Set up a guest account
+                  </button>
+                </div>
+              </div>
+
               {/* Current member */}
               <div style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: '1px solid var(--border-lt)' }}>
