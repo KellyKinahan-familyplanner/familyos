@@ -1650,15 +1650,15 @@ export default function CalendarClient({ displayName, familyName, initials, user
   }
 
   const openEditModal = (ev: CalEvent) => {
-    resetForm()
+    // Set all fields explicitly — do NOT call resetForm() to avoid batch conflicts
     setEditingId(ev.id)
     setFTitle(ev.title)
     setFDate(ev.date)
-    setFTime(ev.time || '')
-    setFEndTime(ev.endTime || '')
+    setFTime(ev.time ? ev.time.slice(0, 5) : '')
+    setFEndTime(ev.endTime ? ev.endTime.slice(0, 5) : '')
     setFNotes(ev.notes || '')
     setFColour(ev.colour || 'green')
-    setFAssignees(ev.assignees || ['Everyone'])
+    setFAssignees(ev.assignees?.length ? ev.assignees : ['Everyone'])
     setFRecur(ev.recur || 'none')
     setFRecurDays(ev.recurDays || [])
     setFMonthType(ev.recurMonthType || 'date')
@@ -1668,7 +1668,10 @@ export default function CalendarClient({ displayName, familyName, initials, user
     setFRecurEnd(ev.recurEnd || 'never')
     setFRecurEndDate(ev.recurEndDate || '')
     setFRecurEndCount(ev.recurEndCount || 4)
-    // Open the right modal tab for the type
+    setFSubject('Maths')
+    setFPoints(5)
+    setFTodPeriod(['Morning'])
+    setFImageFile(null)
     const modalId = ev.type === 'chore' ? 'chore'
       : ev.type === 'homework' ? 'homework'
       : ev.type === 'exam' ? 'exam'
