@@ -1351,6 +1351,8 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [toastVisible, setToastVisible] = useState(false)
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [detailEvent, setDetailEvent] = useState<CalEvent | null>(null)
+  const [attachUploading, setAttachUploading] = useState(false)
+  const [attachError, setAttachError] = useState<string | null>(null)
   const [detailPos, setDetailPos] = useState({ top: 0, left: 0 })
   const [prefillDate, setPrefillDate] = useState('')
   const [checkedTasks, setCheckedTasks] = useState<Set<string | number>>(new Set())
@@ -1632,6 +1634,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
       left: Math.max(4, Math.min(rect.left, window.innerWidth - 292)),
     })
     setDetailEvent(ev)
+    setAttachError(null)
   }
 
   /* ── Period label ── */
@@ -1911,20 +1914,33 @@ export default function CalendarClient({ displayName, familyName, initials, user
                 )
               }
               return (
-                <label style={{ display:'flex', alignItems:'center', gap:6, marginTop:8, marginBottom:4, padding:'7px 10px', borderRadius:'var(--r-md)', border:'1.5px dashed var(--border)', cursor:'pointer', fontSize:12, color:'var(--text-3)' }}>
-                  <i className="ti ti-paperclip" style={{ fontSize:14 }}></i> Add photo or file
-                  <input type="file" style={{ display:'none' }} onChange={async e => {
-                    const file = e.target.files?.[0]; e.target.value = ''
-                    if (!file) return
-                    const fd = new FormData(); fd.append('image', file)
-                    const res = await fetch(`/api/entries/${detailEvent.id}/image`, { method: 'POST', body: fd })
-                    if (res.ok) {
-                      const { image_url } = await res.json()
-                      setEvents(prev => prev.map(e => String(e.id) === String(detailEvent.id) ? { ...e, image_url } : e))
-                      setDetailEvent(prev => prev ? { ...prev, image_url } : null)
-                    }
-                  }} />
-                </label>
+                <>
+                  {attachError && <div style={{ fontSize:11, color:'#dc2626', marginTop:6, padding:'4px 8px', background:'#fef2f2', borderRadius:'var(--r-sm)' }}>{attachError}</div>}
+                  <label style={{ display:'flex', alignItems:'center', gap:6, marginTop:8, marginBottom:4, padding:'7px 10px', borderRadius:'var(--r-md)', border:'1.5px dashed var(--border)', cursor: attachUploading ? 'wait' : 'pointer', fontSize:12, color:'var(--text-3)', opacity: attachUploading ? 0.6 : 1 }}>
+                    <i className={`ti ${attachUploading ? 'ti-loader-2' : 'ti-paperclip'}`} style={{ fontSize:14 }}></i>
+                    {attachUploading ? 'Uploading…' : 'Add photo or file'}
+                    <input type="file" style={{ display:'none' }} disabled={attachUploading} onChange={async e => {
+                      const file = e.target.files?.[0]; e.target.value = ''
+                      if (!file) return
+                      setAttachUploading(true); setAttachError(null)
+                      try {
+                        const fd = new FormData(); fd.append('image', file)
+                        const res = await fetch(`/api/entries/${detailEvent.id}/image`, { method: 'POST', body: fd })
+                        const json = await res.json()
+                        if (res.ok) {
+                          setEvents(prev => prev.map(e => String(e.id) === String(detailEvent.id) ? { ...e, image_url: json.image_url } : e))
+                          setDetailEvent(prev => prev ? { ...prev, image_url: json.image_url } : null)
+                        } else {
+                          setAttachError(json.error ?? `Upload failed (${res.status})`)
+                        }
+                      } catch (err) {
+                        setAttachError(String(err))
+                      } finally {
+                        setAttachUploading(false)
+                      }
+                    }} />
+                  </label>
+                </>
               )
             })()}
             <div className="event-detail-actions">
