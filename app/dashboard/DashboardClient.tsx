@@ -768,7 +768,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
             <div className="action-icon ai-teal"><i className="ti ti-pencil"></i></div>
             <div><div className="action-label">Add homework</div><div className="action-sub">Subject &amp; due date</div></div>
           </div>
-          <div className="action-card ac-lilac" onClick={() => (window as any).openModal('modal-add-exam')}>
+          <div className="action-card ac-lilac" onClick={() => window.location.href = '/calendar?open=exam'}>
             <div className="action-icon ai-lilac"><i className="ti ti-notes"></i></div>
             <div><div className="action-label">Add exam</div><div className="action-sub">With revision planner</div></div>
           </div>
@@ -1267,86 +1267,7 @@ export default function DashboardClient({ displayName, familyName, initials, use
         </div>
       </div>
 
-      {/* Add exam */}
-      <div className="modal-backdrop" id="modal-add-exam" onClick={(e) => (window as any).backdropClose(e,'modal-add-exam')}>
-        <div className="modal"><div className="modal-handle"></div>
-          <div className="modal-head">
-            <div><div className="modal-title">Add exam</div><div className="modal-sub">Track an upcoming test with revision planner.</div></div>
-            <button className="modal-close" onClick={() => (window as any).closeModal('modal-add-exam')}><i className="ti ti-x"></i></button>
-          </div>
-          <div className="modal-body">
-            <div className="modal-field"><label>Exam title</label><input type="text" placeholder="e.g. Maths Test" /></div>
-            <div className="modal-field">
-              <label>Assign to <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Select one or more</span></label>
-              <div className="role-pills" data-multi="true">
-                <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                {members.map(m => (
-                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
-                ))}
-              </div>
-            </div>
-            <div className="modal-field"><label>Subject</label><select><option>Maths</option><option>English</option><option>Science</option><option>History</option><option>Spelling</option><option>Other</option></select></div>
-            <div className="modal-field"><label>Exam date</label><input type="date" /></div>
-            <div className="modal-field">
-              <label>Urgency</label>
-              <div className="urgency-pills">
-                <div className="urgency-pill sel-soon" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'soon')}><div className="up-icon">"'</div><div className="up-label">Soon</div><div className="up-sub">Under 5 days</div></div>
-                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'mid')}><div className="up-icon">[yellow]</div><div className="up-label">Coming up</div><div className="up-sub">5-14 days</div></div>
-                <div className="urgency-pill" onClick={(e) => (window as any).selectUrgency(e.currentTarget,'ok')}><div className="up-icon">[green]</div><div className="up-label">Plenty of time</div><div className="up-sub">15+ days</div></div>
-              </div>
-            </div>
-            <div className="modal-field"><label>Notes (optional)</label><input type="text" placeholder="e.g. Chapters 1-5, open book" /></div>
-            <div className="modal-actions" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-exam')}>Cancel</button>
-              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).saveExamOnly()}>Save only</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveExamThenRevise()}>Save + add revision →</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Add revision */}
-      <div className="modal-backdrop" id="modal-add-revision" onClick={(e) => (window as any).backdropClose(e,'modal-add-revision')}>
-        <div className="modal"><div className="modal-handle"></div>
-          <div className="modal-head">
-            <div><div className="modal-title">Add revision sessions</div><div className="modal-sub">Schedule study blocks leading up to the exam.</div></div>
-            <button className="modal-close" onClick={() => (window as any).closeModal('modal-add-revision')}><i className="ti ti-x"></i></button>
-          </div>
-          <div className="modal-body">
-            <div className="modal-field"><label>Subject / topic</label><input type="text" id="rev-title" placeholder="e.g. Maths — number patterns" /></div>
-            <div className="modal-2col">
-              <div className="modal-field"><label>First session date</label><input type="date" id="rev-date" /></div>
-              <div className="modal-field"><label>Time <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)' }}>Optional</span></label><input type="time" id="rev-time" /></div>
-            </div>
-            <div className="modal-field">
-              <label>Assign to</label>
-              <div className="role-pills" data-multi="true" id="rev-assignees">
-                <div className="role-pill sel" data-everyone="true" onClick={(e) => (window as any).selectRole(e.currentTarget)}>Everyone</div>
-                {members.map(m => (
-                  <div key={m.id} className="role-pill" onClick={(e) => (window as any).selectRole(e.currentTarget)}>{m.display_name.split(' ')[0]}</div>
-                ))}
-              </div>
-            </div>
-            <div className="modal-field">
-              <label>Repeat on days</label>
-              <div className="role-pills" data-multi="true" id="rev-days">
-                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-                  <div key={d} className={`role-pill${['Mon','Wed'].includes(d) ? ' sel' : ''}`} onClick={(e) => (window as any).selectRole(e.currentTarget)}>{d}</div>
-                ))}
-              </div>
-            </div>
-            <div className="modal-field"><label>Repeat until (exam date)</label><input type="date" id="rev-end-date" /></div>
-            <div style={{ background: 'var(--amber-lt)', border: '1px solid #FDE68A', borderRadius: 'var(--r-md)', padding: '9px 12px', fontSize: 11, color: 'var(--amber)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
-              <i className="ti ti-info-circle" style={{ flexShrink: 0 }}></i>
-              Sessions will repeat on selected days and stop automatically on the exam date.
-            </div>
-            <div className="modal-actions">
-              <button className="modal-btn modal-btn-secondary" onClick={() => (window as any).closeModal('modal-add-revision')}>Skip</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => (window as any).saveRevision()}>Add revision sessions</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Add exam / Add revision — handled by the calendar page (see /calendar?open=exam) so there's one shared form */}
 
       {/* Add bill */}
       <div className="modal-backdrop" id="modal-add-bill" onClick={(e) => (window as any).backdropClose(e,'modal-add-bill')}>

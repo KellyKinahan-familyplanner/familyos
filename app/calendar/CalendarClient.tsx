@@ -209,7 +209,7 @@ html,body{height:100%;overflow:hidden;}
 .event-detail-btn.danger{border-color:#FCA5A5;color:#DC2626;background:#FEF2F2;}
 
 /* ── Modal ── */
-.modal-backdrop{position:fixed;inset:0;background:rgba(26,23,20,.45);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(26,23,20,.45);backdrop-filter:blur(3px);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-backdrop.open{opacity:1;pointer-events:all;}
 @media(min-width:600px){.modal-backdrop{align-items:center;}}
 .modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px);box-shadow:0 -4px 40px rgba(0,0,0,.18);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
@@ -303,9 +303,9 @@ html,body{height:100%;overflow:hidden;}
 .cal-cell{position:relative;}
 
 /* ── Mobile touch improvements ── */
-/* ── Mobile bottom nav bar ── */
+/* ── Bottom nav bar (phone + tablet) ── */
 .cal-mobile-nav{display:none;}
-@media(max-width:640px){
+@media(max-width:1024px){
   /* Bottom nav bar */
   .cal-mobile-nav{
     display:flex;position:fixed;bottom:0;left:0;right:0;
@@ -315,13 +315,20 @@ html,body{height:100%;overflow:hidden;}
   }
   .cal-mobile-nav-btn{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:3px;font-size:10px;font-weight:700;color:var(--text-3);cursor:pointer;
-    border:none;background:none;padding:6px 0;text-decoration:none;
+    gap:2px;font-size:9px;font-weight:700;color:var(--text-3);cursor:pointer;
+    border:none;background:none;padding:6px 0;text-decoration:none;white-space:nowrap;
   }
-  .cal-mobile-nav-btn i{font-size:20px;}
+  .cal-mobile-nav-btn i{font-size:18px;}
   .cal-mobile-nav-btn.active{color:var(--pink);}
   .cal-mobile-nav-btn.primary{color:var(--green);}
 
+  /* FAB sits above bottom nav */
+  .cal-fab{bottom:calc(64px + env(safe-area-inset-bottom));}
+
+  /* Pad main content so bottom nav doesn't cover it */
+  .cal-shell{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
+}
+@media(max-width:640px){
   /* Topbar — compact: back | title | kids */
   .cal-topbar{padding:0 10px;gap:6px;height:48px;}
   .cal-topbar-sep{display:none;}
@@ -354,15 +361,12 @@ html,body{height:100%;overflow:hidden;}
   .cal-time-slot{font-size:9px;width:34px;padding-right:3px;}
   .cal-hour-row{min-height:44px;}
 
-  /* FAB sits above bottom nav */
-  .cal-fab{bottom:calc(64px + env(safe-area-inset-bottom));right:14px;}
+  /* FAB adjustments for phone width */
+  .cal-fab{right:14px;}
   .cal-fab-btn{width:52px;height:52px;}
 
   /* Modal full-height sheet */
   .modal{border-radius:20px 20px 0 0;max-height:95vh;}
-
-  /* Pad main content so bottom nav doesn't cover it */
-  .cal-shell{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
 }
 
 /* ── Print / export ── */
@@ -1559,6 +1563,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [fPoints, setFPoints]     = useState(5)
   const [fTodPeriod, setFTodPeriod] = useState<string[]>(['Morning'])
   const [fImageFile, setFImageFile] = useState<File | null>(null)
+  const [fDuration, setFDuration] = useState(60) // revision session length, in minutes
   const [editingId, setEditingId] = useState<string | number | null>(null)
 
   const resetForm = () => {
@@ -1567,8 +1572,20 @@ export default function CalendarClient({ displayName, familyName, initials, user
     setFMonthType('date'); setFMonthDate(1); setFMonthOrd('First'); setFMonthDay('Monday')
     setFRecurEnd('never'); setFRecurEndDate(''); setFRecurEndCount(4)
     setFSubject('Maths'); setFPoints(5); setFTodPeriod(['Morning']); setFImageFile(null)
+    setFDuration(60)
     setEditingId(null)
   }
+
+  // Auto-compute revision session end time from start time + selected duration
+  useEffect(() => {
+    if (activeModal !== 'revision') return
+    if (!fTime) { setFEndTime(''); return }
+    const [h, m] = fTime.split(':').map(Number)
+    const total = h * 60 + m + fDuration
+    const eh = Math.floor(total / 60) % 24
+    const em = total % 60
+    setFEndTime(`${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`)
+  }, [fTime, fDuration, activeModal])
 
   const toggleAssignee = (name: string) => {
     if (name === 'Everyone') { setFAssignees(['Everyone']); return }
@@ -1630,7 +1647,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
       id: Date.now(), title: examTitle, date: examDate, time: fTime, endTime: fEndTime,
       colour: 'red', assignees: examAssignees, recur: 'none',
       recurDays: [], recurEnd: 'never', notes: fNotes, type: 'exam',
-    })
+    }, fImageFile)
     showToast(`Exam saved — now add revision sessions`)
     // Pre-fill revision modal with exam context
     resetForm()
@@ -1648,6 +1665,17 @@ export default function CalendarClient({ displayName, familyName, initials, user
     resetForm(); setFDate(date || prefillDate)
     setPrefillDate(date); setActiveModal(id); setFabOpen(false)
   }
+
+  // Deep-link support: ?open=exam or ?open=revision opens the matching modal on load
+  // (used by the dashboard's quick-action cards so there's a single exam/revision form)
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('open')
+    if (requested === 'exam' || requested === 'revision') {
+      openModal(requested, today.toISOString().slice(0, 10))
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const openEditModal = (ev: CalEvent) => {
     // Set all fields explicitly — do NOT call resetForm() to avoid batch conflicts
@@ -1672,6 +1700,13 @@ export default function CalendarClient({ displayName, familyName, initials, user
     setFPoints(5)
     setFTodPeriod(['Morning'])
     setFImageFile(null)
+    if (ev.type === 'revision' && ev.time && ev.endTime) {
+      const [sh, sm] = ev.time.slice(0, 5).split(':').map(Number)
+      const [eh, em] = ev.endTime.slice(0, 5).split(':').map(Number)
+      setFDuration(Math.max(30, (eh * 60 + em) - (sh * 60 + sm)))
+    } else {
+      setFDuration(60)
+    }
     const modalId = ev.type === 'chore' ? 'chore'
       : ev.type === 'homework' ? 'homework'
       : ev.type === 'exam' ? 'exam'
@@ -2276,6 +2311,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>e.g. chapters covered, open book</span></label>
               <input type="text" placeholder="e.g. Chapters 1–5, no calculator" value={fNotes} onChange={e => setFNotes(e.target.value)} />
             </div>
+            <AttachField id="exam" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-secondary" onClick={() => saveEntry('exam', `Exam added — ${fTitle}`)}>Save only</button>
@@ -2309,6 +2345,16 @@ export default function CalendarClient({ displayName, familyName, initials, user
                 <input type="time" value={fTime} onChange={e => setFTime(e.target.value)} />
               </div>
             </div>
+            <div className="modal-field" style={{ marginTop:12 }}>
+              <label>Session length</label>
+              <div className="role-pills">
+                {[{ mins: 30, label: '30 min' }, { mins: 60, label: '1 hour' }, { mins: 90, label: '1.5 hours' }, { mins: 120, label: '2 hours' }].map(d => (
+                  <div key={d.mins} className={`role-pill${fDuration === d.mins ? ' sel' : ''}`} onClick={() => setFDuration(d.mins)}>
+                    {d.label}
+                  </div>
+                ))}
+              </div>
+            </div>
             <div style={{ marginTop:12 }}>
               <AssigneePills members={MEMBERS} selected={fAssignees} toggle={toggleAssignee} />
             </div>
@@ -2338,7 +2384,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
       {/* ── Mobile bottom nav bar ── */}
       <nav className="cal-mobile-nav">
         <Link href="/dashboard" className="cal-mobile-nav-btn">
-          <i className="ti ti-layout-dashboard"></i>Dashboard
+          <i className="ti ti-layout-dashboard"></i>Home
         </Link>
         <button className="cal-mobile-nav-btn" onClick={() => setView('month')}>
           <i className={`ti ti-calendar-month${view === 'month' ? '' : '-filled'}`} style={{ color: view === 'month' ? 'var(--pink)' : undefined }}></i>Month
@@ -2349,6 +2395,9 @@ export default function CalendarClient({ displayName, familyName, initials, user
         <button className="cal-mobile-nav-btn" onClick={() => setView('day')}>
           <i className={`ti ti-calendar-day`} style={{ color: view === 'day' ? 'var(--pink)' : undefined }}></i>Day
         </button>
+        <Link href="/tasks" className="cal-mobile-nav-btn">
+          <i className="ti ti-circle-check"></i>Tasks
+        </Link>
         <button className="cal-mobile-nav-btn primary" onClick={() => { setFabOpen(false); openModal('event', today.toISOString().slice(0,10)) }}>
           <i className="ti ti-circle-plus"></i>Add
         </button>
