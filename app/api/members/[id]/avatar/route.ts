@@ -30,12 +30,12 @@ export async function POST(
   const path = `${self.family_id}/${id}.${ext}`
 
   const { error: uploadError } = await admin.storage
-    .from('avatars')
+    .from('bill-uploads')
     .upload(path, file, { upsert: true, contentType: file.type })
 
   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 })
 
-  const { data: { publicUrl } } = admin.storage.from('avatars').getPublicUrl(path)
+  const { data: { publicUrl } } = admin.storage.from('bill-uploads').getPublicUrl(path)
 
   // Append cache-buster so browsers reload the image even if path is the same
   const avatarUrl = `${publicUrl}?t=${Date.now()}`
@@ -67,7 +67,7 @@ export async function DELETE(
   if (!target || target.family_id !== self.family_id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   // Remove from storage (try both jpg and png)
-  await admin.storage.from('avatars').remove([
+  await admin.storage.from('bill-uploads').remove([
     `${self.family_id}/${id}.jpg`,
     `${self.family_id}/${id}.png`,
     `${self.family_id}/${id}.webp`,

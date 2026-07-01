@@ -27,7 +27,7 @@ export async function POST(
     console.log('[image/POST] uploading to path:', path, '| size:', file.size, '| type:', file.type || 'unknown')
 
     const { error: uploadError } = await admin.storage
-      .from('avatars')
+      .from('bill-uploads')
       .upload(path, file, { upsert: true, contentType: file.type || 'application/octet-stream' })
 
     if (uploadError) {
@@ -35,7 +35,7 @@ export async function POST(
       return NextResponse.json({ error: uploadError.message }, { status: 500 })
     }
 
-    const { data: { publicUrl } } = admin.storage.from('avatars').getPublicUrl(path)
+    const { data: { publicUrl } } = admin.storage.from('bill-uploads').getPublicUrl(path)
     const imageUrl = `${publicUrl}?t=${Date.now()}`
 
     const { error: dbError } = await admin
@@ -74,7 +74,7 @@ export async function DELETE(
   if (entry?.image_url) {
     // Extract storage path from public URL: everything after /object/public/avatars/
     const match = entry.image_url.match(/\/object\/public\/avatars\/(.+?)(\?|$)/)
-    if (match) await admin.storage.from('avatars').remove([decodeURIComponent(match[1])])
+    if (match) await admin.storage.from('bill-uploads').remove([decodeURIComponent(match[1])])
   }
   await admin.from('calendar_entries').update({ image_url: null }).eq('id', id)
   return NextResponse.json({ ok: true })

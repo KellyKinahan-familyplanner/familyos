@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient()
 
   const { error: uploadError } = await admin.storage
-    .from('avatars')
+    .from('bill-uploads')
     .upload(path, file, { upsert: true, contentType: file.type })
 
   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 })
 
-  const { data: { publicUrl } } = admin.storage.from('avatars').getPublicUrl(path)
+  const { data: { publicUrl } } = admin.storage.from('bill-uploads').getPublicUrl(path)
   const coverUrl = `${publicUrl}?t=${Date.now()}`
 
   const { error: dbError } = await admin
@@ -45,7 +45,7 @@ export async function DELETE(_request: NextRequest) {
   if (!self || self.role !== 'admin') return NextResponse.json({ error: 'Admin only' }, { status: 403 })
 
   const admin = createAdminClient()
-  await admin.storage.from('avatars').remove([
+  await admin.storage.from('bill-uploads').remove([
     `${self.family_id}/cover.jpg`,
     `${self.family_id}/cover.png`,
     `${self.family_id}/cover.webp`,
