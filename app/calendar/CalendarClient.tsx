@@ -434,44 +434,54 @@ export function getSpecialBorderColor(type: string): string {
 
 /** Resolve the display colour for an event based on its assignees */
 export function getMemberColor(assignees: string[], members: Member[]): { hex: string; bg: string } {
-  if (!assignees.length || assignees.includes('Everyone')) return { hex: '#1A1714', bg: '#EBEBEB' }
+  if (!assignees.length) return { hex: '#1A1714', bg: '#EBEBEB' }
+  const real = members.filter(m => m.id !== 'all')
+  if (assignees.includes('Everyone')) return real.length ? { hex: real[0].fg, bg: real[0].bg } : { hex: '#1A1714', bg: '#EBEBEB' }
   for (const name of assignees) {
-    const m = members.find(mb => mb.id !== 'all' && (mb.name === name || mb.name.split(' ')[0] === name))
+    const m = real.find(mb => mb.name === name || mb.name.split(' ')[0] === name)
     if (m) return { hex: m.fg, bg: m.bg }
   }
   return { hex: '#A09893', bg: '#F0EDE9' }
 }
 
+function buildDiagonalStripe(memberBgs: string[]): string {
+  const n = memberBgs.length
+  const stops = memberBgs.flatMap((bg, i) => {
+    const from = Math.round((i / n) * 100)
+    const to   = Math.round(((i + 1) / n) * 100)
+    return [`${bg} ${from}%`, `${bg} ${to}%`]
+  })
+  return `linear-gradient(135deg, ${stops.join(', ')})`
+}
+
 /**
- * Returns chip style with diagonal gradient for multi-member events.
- * Single member → solid bg. Multiple → 135° stripe per member bg colour.
+ * Returns chip style with diagonal gradient for multi-member or Everyone events.
+ * Single member → solid bg. Multiple / Everyone → 135° stripe per member bg colour.
  */
 export function getEventChipStyle(
   assignees: string[],
   members: Member[]
 ): { background: string; color: string; borderLeftColor: string } {
-  const FALLBACK = { background: '#EBEBEB', color: '#1A1714', borderLeftColor: '#1A1714' }
+  const real = members.filter(m => m.id !== 'all')
+  if (!assignees.length) return { background: '#EBEBEB', color: '#1A1714', borderLeftColor: '#1A1714' }
 
-  if (!assignees.length || assignees.includes('Everyone')) return FALLBACK
+  // Everyone → diagonal of all real family member colours
+  if (assignees.includes('Everyone')) {
+    if (!real.length) return { background: '#EBEBEB', color: '#1A1714', borderLeftColor: '#1A1714' }
+    if (real.length === 1) return { background: real[0].bg, color: real[0].fg, borderLeftColor: real[0].fg }
+    return { background: buildDiagonalStripe(real.map(m => m.bg)), color: real[0].fg, borderLeftColor: real[0].fg }
+  }
 
   const matched = assignees
-    .map(name => members.find(m => m.id !== 'all' && (m.name === name || m.name.split(' ')[0] === name)))
+    .map(name => real.find(m => m.name === name || m.name.split(' ')[0] === name))
     .filter(Boolean) as Member[]
 
-  if (!matched.length) return FALLBACK
+  if (!matched.length) return { background: '#EBEBEB', color: '#1A1714', borderLeftColor: '#1A1714' }
   if (matched.length === 1) {
     return { background: matched[0].bg, color: matched[0].fg, borderLeftColor: matched[0].fg }
   }
-
-  // Build diagonal stripe: equal-width bands per member bg colour
-  const n = matched.length
-  const stops = matched.flatMap((m, i) => {
-    const from = Math.round((i / n) * 100)
-    const to   = Math.round(((i + 1) / n) * 100)
-    return [`${m.bg} ${from}%`, `${m.bg} ${to}%`]
-  })
   return {
-    background: `linear-gradient(135deg, ${stops.join(', ')})`,
+    background: buildDiagonalStripe(matched.map(m => m.bg)),
     color: matched[0].fg,
     borderLeftColor: matched[0].fg,
   }
@@ -1458,7 +1468,10 @@ export default function CalendarClient({ displayName, familyName, initials, user
 
   /* ── Today's tasks for sidebar ── */
   const todayStr = today.toISOString().slice(0, 10)
-  const todayItems = filteredEvents.filter(e => eventOccursOn(e, todayStr))
+  // In day/week view show tasks for the viewed date; in month view show today
+  const sidebarDate = (view === 'day' || view === 'week') ? viewDate : today
+  const sidebarDateStr = sidebarDate.toISOString().slice(0, 10)
+  const todayItems = filteredEvents.filter(e => eventOccursOn(e, sidebarDateStr))
 
   /* ── Modal form state ── */
   const [fTitle, setFTitle]       = useState('')
@@ -1713,27 +1726,30 @@ export default function CalendarClient({ displayName, familyName, initials, user
         {/* ── Today's tasks sidebar ── */}
         <aside className="cal-sidebar">
           <div className="sidebar-head">
-            Today's tasks
-            <div className="sidebar-date">{today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+            {sidebarDateStr === todayStr ? "Today's tasks" : sidebarDate.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+            <div className="sidebar-date">{sidebarDate.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
           </div>
           {todayItems.length === 0 ? (
             <div className="sidebar-empty">Nothing scheduled for today 🎉</div>
           ) : (
             <>
-              {(['task','chore','homework','event'] as const).map(type => {
+              {(['chore','homework','exam','task','event'] as const).map(type => {
                 const items = todayItems.filter(e => e.type === type)
                 if (!items.length) return null
-                const labels: Record<string, string> = { task: 'Tasks', chore: 'Chores', homework: 'Homework', event: 'Events' }
-                const icons: Record<string, string> = { task: 'ti-circle-check', chore: 'ti-home', homework: 'ti-books', event: 'ti-calendar-event' }
+                const labels: Record<string, string> = { task: 'Tasks', chore: 'Chores', homework: 'Homework', exam: 'Exams', event: 'Events' }
+                const icons: Record<string, string> = { task: 'ti-circle-check', chore: 'ti-home', homework: 'ti-books', exam: 'ti-writing', event: 'ti-calendar-event' }
+                const sectionBg: Record<string, string> = { chore: 'var(--green-lt)', homework: 'var(--lilac-lt)', exam: '#FEE2E2', task: 'var(--pink-lt)', event: 'var(--bg)' }
+                const sectionFg: Record<string, string> = { chore: 'var(--green)', homework: 'var(--lilac)', exam: '#DC2626', task: 'var(--pink)', event: 'var(--text-2)' }
                 return (
-                  <div key={type} className="sidebar-section">
-                    <div className="sidebar-section-label">
+                  <div key={type} className="sidebar-section" style={{ background: sectionBg[type], borderRadius: 'var(--r-md)', margin: '6px 8px 0', padding: '8px 10px' }}>
+                    <div className="sidebar-section-label" style={{ color: sectionFg[type] }}>
                       <i className={`ti ${icons[type]}`} style={{ marginRight: 4 }}></i>{labels[type]}
                     </div>
                     {items.map(item => (
                       <div key={item.id} className="sidebar-task-row">
                         <div
                           className={`sidebar-check${checkedTasks.has(item.id) ? ' done' : ''}`}
+                          style={checkedTasks.has(item.id) ? { background: sectionFg[type], borderColor: sectionFg[type] } : { borderColor: sectionFg[type] }}
                           onClick={() => setCheckedTasks(prev => {
                             const next = new Set(prev)
                             next.has(item.id) ? next.delete(item.id) : next.add(item.id)
