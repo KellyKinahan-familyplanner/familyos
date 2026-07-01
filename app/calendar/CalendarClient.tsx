@@ -1167,23 +1167,35 @@ function RecurPicker({
 }
 
 /** Image attach field — wired to parent fImageFile state via onPick/onClear */
+function isImageUrl(url: string) {
+  return /\.(jpe?g|png|gif|webp|svg|avif)(\?|$)/i.test(url)
+}
+
 function AttachField({ id, file, onPick, onClear }: { id: string; file: File | null; onPick: (f: File) => void; onClear: () => void }) {
   const inputId = `attach-${id}`
-  const preview = file ? URL.createObjectURL(file) : null
+  const isImg = file ? file.type.startsWith('image/') : false
+  const preview = (file && isImg) ? URL.createObjectURL(file) : null
   return (
     <div className="modal-field">
-      <label>Photo <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label>
+      <label>Photo / File <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label>
       {file ? (
-        <div style={{ position:'relative', display:'inline-block' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview!} alt="preview" style={{ width:'100%', maxHeight:180, objectFit:'cover', borderRadius:'var(--r-md)' }} />
+        <div style={{ position:'relative', display:'inline-block', width:'100%' }}>
+          {isImg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={preview!} alt="preview" style={{ width:'100%', maxHeight:180, objectFit:'cover', borderRadius:'var(--r-md)' }} />
+          ) : (
+            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:'var(--r-md)', background:'var(--surface-2)', fontSize:13 }}>
+              <i className="ti ti-paperclip" style={{ fontSize:16, color:'var(--text-3)' }}></i>
+              <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color:'var(--text-2)' }}>{file.name}</span>
+            </div>
+          )}
           <button onClick={onClear} style={{ position:'absolute', top:6, right:6, background:'rgba(0,0,0,.55)', color:'#fff', border:'none', borderRadius:'50%', width:24, height:24, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
         </div>
       ) : (
         <div className="attach-drop" onClick={() => document.getElementById(inputId)?.click()}>
-          <input type="file" id={inputId} accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) onPick(f); e.target.value = '' }} style={{ display:'none' }} />
-          <i className="ti ti-camera" style={{ fontSize:16, color:'var(--text-3)' }}></i>
-          <span style={{ fontSize:12, color:'var(--text-3)' }}>Tap to add a photo</span>
+          <input type="file" id={inputId} onChange={e => { const f = e.target.files?.[0]; if (f) onPick(f); e.target.value = '' }} style={{ display:'none' }} />
+          <i className="ti ti-paperclip" style={{ fontSize:16, color:'var(--text-3)' }}></i>
+          <span style={{ fontSize:12, color:'var(--text-3)' }}>Tap to add a photo or file</span>
         </div>
       )}
     </div>
@@ -1869,35 +1881,52 @@ export default function CalendarClient({ displayName, familyName, initials, user
               </div>
             )}
             {detailEvent.notes && <div className="event-detail-row"><i className="ti ti-notes"></i>{detailEvent.notes}</div>}
-            {/* Live image_url — read from events state so uploads appear without reopening */}
-            {(events.find(e => String(e.id) === String(detailEvent.id)) ?? detailEvent).image_url ? (
-              <div style={{ position:'relative', marginTop:8, marginBottom:4 }}>
-                <a href={(events.find(e => String(e.id) === String(detailEvent.id)) ?? detailEvent).image_url!} target="_blank" rel="noopener noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={(events.find(e => String(e.id) === String(detailEvent.id)) ?? detailEvent).image_url!} alt="Event photo" style={{ width:'100%', maxHeight:160, objectFit:'cover', borderRadius:'var(--r-md)', cursor:'pointer', display:'block' }} />
-                </a>
-                <button onClick={async () => {
-                  await fetch(`/api/entries/${detailEvent.id}/image`, { method: 'DELETE' })
-                  setEvents(prev => prev.map(e => String(e.id) === String(detailEvent.id) ? { ...e, image_url: null } : e))
-                  setDetailEvent(prev => prev ? { ...prev, image_url: null } : null)
-                }} style={{ position:'absolute', top:6, right:6, background:'rgba(0,0,0,.55)', color:'#fff', border:'none', borderRadius:'50%', width:22, height:22, cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
-              </div>
-            ) : (
-              <label style={{ display:'flex', alignItems:'center', gap:6, marginTop:8, marginBottom:4, padding:'7px 10px', borderRadius:'var(--r-md)', border:'1.5px dashed var(--border)', cursor:'pointer', fontSize:12, color:'var(--text-3)' }}>
-                <i className="ti ti-camera" style={{ fontSize:14 }}></i> Add photo
-                <input type="file" accept="image/*" style={{ display:'none' }} onChange={async e => {
-                  const file = e.target.files?.[0]; e.target.value = ''
-                  if (!file) return
-                  const fd = new FormData(); fd.append('image', file)
-                  const res = await fetch(`/api/entries/${detailEvent.id}/image`, { method: 'POST', body: fd })
-                  if (res.ok) {
-                    const { image_url } = await res.json()
-                    setEvents(prev => prev.map(e => String(e.id) === String(detailEvent.id) ? { ...e, image_url } : e))
-                    setDetailEvent(prev => prev ? { ...prev, image_url } : null)
-                  }
-                }} />
-              </label>
-            )}
+            {/* Live file/image attachment — read from events state so uploads appear immediately */}
+            {(() => {
+              const liveUrl = (events.find(e => String(e.id) === String(detailEvent.id)) ?? detailEvent).image_url
+              if (liveUrl) {
+                const isImg = isImageUrl(liveUrl)
+                return (
+                  <div style={{ position:'relative', marginTop:8, marginBottom:4 }}>
+                    {isImg ? (
+                      <a href={liveUrl} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={liveUrl} alt="Attachment" style={{ width:'100%', maxHeight:160, objectFit:'cover', borderRadius:'var(--r-md)', cursor:'pointer', display:'block' }} />
+                      </a>
+                    ) : (
+                      <a href={liveUrl} target="_blank" rel="noopener noreferrer" style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:'var(--r-md)', background:'var(--surface-2)', fontSize:13, textDecoration:'none', color:'var(--text-1)' }}>
+                        <i className="ti ti-paperclip" style={{ fontSize:16, color:'var(--text-3)' }}></i>
+                        <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                          {decodeURIComponent(liveUrl.split('/').pop()?.split('?')[0] ?? 'Attachment')}
+                        </span>
+                        <i className="ti ti-external-link" style={{ fontSize:13, color:'var(--text-3)' }}></i>
+                      </a>
+                    )}
+                    <button onClick={async () => {
+                      await fetch(`/api/entries/${detailEvent.id}/image`, { method: 'DELETE' })
+                      setEvents(prev => prev.map(e => String(e.id) === String(detailEvent.id) ? { ...e, image_url: null } : e))
+                      setDetailEvent(prev => prev ? { ...prev, image_url: null } : null)
+                    }} style={{ position:'absolute', top:6, right:6, background:'rgba(0,0,0,.55)', color:'#fff', border:'none', borderRadius:'50%', width:22, height:22, cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+                  </div>
+                )
+              }
+              return (
+                <label style={{ display:'flex', alignItems:'center', gap:6, marginTop:8, marginBottom:4, padding:'7px 10px', borderRadius:'var(--r-md)', border:'1.5px dashed var(--border)', cursor:'pointer', fontSize:12, color:'var(--text-3)' }}>
+                  <i className="ti ti-paperclip" style={{ fontSize:14 }}></i> Add photo or file
+                  <input type="file" style={{ display:'none' }} onChange={async e => {
+                    const file = e.target.files?.[0]; e.target.value = ''
+                    if (!file) return
+                    const fd = new FormData(); fd.append('image', file)
+                    const res = await fetch(`/api/entries/${detailEvent.id}/image`, { method: 'POST', body: fd })
+                    if (res.ok) {
+                      const { image_url } = await res.json()
+                      setEvents(prev => prev.map(e => String(e.id) === String(detailEvent.id) ? { ...e, image_url } : e))
+                      setDetailEvent(prev => prev ? { ...prev, image_url } : null)
+                    }
+                  }} />
+                </label>
+              )
+            })()}
             <div className="event-detail-actions">
               <button className="event-detail-btn" onClick={() => { openModal('event', detailEvent.date); setDetailEvent(null) }}>
                 <i className="ti ti-edit" style={{ marginRight: 4, fontSize: 11 }}></i>Edit

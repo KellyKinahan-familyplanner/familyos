@@ -18,8 +18,9 @@ export async function POST(
   const file = formData.get('image') as File | null
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-  const path = `entries/${self.family_id}/${id}.${ext}`
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin'
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const path = `entries/${self.family_id}/${id}_${safeName}`
   const admin = createAdminClient()
 
   const { error: uploadError } = await admin.storage
@@ -53,11 +54,14 @@ export async function DELETE(
   const { id } = await params
   const admin = createAdminClient()
 
-  await admin.storage.from('avatars').remove([
-    `entries/${self.family_id}/${id}.jpg`,
-    `entries/${self.family_id}/${id}.png`,
-    `entries/${self.family_id}/${id}.webp`,
-  ])
+  // Get current image_url so we can derive the storage path
+  const { data: entry } = await admin
+    .from('calendar_entries').select('image_url').eq('id', id).maybeSingle()
+  if (entry?.image_url) {
+    // Extract storage path from public URL: everything after /object/public/avatars/
+    const match = entry.image_url.match(/\/object\/public\/avatars\/(.+?)(\?|$)/)
+    if (match) await admin.storage.from('avatars').remove([decodeURIComponent(match[1])])
+  }
   await admin.from('calendar_entries').update({ image_url: null }).eq('id', id)
   return NextResponse.json({ ok: true })
 }
