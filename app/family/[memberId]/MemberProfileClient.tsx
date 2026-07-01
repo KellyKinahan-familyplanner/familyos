@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 
 type Feed = { id: string; name: string; url: string; colour: string; last_synced: string | null }
@@ -14,6 +14,12 @@ const AVATAR_PRESETS = [
   { bg: '#FCE7F3', fg: '#BE185D' },
   { bg: '#ECFDF5', fg: '#059669' },
 ]
+
+// browsers that support install prompt extend Event with prompt() / userChoice
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
 
 type GuestPerms = {
   can_view_calendar: boolean
@@ -163,6 +169,29 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf, 
     const res = await fetch(`/api/members/${member.id}`, { method: 'DELETE' })
     if (res.ok) window.location.href = '/family'
     else showToast('Could not remove member')
+  }
+
+  // PWA install prompt
+  const [installPrompt, setInstallPrompt] = useState<Event | null>(null)
+  const [isIOS, setIsIOS] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(false)
+  const [showIOSSteps, setShowIOSSteps] = useState(false)
+
+  useEffect(() => {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    setIsIOS(ios)
+    setIsInstalled(window.matchMedia('(display-mode: standalone)').matches)
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const triggerInstall = async () => {
+    if (!installPrompt) return
+    const prompt = installPrompt as BeforeInstallPromptEvent
+    prompt.prompt()
+    await prompt.userChoice
+    setInstallPrompt(null)
   }
 
   // Guest permissions
@@ -436,6 +465,61 @@ export default function MemberProfileClient({ member: initial, isAdmin, isSelf, 
                 {pinSaving ? 'Resetting...' : 'Reset PIN'}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Add to Home Screen — only shown to the member themselves, and only if not already installed */}
+        {isSelf && !isInstalled && (
+          <div className="section">
+            <div className="section-title">ADD TO HOME SCREEN</div>
+            <div style={{ padding: '10px 18px 4px', fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
+              Install KYNC on your device for instant access — works like a native app, no App Store needed.
+            </div>
+
+            {isIOS ? (
+              <div style={{ padding: '10px 18px 14px' }}>
+                <button
+                  onClick={() => setShowIOSSteps(s => !s)}
+                  style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'11px 14px', background:'#EDF4FE', border:'1.5px solid #B5D4F4', borderRadius:'var(--r-md)', color:'#1976D2', fontSize:13, fontWeight:700, cursor:'pointer', textAlign:'left' }}>
+                  <i className="ti ti-device-mobile" style={{ fontSize:18 }}></i>
+                  How to add to Home Screen on iPhone / iPad
+                  <i className={`ti ti-chevron-${showIOSSteps ? 'up' : 'down'}`} style={{ marginLeft:'auto', fontSize:14 }}></i>
+                </button>
+                {showIOSSteps && (
+                  <div style={{ marginTop:10, padding:'12px 14px', background:'var(--bg)', borderRadius:'var(--r-md)', border:'1px solid var(--border)' }}>
+                    {[
+                      { n:1, icon:'ti-share', text:'Tap the Share button at the bottom of Safari (the box with an arrow pointing up)' },
+                      { n:2, icon:'ti-square-plus', text:'Scroll down and tap Add to Home Screen' },
+                      { n:3, icon:'ti-device-mobile-check', text:'Tap Add — KYNC will appear on your home screen like any other app' },
+                    ].map(s => (
+                      <div key={s.n} style={{ display:'flex', gap:12, marginBottom:10, alignItems:'flex-start' }}>
+                        <div style={{ width:26, height:26, borderRadius:'50%', background:'#1976D2', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, flexShrink:0 }}>{s.n}</div>
+                        <div style={{ fontSize:12, color:'var(--text-1)', lineHeight:1.5, paddingTop:4 }}>
+                          <i className={`ti ${s.icon}`} style={{ marginRight:5, color:'#1976D2' }}></i>{s.text}
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ fontSize:11, color:'var(--text-3)', marginTop:4 }}>
+                      Only works in <strong>Safari</strong> — Chrome on iPhone doesn&apos;t support Add to Home Screen.
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : installPrompt ? (
+              <div style={{ padding:'10px 18px 14px' }}>
+                <button
+                  onClick={triggerInstall}
+                  style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 18px', background:'var(--green)', color:'#fff', border:'none', borderRadius:'var(--r-md)', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                  <i className="ti ti-device-mobile-down" style={{ fontSize:16 }}></i>
+                  Install KYNC on this device
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding:'10px 18px 14px', fontSize:12, color:'var(--text-3)', lineHeight:1.5 }}>
+                <i className="ti ti-info-circle" style={{ marginRight:5, verticalAlign:'middle' }}></i>
+                KYNC may already be installed, or your browser will show an install option in its address bar.
+              </div>
+            )}
           </div>
         )}
 
