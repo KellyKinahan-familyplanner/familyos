@@ -66,6 +66,7 @@ input,select,textarea{font-family:inherit;}
 .member-badge.admin   {background:var(--green-lt);color:var(--green);}
 .member-badge.member  {background:var(--border-lt);color:var(--text-2);}
 .member-badge.child   {background:var(--lilac-lt);color:var(--lilac);}
+.member-badge.guest   {background:#F0FDF4;color:#15803D;}
 .member-badge.pending {background:var(--amber-lt);color:var(--amber);}
 .member-pin{font-size:11px;color:var(--text-3);margin-top:4px;display:flex;align-items:center;gap:4px;}
 .member-actions{display:flex;gap:4px;position:absolute;top:10px;right:10px;}
@@ -144,7 +145,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
   const [editName, setEditName]   = useState('')
   const [editFeedUrl, setEditFeedUrl] = useState('')
   const [editFeedName, setEditFeedName] = useState('')
-  const [tab, setTab]             = useState<'child' | 'adult'>('child')
+  const [tab, setTab]             = useState<'child' | 'adult' | 'guest'>('child')
   const [saving, setSaving]       = useState(false)
   const [toast, setToast]         = useState('')
   const [toastVisible, setToastVisible] = useState(false)
@@ -277,7 +278,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
     }
   }
 
-  const addChild = async () => {
+  const addChild = async (role: 'child' | 'guest' = 'child') => {
     if (!childName.trim()) { showToast('Enter a name'); return }
     const pinStr = pin.join('')
     if (pinStr.length !== 4) { showToast('Enter a 4-digit PIN'); return }
@@ -286,7 +287,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
       const res = await fetch('/api/members/add-child', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: childName.trim(), pin: pinStr }),
+        body: JSON.stringify({ name: childName.trim(), pin: pinStr, role }),
       })
       const data = await res.json()
       if (!res.ok) { showToast(data.error || 'Failed'); return }
@@ -373,6 +374,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
   const admins   = members.filter(m => m.role === 'admin')
   const adults   = members.filter(m => m.role === 'member')
   const children = members.filter(m => m.role === 'child')
+  const guests   = members.filter(m => m.role === 'guest')
   const pending  = members.filter(m => m.invite_status === 'pending')
 
   const renderMember = (m: FamilyMember, i: number) => {
@@ -390,6 +392,7 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
           {m.role === 'member' && !isPending && <span className="member-badge member"><i className="ti ti-user" style={{ fontSize: 10 }} />Adult</span>}
           {isPending && <span className="member-badge pending"><i className="ti ti-mail" style={{ fontSize: 10 }} />Invite pending</span>}
           {m.role === 'child' && <span className="member-badge child"><i className="ti ti-star" style={{ fontSize: 10 }} />Child</span>}
+          {m.role === 'guest' && <span className="member-badge guest"><i className="ti ti-eye" style={{ fontSize: 10 }} />Guest</span>}
           {m.role === 'child' && m.child_username && (
             <div className="member-pin"><i className="ti ti-lock" style={{ fontSize: 10 }} />@{m.child_username}</div>
           )}
@@ -493,6 +496,17 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
             : <div className="member-grid">{children.map((m, i) => renderMember(m, admins.length + adults.length + i))}</div>
           }
         </div>
+
+        {/* Guests */}
+        {(guests.length > 0 || isAdmin) && (
+          <div className="section">
+            <div className="section-label">Guests</div>
+            {guests.length === 0
+              ? <div className="empty-state"><i className="ti ti-eye" /><p>No guests yet — add a guest for co-parents, grandparents, or carers.</p></div>
+              : <div className="member-grid">{guests.map((m, i) => renderMember(m, admins.length + adults.length + children.length + i))}</div>
+            }
+          </div>
+        )}
 
         {/* ── Special Events & Holidays ── */}
         <div className="settings-box">
@@ -673,20 +687,28 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
               <button className="modal-close" onClick={() => setModal(null)}><i className="ti ti-x" /></button>
             </div>
             <div className="modal-body">
-              <div className="modal-tabs">
+              <div className="modal-tabs" style={{ display: 'flex' }}>
                 <div className={`modal-tab${tab === 'child' ? ' active' : ''}`} onClick={() => setTab('child')}>
-                  Child (PIN login)
+                  Child
+                </div>
+                <div className={`modal-tab${tab === 'guest' ? ' active' : ''}`} onClick={() => setTab('guest')}>
+                  Guest
                 </div>
                 <div className={`modal-tab${tab === 'adult' ? ' active' : ''}`} onClick={() => setTab('adult')}>
-                  Adult (email invite)
+                  Adult
                 </div>
               </div>
 
-              {tab === 'child' ? (
+              {(tab === 'child' || tab === 'guest') ? (
                 <>
+                  {tab === 'guest' && (
+                    <div className="info-box" style={{ background: '#F5F3FF', color: '#5B21B6' }}>
+                      <strong>Guest account</strong> — perfect for co-parents, grandparents, or carers. They get PIN login and you control exactly what they can see. Set their access restrictions from their profile after saving.
+                    </div>
+                  )}
                   <div className="form-row">
-                    <label className="form-label">Child&apos;s name</label>
-                    <input className="form-input" placeholder="e.g. Emma" autoFocus
+                    <label className="form-label">{tab === 'guest' ? 'Guest\'s name' : 'Child\'s name'}</label>
+                    <input className="form-input" placeholder={tab === 'guest' ? 'e.g. Grandma Sue' : 'e.g. Emma'} autoFocus
                       value={childName} onChange={e => setChildName(e.target.value)} />
                   </div>
                   <div className="form-row">
@@ -732,8 +754,8 @@ export default function FamilyClient({ displayName, familyName, familySlug, init
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" disabled={saving}
-                onClick={tab === 'child' ? addChild : inviteAdult}>
-                {saving ? 'Saving…' : tab === 'child' ? 'Add child' : 'Send invite'}
+                onClick={tab === 'child' ? () => addChild('child') : tab === 'guest' ? () => addChild('guest') : inviteAdult}>
+                {saving ? 'Saving…' : tab === 'child' ? 'Add child' : tab === 'guest' ? 'Create guest account' : 'Send invite'}
               </button>
             </div>
           </div>
