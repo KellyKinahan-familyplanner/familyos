@@ -27,14 +27,20 @@ export async function POST(
     .from('avatars')
     .upload(path, file, { upsert: true, contentType: file.type })
 
-  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 })
+  if (uploadError) {
+    console.error('[image/POST] storage upload error:', uploadError.message, '| path:', path)
+    return NextResponse.json({ error: uploadError.message }, { status: 500 })
+  }
 
   const { data: { publicUrl } } = admin.storage.from('avatars').getPublicUrl(path)
   const imageUrl = `${publicUrl}?t=${Date.now()}`
 
   const { error: dbError } = await admin
     .from('calendar_entries').update({ image_url: imageUrl }).eq('id', id)
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })
+  if (dbError) {
+    console.error('[image/POST] db update error:', dbError.message, '| id:', id)
+    return NextResponse.json({ error: dbError.message }, { status: 500 })
+  }
 
   return NextResponse.json({ image_url: imageUrl })
 }
