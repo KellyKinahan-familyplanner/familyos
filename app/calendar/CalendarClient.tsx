@@ -2203,35 +2203,6 @@ export default function CalendarClient({ displayName, familyName, initials, user
                 <div className="kv-greeting">{greetWord}, {firstName}! 👋</div>
                 <div className="kv-date">{today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
                 {customMsg ? <div className="kv-message" onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }} style={{ cursor:'pointer' }} title="Tap to edit">&ldquo;{customMsg}&rdquo;</div> : null}
-                {/* Message edit */}
-                {kvEditingMsg === kid.id ? (
-                  <div style={{ background:'#fff', borderRadius:'var(--r-xl)', padding:16, marginBottom:16, width:'100%', boxShadow:'0 2px 16px rgba(232,73,122,.08)' }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:'var(--text-2)', marginBottom:8 }}>Personalise messages for {firstName}</div>
-                    <div style={{ marginBottom:8 }}>
-                      <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Morning message</label>
-                      <input type="text" value={kvMsgDraft.morning} onChange={e => setKvMsgDraft(d => ({ ...d, morning: e.target.value }))}
-                        placeholder="e.g. Have a great day at school!"
-                        style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)' }} />
-                    </div>
-                    <div style={{ marginBottom:12 }}>
-                      <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Evening message</label>
-                      <input type="text" value={kvMsgDraft.evening} onChange={e => setKvMsgDraft(d => ({ ...d, evening: e.target.value }))}
-                        placeholder="e.g. Time to wind down — great job today!"
-                        style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)' }} />
-                    </div>
-                    <div style={{ display:'flex', gap:8 }}>
-                      <button onClick={() => setKvEditingMsg(null)} style={{ flex:1, padding:'10px', borderRadius:'var(--r-md)', border:'1.5px solid var(--green-mid)', background:'var(--green-lt)', color:'var(--green)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
-                      <button onClick={() => kvSaveMsg(kid.id)} style={{ flex:1, padding:'10px', borderRadius:'var(--r-md)', border:'none', background:'var(--pink)', color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Save message</button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }}
-                    style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', marginBottom:12, background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', color:'var(--pink)', fontSize:13, fontWeight:700, cursor:'pointer', textAlign:'left' }}>
-                    <i className="ti ti-message-heart" style={{ fontSize:16, flexShrink:0 }}></i>
-                    {customMsg ? `Edit message for ${firstName}` : `✏️ Add a personal message for ${firstName}`}
-                  </button>
-                )}
                 <div className="kv-card">
                   <div className="kv-card-head">
                     <div className="kv-card-icon" style={{ background: kid.bg, color: kid.fg }}>{kid.initials}</div>
@@ -2267,6 +2238,35 @@ export default function CalendarClient({ displayName, familyName, initials, user
                     </div>
                   )}
                 </div>
+                {/* Message editor — below chores so it's always visible */}
+                {kvEditingMsg === kid.id ? (
+                  <div style={{ background:'#fff', borderRadius:'var(--r-xl)', padding:16, marginTop:12, width:'100%', boxShadow:'0 2px 16px rgba(232,73,122,.08)' }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:'var(--text-2)', marginBottom:8 }}>Personalise messages for {firstName}</div>
+                    <div style={{ marginBottom:8 }}>
+                      <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Morning message</label>
+                      <input type="text" value={kvMsgDraft.morning} onChange={e => setKvMsgDraft(d => ({ ...d, morning: e.target.value }))}
+                        placeholder="e.g. Have a great day at school!"
+                        style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)' }} />
+                    </div>
+                    <div style={{ marginBottom:12 }}>
+                      <label style={{ fontSize:11, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:'.06em', display:'block', marginBottom:4 }}>Evening message</label>
+                      <input type="text" value={kvMsgDraft.evening} onChange={e => setKvMsgDraft(d => ({ ...d, evening: e.target.value }))}
+                        placeholder="e.g. Time to wind down — great job today!"
+                        style={{ width:'100%', padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:'var(--r-md)', fontSize:14, outline:'none', background:'var(--bg)' }} />
+                    </div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <button onClick={() => setKvEditingMsg(null)} style={{ flex:1, padding:'10px', borderRadius:'var(--r-md)', border:'1.5px solid var(--green-mid)', background:'var(--green-lt)', color:'var(--green)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
+                      <button onClick={() => kvSaveMsg(kid.id)} style={{ flex:1, padding:'10px', borderRadius:'var(--r-md)', border:'none', background:'var(--pink)', color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Save message</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setKvEditingMsg(kid.id); setKvMsgDraft(msgs) }}
+                    style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', marginTop:12, background:'var(--pink-lt)', border:'1.5px solid var(--pink-mid)', borderRadius:'var(--r-lg)', color:'var(--pink)', fontSize:13, fontWeight:700, cursor:'pointer', textAlign:'left' }}>
+                    <i className="ti ti-message-heart" style={{ fontSize:16, flexShrink:0 }}></i>
+                    {customMsg ? `Edit message for ${firstName}` : `✏️ Add a personal message for ${firstName}`}
+                  </button>
+                )}
               </div>
             )
           })}
