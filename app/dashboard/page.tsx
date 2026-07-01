@@ -24,7 +24,7 @@ export default async function DashboardPage() {
 
   const { data: family } = await supabase
     .from('families')
-    .select('name')
+    .select('name, cover_url')
     .eq('id', member.family_id)
     .maybeSingle()
 
@@ -49,6 +49,8 @@ export default async function DashboardPage() {
       initials={initials}
       userEmail={user.email}
       members={allMembers ?? []}
+      isAdmin={member.role === 'admin'}
+      coverUrl={family?.cover_url ?? null}
     />
   )
 }

@@ -18,6 +18,8 @@ interface Props {
   initials: string
   userEmail?: string
   members?: FamilyMember[]
+  isAdmin?: boolean
+  coverUrl?: string | null
 }
 
 const DASHBOARD_CSS = `
@@ -425,7 +427,7 @@ input,select,textarea{font-family:inherit;}
 @media print{.topbar,.modal-backdrop,.help-backdrop,.toast,#bedtime-overlay{display:none!important;}.dash-body{padding:0;}}
 `
 
-export default function DashboardClient({ displayName, familyName, initials, userEmail, members = [] }: Props) {
+export default function DashboardClient({ displayName, familyName, initials, userEmail, members = [], isAdmin = false, coverUrl: initialCoverUrl = null }: Props) {
   const firstName = displayName.split(' ')[0]
   const fName = familyName || 'My Family'
 
@@ -576,6 +578,28 @@ export default function DashboardClient({ displayName, familyName, initials, use
     setTodayStr(new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }))
   }, [])
 
+  const [coverUrl, setCoverUrl] = useState<string | null>(initialCoverUrl ?? null)
+  const [coverUploading, setCoverUploading] = useState(false)
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverUploading(true)
+    const fd = new FormData()
+    fd.append('cover', file)
+    const res = await fetch('/api/family/cover', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (res.ok) setCoverUrl(data.cover_url)
+    setCoverUploading(false)
+    e.target.value = ''
+  }
+
+  async function handleCoverRemove() {
+    if (!confirm('Remove cover photo?')) return
+    await fetch('/api/family/cover', { method: 'DELETE' })
+    setCoverUrl(null)
+  }
+
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
@@ -667,8 +691,9 @@ export default function DashboardClient({ displayName, familyName, initials, use
       <div className="dash-body">
 
         {/* Welcome banner */}
-        <div className="welcome-banner">
-          <div>
+        <div className="welcome-banner" style={coverUrl ? { backgroundImage: `url(${coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {coverUrl && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', borderRadius: 'inherit', zIndex: 0 }} />}
+          <div style={{ position: 'relative', zIndex: 1 }}>
             <div className="welcome-eyebrow">Welcome back</div>
             <div className="welcome-heading">{firstName}&apos;s<br />Family Hub</div>
             <div className="welcome-sub">{fName}{todayStr ? ` . ${todayStr}` : ''}</div>
@@ -687,7 +712,21 @@ export default function DashboardClient({ displayName, familyName, initials, use
               <span className="welcome-member-count">{members.length === 1 ? '1 member' : `${members.length} members`}</span>
             </div>
           </div>
-          <a className="welcome-cal-btn" href="/calendar"><i className="ti ti-calendar"></i><span>Open Calendar</span></a>
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <a className="welcome-cal-btn" href="/calendar"><i className="ti ti-calendar"></i><span>Open Calendar</span></a>
+            {isAdmin && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 11, fontWeight: 700, cursor: coverUploading ? 'wait' : 'pointer', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.25)' }}>
+                <i className="ti ti-camera" style={{ fontSize: 13 }}></i>
+                {coverUploading ? 'Uploading…' : coverUrl ? 'Change photo' : 'Add cover photo'}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverUpload} disabled={coverUploading} />
+              </label>
+            )}
+            {isAdmin && coverUrl && (
+              <button onClick={handleCoverRemove} style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: 10, fontWeight: 700, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)' }}>
+                Remove photo
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
