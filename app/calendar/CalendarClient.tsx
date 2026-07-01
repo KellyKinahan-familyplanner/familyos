@@ -1559,6 +1559,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [fPoints, setFPoints]     = useState(5)
   const [fTodPeriod, setFTodPeriod] = useState<string[]>(['Morning'])
   const [fImageFile, setFImageFile] = useState<File | null>(null)
+  const [editingId, setEditingId] = useState<string | number | null>(null)
 
   const resetForm = () => {
     setFTitle(''); setFTime(''); setFEndTime(''); setFNotes(''); setFColour('green')
@@ -1566,6 +1567,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
     setFMonthType('date'); setFMonthDate(1); setFMonthOrd('First'); setFMonthDay('Monday')
     setFRecurEnd('never'); setFRecurEndDate(''); setFRecurEndCount(4)
     setFSubject('Maths'); setFPoints(5); setFTodPeriod(['Morning']); setFImageFile(null)
+    setEditingId(null)
   }
 
   const toggleAssignee = (name: string) => {
@@ -1583,17 +1585,38 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const saveEntry = (type: CalEvent['type'], successMsg: string) => {
     if (!fTitle.trim()) { showToast('Please enter a title'); return }
     if (!fDate)         { showToast('Please pick a date'); return }
-    addEvent({
-      id: Date.now(), title: fTitle, date: fDate, time: fTime, endTime: fEndTime,
-      colour: fColour, assignees: fAssignees, recur: fRecur,
-      recurDays: fRecurDays, recurMonthType: fMonthType,
-      recurMonthDate: fMonthDate, recurMonthOrdinal: fMonthOrd, recurMonthDay: fMonthDay,
-      recurEnd: fRecurEnd, recurEndDate: fRecurEndDate, recurEndCount: fRecurEndCount,
-      notes: fNotes, type,
-    }, fImageFile)
+    if (editingId !== null) {
+      // Update existing entry
+      const updated: CalEvent = {
+        id: editingId, title: fTitle, date: fDate, time: fTime, endTime: fEndTime,
+        colour: fColour, assignees: fAssignees, recur: fRecur,
+        recurDays: fRecurDays, recurMonthType: fMonthType,
+        recurMonthDate: fMonthDate, recurMonthOrdinal: fMonthOrd, recurMonthDay: fMonthDay,
+        recurEnd: fRecurEnd, recurEndDate: fRecurEndDate, recurEndCount: fRecurEndCount,
+        notes: fNotes, type,
+      }
+      setEvents(prev => prev.map(e => String(e.id) === String(editingId) ? updated : e))
+      fetch('/api/entries', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      }).then(r => r.json()).then(saved => {
+        if (saved.error) showToast('Save failed: ' + saved.error)
+        else setEvents(prev => prev.map(e => String(e.id) === String(editingId) ? { ...e, ...saved } : e))
+      })
+    } else {
+      addEvent({
+        id: Date.now(), title: fTitle, date: fDate, time: fTime, endTime: fEndTime,
+        colour: fColour, assignees: fAssignees, recur: fRecur,
+        recurDays: fRecurDays, recurMonthType: fMonthType,
+        recurMonthDate: fMonthDate, recurMonthOrdinal: fMonthOrd, recurMonthDay: fMonthDay,
+        recurEnd: fRecurEnd, recurEndDate: fRecurEndDate, recurEndCount: fRecurEndCount,
+        notes: fNotes, type,
+      }, fImageFile)
+    }
     setActiveModal(null)
     resetForm()
-    showToast(successMsg)
+    showToast(editingId !== null ? 'Updated ✓' : successMsg)
   }
 
   const saveExamThenRevise = () => {
@@ -1624,6 +1647,36 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const openModal = (id: string, date = '') => {
     resetForm(); setFDate(date || prefillDate)
     setPrefillDate(date); setActiveModal(id); setFabOpen(false)
+  }
+
+  const openEditModal = (ev: CalEvent) => {
+    resetForm()
+    setEditingId(ev.id)
+    setFTitle(ev.title)
+    setFDate(ev.date)
+    setFTime(ev.time || '')
+    setFEndTime(ev.endTime || '')
+    setFNotes(ev.notes || '')
+    setFColour(ev.colour || 'green')
+    setFAssignees(ev.assignees || ['Everyone'])
+    setFRecur(ev.recur || 'none')
+    setFRecurDays(ev.recurDays || [])
+    setFMonthType(ev.recurMonthType || 'date')
+    setFMonthDate(ev.recurMonthDate || 1)
+    setFMonthOrd(ev.recurMonthOrdinal || 'First')
+    setFMonthDay(ev.recurMonthDay || 'Monday')
+    setFRecurEnd(ev.recurEnd || 'never')
+    setFRecurEndDate(ev.recurEndDate || '')
+    setFRecurEndCount(ev.recurEndCount || 4)
+    // Open the right modal tab for the type
+    const modalId = ev.type === 'chore' ? 'chore'
+      : ev.type === 'homework' ? 'homework'
+      : ev.type === 'exam' ? 'exam'
+      : ev.type === 'revision' ? 'revision'
+      : ev.type === 'task' ? 'task'
+      : 'event'
+    setActiveModal(modalId)
+    setFabOpen(false)
   }
 
   const openDetail = (ev: CalEvent, e: React.MouseEvent) => {
@@ -1944,7 +1997,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
               )
             })()}
             <div className="event-detail-actions">
-              <button className="event-detail-btn" onClick={() => { openModal('event', detailEvent.date); setDetailEvent(null) }}>
+              <button className="event-detail-btn" onClick={() => { openEditModal(detailEvent); setDetailEvent(null) }}>
                 <i className="ti ti-edit" style={{ marginRight: 4, fontSize: 11 }}></i>Edit
               </button>
               <button className="event-detail-btn danger" onClick={() => removeEvent(detailEvent.id)}>
@@ -2008,7 +2061,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <AttachField id="event" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('event','Event added ✓')}>Add event</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('event','Event added ✓')}>{editingId !== null ? 'Save changes' : 'Add event'}</button>
             </div>
           </div>
         </div>
@@ -2051,7 +2104,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <AttachField id="task" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('task','Task added ✓')}>Add task</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('task','Task added ✓')}>{editingId !== null ? 'Save changes' : 'Add task'}</button>
             </div>
           </div>
         </div>
@@ -2104,7 +2157,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             </div>
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('chore','Chore added ✓')}>Add chore</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('chore','Chore added ✓')}>{editingId !== null ? 'Save changes' : 'Add chore'}</button>
             </div>
           </div>
         </div>
@@ -2156,7 +2209,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <AttachField id="hw" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('homework','Homework added ✓')}>Add homework</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('homework','Homework added ✓')}>{editingId !== null ? 'Save changes' : 'Add homework'}</button>
             </div>
           </div>
         </div>

@@ -108,3 +108,51 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data, { status: 201 })
 }
+
+// PATCH /api/entries — update an existing entry
+export async function PATCH(request: NextRequest) {
+  const supabase = await createServerSideClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: member } = await supabase
+    .from('family_members')
+    .select('family_id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!member) return NextResponse.json({ error: 'No family' }, { status: 404 })
+
+  const body = await request.json()
+  const { id, ...rest } = body
+
+  const { data, error } = await supabase
+    .from('calendar_entries')
+    .update({
+      title:              rest.title,
+      date:               rest.date,
+      time_start:         rest.time        || null,
+      time_end:           rest.endTime     || null,
+      type:               rest.type        || 'event',
+      colour:             rest.colour      || 'green',
+      assignees:          rest.assignees   || ['Everyone'],
+      notes:              rest.notes       || null,
+      recur:              rest.recur       || 'none',
+      recur_days:         rest.recurDays   || null,
+      recur_month_type:   rest.recurMonthType    || null,
+      recur_month_date:   rest.recurMonthDate    || null,
+      recur_month_ordinal:rest.recurMonthOrdinal || null,
+      recur_month_day:    rest.recurMonthDay     || null,
+      recur_end:          rest.recurEnd          || 'never',
+      recur_end_date:     rest.recurEndDate      || null,
+      recur_end_count:    rest.recurEndCount     || null,
+      subject:            rest.subject     || null,
+      points:             rest.points      ?? null,
+    })
+    .eq('id', id)
+    .eq('family_id', member.family_id)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
