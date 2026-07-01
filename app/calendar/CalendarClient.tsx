@@ -25,6 +25,7 @@ export type CalEvent = {
   recurEndCount?: number
   notes?: string
   points?: number
+  image_url?: string | null
   type: 'event' | 'task' | 'chore' | 'homework' | 'exam' | 'revision' | 'birthday' | 'school-holiday' | 'family-holiday' | 'public-holiday'
 }
 
@@ -1165,33 +1166,24 @@ function RecurPicker({
   )
 }
 
-/** Reusable file/photo attach field for calendar modals */
-function AttachField({ id }: { id: string }) {
-  const [files, setFiles] = useState<File[]>([])
+/** Image attach field — wired to parent fImageFile state via onPick/onClear */
+function AttachField({ id, file, onPick, onClear }: { id: string; file: File | null; onPick: (f: File) => void; onClear: () => void }) {
   const inputId = `attach-${id}`
-  const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const picked = Array.from(e.target.files ?? [])
-    setFiles(prev => [...prev, ...picked])
-    e.target.value = ''
-  }
-  const remove = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i))
+  const preview = file ? URL.createObjectURL(file) : null
   return (
     <div className="modal-field">
-      <label>Attachments <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label>
-      <div className="attach-drop" onClick={() => document.getElementById(inputId)?.click()}>
-        <input type="file" id={inputId} multiple accept="image/*,.pdf,.doc,.docx" onChange={onFiles} style={{ display:'none' }} />
-        <i className="ti ti-paperclip" style={{ fontSize:16, color:'var(--text-3)' }}></i>
-        <span style={{ fontSize:12, color:'var(--text-3)' }}>Tap to attach files or photos</span>
-      </div>
-      {files.length > 0 && (
-        <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:6 }}>
-          {files.map((f, i) => (
-            <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 10px', background:'var(--bg)', borderRadius:'var(--r-sm)', fontSize:12 }}>
-              <i className="ti ti-file" style={{ color:'var(--text-3)', fontSize:13 }}></i>
-              <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{f.name}</span>
-              <button onClick={() => remove(i)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-3)', fontSize:14, padding:0, lineHeight:1 }}>×</button>
-            </div>
-          ))}
+      <label>Photo <span style={{ fontSize:10, fontWeight:500, color:'var(--text-3)' }}>Optional</span></label>
+      {file ? (
+        <div style={{ position:'relative', display:'inline-block' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview!} alt="preview" style={{ width:'100%', maxHeight:180, objectFit:'cover', borderRadius:'var(--r-md)' }} />
+          <button onClick={onClear} style={{ position:'absolute', top:6, right:6, background:'rgba(0,0,0,.55)', color:'#fff', border:'none', borderRadius:'50%', width:24, height:24, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+        </div>
+      ) : (
+        <div className="attach-drop" onClick={() => document.getElementById(inputId)?.click()}>
+          <input type="file" id={inputId} accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) onPick(f); e.target.value = '' }} style={{ display:'none' }} />
+          <i className="ti ti-camera" style={{ fontSize:16, color:'var(--text-3)' }}></i>
+          <span style={{ fontSize:12, color:'var(--text-3)' }}>Tap to add a photo</span>
         </div>
       )}
     </div>
@@ -1375,6 +1367,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
           recurEnd:         r.recur_end as 'never' | 'on' | 'after' | undefined,
           recurEndDate:     r.recur_end_date as string | undefined,
           recurEndCount:    r.recur_end_count as number | undefined,
+          image_url:        r.image_url as string | null | undefined,
         }))
         setEvents(mapped)
       })
@@ -1466,8 +1459,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
   }
 
   /* ── Event helpers ── */
-  const addEvent = async (ev: CalEvent) => {
-    // Optimistic add so UI feels instant
+  const addEvent = async (ev: CalEvent, imageFile?: File | null) => {
     setEvents(prev => [...prev, ev])
     try {
       const res = await fetch('/api/entries', {
@@ -1477,8 +1469,17 @@ export default function CalendarClient({ displayName, familyName, initials, user
       })
       if (res.ok) {
         const saved = await res.json()
-        // Replace the optimistic entry with the real UUID from Supabase
         setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, id: saved.id } : e))
+        // Upload image after we have the real UUID
+        if (imageFile && saved.id) {
+          const fd = new FormData()
+          fd.append('image', imageFile)
+          const imgRes = await fetch(`/api/entries/${saved.id}/image`, { method: 'POST', body: fd })
+          if (imgRes.ok) {
+            const { image_url } = await imgRes.json()
+            setEvents(prev => prev.map(e => e.id === saved.id ? { ...e, image_url } : e))
+          }
+        }
       }
     } catch {
       // Keep optimistic entry — will re-sync on next page load
@@ -1543,13 +1544,14 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const [fSubject, setFSubject]   = useState('Maths')
   const [fPoints, setFPoints]     = useState(5)
   const [fTodPeriod, setFTodPeriod] = useState<string[]>(['Morning'])
+  const [fImageFile, setFImageFile] = useState<File | null>(null)
 
   const resetForm = () => {
     setFTitle(''); setFTime(''); setFEndTime(''); setFNotes(''); setFColour('green')
     setFAssignees(['Everyone']); setFRecur('none'); setFRecurDays([])
     setFMonthType('date'); setFMonthDate(1); setFMonthOrd('First'); setFMonthDay('Monday')
     setFRecurEnd('never'); setFRecurEndDate(''); setFRecurEndCount(4)
-    setFSubject('Maths'); setFPoints(5); setFTodPeriod(['Morning'])
+    setFSubject('Maths'); setFPoints(5); setFTodPeriod(['Morning']); setFImageFile(null)
   }
 
   const toggleAssignee = (name: string) => {
@@ -1574,7 +1576,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
       recurMonthDate: fMonthDate, recurMonthOrdinal: fMonthOrd, recurMonthDay: fMonthDay,
       recurEnd: fRecurEnd, recurEndDate: fRecurEndDate, recurEndCount: fRecurEndCount,
       notes: fNotes, type,
-    })
+    }, fImageFile)
     setActiveModal(null)
     resetForm()
     showToast(successMsg)
@@ -1867,6 +1869,12 @@ export default function CalendarClient({ displayName, familyName, initials, user
               </div>
             )}
             {detailEvent.notes && <div className="event-detail-row"><i className="ti ti-notes"></i>{detailEvent.notes}</div>}
+            {detailEvent.image_url && (
+              <a href={detailEvent.image_url} target="_blank" rel="noopener noreferrer" style={{ display:'block', marginTop:8, marginBottom:4 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={detailEvent.image_url} alt="Event photo" style={{ width:'100%', maxHeight:160, objectFit:'cover', borderRadius:'var(--r-md)', cursor:'pointer' }} />
+              </a>
+            )}
             <div className="event-detail-actions">
               <button className="event-detail-btn" onClick={() => { openModal('event', detailEvent.date); setDetailEvent(null) }}>
                 <i className="ti ti-edit" style={{ marginRight: 4, fontSize: 11 }}></i>Edit
@@ -1929,7 +1937,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>Optional</span></label>
               <textarea rows={2} placeholder="Any extra details…" value={fNotes} onChange={e => setFNotes(e.target.value)} style={{ resize:'none' }} />
             </div>
-            <AttachField id="event" />
+            <AttachField id="event" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('event','Event added ✓')}>Add event</button>
@@ -1972,7 +1980,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>Optional</span></label>
               <input type="text" placeholder="Any extra details…" value={fNotes} onChange={e => setFNotes(e.target.value)} />
             </div>
-            <AttachField id="task" />
+            <AttachField id="task" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('task','Task added ✓')}>Add task</button>
@@ -2077,7 +2085,7 @@ export default function CalendarClient({ displayName, familyName, initials, user
             <div className="modal-field"><label>Notes <span style={{ fontSize:10, color:'var(--text-3)', fontWeight:500 }}>Optional</span></label>
               <input type="text" placeholder="e.g. Pages 12–24, show working" value={fNotes} onChange={e => setFNotes(e.target.value)} />
             </div>
-            <AttachField id="hw" />
+            <AttachField id="hw" file={fImageFile} onPick={setFImageFile} onClear={() => setFImageFile(null)} />
             <div className="modal-actions">
               <button className="modal-btn modal-btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
               <button className="modal-btn modal-btn-primary" onClick={() => saveEntry('homework','Homework added ✓')}>Add homework</button>
