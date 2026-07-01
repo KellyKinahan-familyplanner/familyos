@@ -1850,41 +1850,66 @@ export default function CalendarClient({ displayName, familyName, initials, user
       </div>
 
       {/* ── Event detail popover ── */}
-      {detailEvent && (
+      {detailEvent && (() => {
+        // Always read from live events state so async image uploads appear immediately
+        const de = events.find(e => e.id === detailEvent.id) ?? detailEvent
+        const uploadDetailImage = async (file: File) => {
+          const fd = new FormData(); fd.append('image', file)
+          const res = await fetch(`/api/entries/${de.id}/image`, { method: 'POST', body: fd })
+          if (res.ok) {
+            const { image_url } = await res.json()
+            setEvents(prev => prev.map(e => e.id === de.id ? { ...e, image_url } : e))
+          }
+        }
+        const removeDetailImage = async () => {
+          await fetch(`/api/entries/${de.id}/image`, { method: 'DELETE' })
+          setEvents(prev => prev.map(e => e.id === de.id ? { ...e, image_url: null } : e))
+        }
+        return (
         <>
           <div className="event-detail-backdrop" onClick={() => setDetailEvent(null)} />
           <div className="event-detail" style={{ top: detailPos.top, left: detailPos.left }}>
             <button className="event-detail-close" onClick={() => setDetailEvent(null)}><i className="ti ti-x"></i></button>
             <div className="event-detail-title">
-              <i className={`ti ${TYPE_ICONS[detailEvent.type] || 'ti-calendar-event'}`} style={{ color: getEventChipStyle(detailEvent.assignees, MEMBERS).borderLeftColor, marginRight: 6, fontSize: 14 }}></i>
-              {detailEvent.title}
+              <i className={`ti ${TYPE_ICONS[de.type] || 'ti-calendar-event'}`} style={{ color: getEventChipStyle(de.assignees, MEMBERS).borderLeftColor, marginRight: 6, fontSize: 14 }}></i>
+              {de.title}
             </div>
-            {detailEvent.time && <div className="event-detail-row"><i className="ti ti-clock"></i>{detailEvent.time}{detailEvent.endTime ? ` – ${detailEvent.endTime}` : ''}</div>}
-            <div className="event-detail-row"><i className="ti ti-users"></i>{detailEvent.assignees.join(', ')}</div>
-            {detailEvent.recur !== 'none' && (
+            {de.time && <div className="event-detail-row"><i className="ti ti-clock"></i>{de.time}{de.endTime ? ` – ${de.endTime}` : ''}</div>}
+            <div className="event-detail-row"><i className="ti ti-users"></i>{de.assignees.join(', ')}</div>
+            {de.recur !== 'none' && (
               <div className="event-detail-row"><i className="ti ti-repeat"></i>
-                {detailEvent.recur === 'daily' ? 'Repeats daily' : detailEvent.recur === 'weekly' ? `Weekly (${(detailEvent.recurDays || []).join(', ')})` : 'Monthly'}
-                {detailEvent.recurEnd === 'on' && detailEvent.recurEndDate ? ` · until ${detailEvent.recurEndDate}` : ''}
-                {detailEvent.recurEnd === 'after' && detailEvent.recurEndCount ? ` · ${detailEvent.recurEndCount}×` : ''}
+                {de.recur === 'daily' ? 'Repeats daily' : de.recur === 'weekly' ? `Weekly (${(de.recurDays || []).join(', ')})` : 'Monthly'}
+                {de.recurEnd === 'on' && de.recurEndDate ? ` · until ${de.recurEndDate}` : ''}
+                {de.recurEnd === 'after' && de.recurEndCount ? ` · ${de.recurEndCount}×` : ''}
               </div>
             )}
-            {detailEvent.notes && <div className="event-detail-row"><i className="ti ti-notes"></i>{detailEvent.notes}</div>}
-            {detailEvent.image_url && (
-              <a href={detailEvent.image_url} target="_blank" rel="noopener noreferrer" style={{ display:'block', marginTop:8, marginBottom:4 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={detailEvent.image_url} alt="Event photo" style={{ width:'100%', maxHeight:160, objectFit:'cover', borderRadius:'var(--r-md)', cursor:'pointer' }} />
-              </a>
+            {de.notes && <div className="event-detail-row"><i className="ti ti-notes"></i>{de.notes}</div>}
+            {de.image_url ? (
+              <div style={{ position:'relative', marginTop:8, marginBottom:4 }}>
+                <a href={de.image_url} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={de.image_url} alt="Event photo" style={{ width:'100%', maxHeight:160, objectFit:'cover', borderRadius:'var(--r-md)', cursor:'pointer', display:'block' }} />
+                </a>
+                <button onClick={removeDetailImage} style={{ position:'absolute', top:6, right:6, background:'rgba(0,0,0,.55)', color:'#fff', border:'none', borderRadius:'50%', width:22, height:22, cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+              </div>
+            ) : (
+              <label style={{ display:'flex', alignItems:'center', gap:6, marginTop:8, marginBottom:4, padding:'7px 10px', borderRadius:'var(--r-md)', border:'1.5px dashed var(--border)', cursor:'pointer', fontSize:12, color:'var(--text-3)' }}>
+                <i className="ti ti-camera" style={{ fontSize:14 }}></i> Add photo
+                <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadDetailImage(f); e.target.value = '' }} />
+              </label>
             )}
             <div className="event-detail-actions">
-              <button className="event-detail-btn" onClick={() => { openModal('event', detailEvent.date); setDetailEvent(null) }}>
+              <button className="event-detail-btn" onClick={() => { openModal('event', de.date); setDetailEvent(null) }}>
                 <i className="ti ti-edit" style={{ marginRight: 4, fontSize: 11 }}></i>Edit
               </button>
-              <button className="event-detail-btn danger" onClick={() => removeEvent(detailEvent.id)}>
+              <button className="event-detail-btn danger" onClick={() => removeEvent(de.id)}>
                 <i className="ti ti-trash" style={{ marginRight: 4, fontSize: 11 }}></i>Remove
               </button>
             </div>
           </div>
         </>
+        )
+      })()}
       )}
 
       {/* ════════════════════════════════
