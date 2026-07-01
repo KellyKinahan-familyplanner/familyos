@@ -199,7 +199,7 @@ html,body{height:100%;overflow:hidden;}
 
 /* ── Event detail popover ── */
 .event-detail-backdrop{position:fixed;inset:0;z-index:299;}
-.event-detail{position:fixed;z-index:300;background:var(--surface);border-radius:var(--r-xl);box-shadow:0 8px 40px rgba(0,0,0,.18);padding:16px;width:280px;border:1.5px solid var(--border);}
+.event-detail{position:fixed;z-index:300;background:var(--surface);border-radius:var(--r-xl);box-shadow:0 8px 40px rgba(0,0,0,.18);padding:16px;width:280px;border:1.5px solid var(--border);max-height:85vh;overflow-y:auto;}
 .event-detail-close{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text-2);}
 .event-detail-title{font-size:14px;font-weight:800;margin-bottom:6px;padding-right:28px;}
 .event-detail-row{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--text-2);margin-bottom:5px;line-height:1.4;}
@@ -1685,8 +1685,13 @@ export default function CalendarClient({ displayName, familyName, initials, user
   const openDetail = (ev: CalEvent, e: React.MouseEvent) => {
     e.stopPropagation()
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const popupH = 420 // estimated max height
+    const spaceBelow = window.innerHeight - rect.bottom - 8
+    const top = spaceBelow >= popupH
+      ? rect.bottom + 6
+      : Math.max(8, rect.top - popupH - 6)
     setDetailPos({
-      top: Math.min(rect.bottom + 6, window.innerHeight - 260),
+      top,
       left: Math.max(4, Math.min(rect.left, window.innerWidth - 292)),
     })
     setDetailEvent(ev)
